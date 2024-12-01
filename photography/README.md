@@ -1,6 +1,6 @@
 # Photography Portfolio
 
-A minimalist photography portfolio website with dynamic image galleries and smooth interactions.
+A minimalist photography portfolio website with dynamic album loading and smooth interactions.
 
 ## Adding a New Album
 
@@ -15,7 +15,10 @@ python3 -m venv venv
 
 ### Creating an Album
 
-The script will create optimized copies of your images, create the album page, and update the landing page automatically.
+The script will:
+1. Create optimized copies of your images
+2. Create the album page
+3. Update the albums.json file automatically
 
 ```bash
 ./venv/bin/python create_album.py [album-name] "Album Title" "Album Description" [path-to-images]
@@ -49,26 +52,43 @@ The script will create optimized copies of your images, create the album page, a
    - Full-screen image viewer
    - Keyboard navigation
 
-3. Updates landing page (`index.html`)
-   - Adds album preview with cover image (first image by default, or specified cover)
-   - Supports both local images and external URLs for covers
-   - Updates navigation
+3. Updates `albums/albums.json`
+   - Adds new album to the beginning of the list
+   - Includes title, description, cover image, and URL
+   - Used by main.js to dynamically load albums
 
-### Publishing Changes
+### Project Structure
 
-After creating an album, run:
-```bash
-git add photography/albums/[album-name].html
-git add photography/images/[album-name]/*
-git add photography/index.html
-git commit -m "Add new album: [Album Title]"
-git push origin main
+```
+photography/
+├── albums/
+│   ├── albums.json     # Album metadata
+│   ├── template.html   # Album page template
+│   └── [album].html   # Individual album pages
+├── images/
+│   └── [album]/       # Optimized images for each album
+├── create_album.py    # Album creation script
+├── index.html         # Main gallery page
+├── main.js           # Gallery initialization
+└── styles.css        # Custom styles
 ```
 
-## Features
+### Development
 
-- Responsive masonry grid layout
-- Full-screen image viewer
-- Keyboard navigation (←/→/Esc)
-- Automatic image optimization
-- Mobile-friendly design
+The website uses:
+- Vanilla JavaScript for dynamic rendering
+- CSS Grid for responsive layout
+- Masonry layout for image grids
+- Intersection Observer for lazy loading
+- Tailwind CSS for styling
+
+### Contributing
+
+1. Create a new branch for your changes
+2. Make your modifications
+3. Test locally using a web server (e.g., `python3 -m http.server`)
+4. Submit a pull request
+
+### License
+
+MIT License - feel free to use this code for your own portfolio!
