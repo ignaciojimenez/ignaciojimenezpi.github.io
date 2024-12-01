@@ -4,7 +4,8 @@ A minimalist photography portfolio website with dynamic album loading and smooth
 
 ## Features
 - Dynamic image loading with lazy loading
-- Responsive Masonry grid layout
+- Responsive grid layout with hover effects
+- Chronological album sorting (newest first)
 - Image optimization (max 2000px, 85% quality)
 - Modal image viewer with keyboard navigation
 - Mobile-friendly design
@@ -14,7 +15,7 @@ A minimalist photography portfolio website with dynamic album loading and smooth
 ```
 photography/
 ├── albums/
-│   ├── albums.json         # Album metadata
+│   ├── albums.json         # Album metadata and configuration
 │   ├── template.html       # Generic album template
 │   └── [album-name]/      # Individual album directories
 │       ├── index.html     # Album page (from template)
@@ -23,6 +24,19 @@ photography/
 ├── create_album.py        # Album creation utility
 ├── styles.css            # Global styles
 └── index.html           # Portfolio home page
+```
+
+## Album Configuration
+Each album in `albums.json` has the following structure:
+```json
+{
+  "id": "album-name",
+  "title": "Album Title",
+  "description": "Album description",
+  "date": "YYYY-MM-DD",
+  "coverImage": "path/to/cover/image",
+  "images": ["image1.jpg", "image2.jpg"]
+}
 ```
 
 ## Adding a New Album
@@ -45,57 +59,33 @@ The script will:
 4. Update the albums.json file automatically
 
 ```bash
-./venv/bin/python create_album.py [album-name] "Album Title" "Album Description" [path-to-images]
+./venv/bin/python create_album.py [album-name] "Album Title" "Album Description" "YYYY-MM-DD" [path-to-images] --cover [cover-image]
 ```
 
-#### Examples
+#### Required Parameters
+- `album-name`: URL-friendly name (e.g., "summer-2023")
+- `Album Title`: Display title (e.g., "Summer 2023")
+- `Album Description`: Short description of the album
+- `YYYY-MM-DD`: Date of the album (used for sorting)
+- `path-to-images`: Directory containing the images
 
+#### Optional Parameters
+- `--cover`: Specify a cover image (must be in the images directory)
+
+#### Example
 ```bash
-# Create album from a directory of images
-./venv/bin/python create_album.py italy-2023 "Italy Trip" "Summer adventures in Italy" ~/Pictures/Italy/
-
-# Create album from specific images
-./venv/bin/python create_album.py portraits "Portrait Work" "Recent portrait photography" "photo1.jpg,photo2.jpg,photo3.jpg"
-
-# Use a specific local image as cover
-./venv/bin/python create_album.py wedding "Smith Wedding" "Smith wedding in Barcelona" ~/Pictures/Smith-Wedding/ --cover ceremony.jpg
-
-# Use an external URL as cover image (e.g., from Unsplash)
-./venv/bin/python create_album.py nature "Nature Gallery" "Beautiful landscapes" ~/Pictures/Nature/ --cover https://images.unsplash.com/photo-1472214103451-9374bd1c798e
+./venv/bin/python create_album.py urban "Urban Photography" "City landscapes" "2023-12-01" path/to/images --cover modern-architecture.jpg
 ```
 
-### What Happens
+## Features
+### Landing Page
+- Albums sorted chronologically (newest first)
+- Hover effects showing album title, date, and description
+- Responsive grid layout
+- Lazy loading for better performance
 
-1. Creates album directory in `albums/[album-name]/`
-   - `index.html`: Album page with image grid (from template)
-   - `images.json`: List of images in the album
-   - `images/`: Directory containing optimized images
-     - Resizes large images (max 2000px)
-     - Optimizes for web (85% quality)
-     - Original images remain untouched
-
-2. Updates `albums.json` with new album metadata:
-   - Album ID (URL-friendly name)
-   - Title
-   - Description
-   - Cover image URL
-
-## Technical Details
-
-### Dependencies
-- Python 3 with Pillow for image processing
-- Tailwind CSS for styling
-- Masonry Layout for responsive grid
-- ImagesLoaded for smooth loading
-- Intersection Observer for lazy loading
-
-### Browser Support
-- Modern browsers with JavaScript enabled
-- Graceful degradation for older browsers
-- Mobile-friendly responsive design
-
-### Performance
-- Lazy loading of images
-- Optimized image sizes
-- Minimal JavaScript dependencies
-- No build step required
+### Album Pages
+- Responsive image grid
+- Modal viewer with keyboard navigation
+- Image lazy loading
+- Smooth loading transitions
