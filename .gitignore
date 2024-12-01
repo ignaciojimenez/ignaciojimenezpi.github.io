@@ -1,3 +1,11 @@
 .DS_Store
 node_modules/
 *.log
+
+# Python virtual environment
+photography/venv/
+
+# Test files
+photography/test-images/
+photography/images/test-album/
+photography/albums/test-album.html
