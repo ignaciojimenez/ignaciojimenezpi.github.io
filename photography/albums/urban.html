@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban - Ignacio Jiménez Pi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+    <link rel="stylesheet" href="../styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-white text-gray-900">
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-sm z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="../index.html" class="text-xl font-light tracking-wide">IGNACIO JIMÉNEZ PI</a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button class="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Image Grid -->
+    <div class="pt-16 px-4 md:px-8 flex justify-center">
+        <div class="gallery-grid" id="gallery">
+            <div class="grid-sizer"></div>
+            <!-- Images will be loaded here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center">
+        <button class="absolute top-4 right-4 text-white close-modal">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <img id="modalImage" class="max-h-[90vh] max-w-[90vw] object-contain" src="" alt="">
+        <button class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white prev-image">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+        </button>
+        <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white next-image">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Urban gallery images
+        const galleryImages = [
+            {
+                url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
+                alt: 'Modern Architecture'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1514924013411-cbf25faa35bb',
+                alt: 'City Skyline'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1444723121867-7a241cacace9',
+                alt: 'City Lights'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1465447142348-e9952c393450',
+                alt: 'Urban Geometry'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1451976426598-a7593bd6d0b2',
+                alt: 'City Streets'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1486325212027-8081e485255e',
+                alt: 'Downtown'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad',
+                alt: 'Urban Abstract'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1495542779398-9fec7dc7986c',
+                alt: 'City Patterns'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390',
+                alt: 'Urban Details'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742',
+                alt: 'Urban Minimalism'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1517935706615-2717063c2225',
+                alt: 'City Reflections'
+            },
+            {
+                url: 'https://images.unsplash.com/photo-1496568816309-51d7c20e3b21',
+                alt: 'Urban Perspective'
+            }
+        ];
+
+        let currentImageIndex = 0;
+
+        // Load gallery images
+        document.addEventListener('DOMContentLoaded', () => {
+            const galleryContainer = document.querySelector('#gallery');
+            
+            // Create and append all gallery items
+            galleryImages.forEach((image, index) => {
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item';
+                
+                galleryItem.innerHTML = `
+                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                         data-src="${image.url}" 
+                         alt="${image.alt}"
+                         data-index="${index}">
+                `;
+                
+                galleryContainer.appendChild(galleryItem);
+            });
+
+            // Initialize Masonry after all images are loaded
+            imagesLoaded(galleryContainer, () => {
+                const masonry = new Masonry(galleryContainer, {
+                    itemSelector: '.gallery-item',
+                    columnWidth: '.grid-sizer',
+                    gutter: 10,
+                    percentPosition: true,
+                    transitionDuration: '0.3s',
+                    initLayout: false,
+                    resize: true
+                });
+
+                // Initial layout
+                masonry.layout();
+
+                // Load images with intersection observer
+                const loadImage = (entry) => {
+                    const item = entry.target;
+                    const img = item.querySelector('img');
+                    
+                    // Start loading the image
+                    img.src = img.dataset.src;
+                    
+                    img.onload = () => {
+                        item.classList.add('loaded');
+                        masonry.layout();
+                    };
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            loadImage(entry);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '50px',
+                    threshold: 0.1
+                });
+
+                // Observe all gallery items
+                document.querySelectorAll('.gallery-item').forEach(item => {
+                    observer.observe(item);
+                });
+            });
+
+            // Modal functionality
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const closeButton = document.querySelector('.close-modal');
+            const prevButton = document.querySelector('.prev-image');
+            const nextButton = document.querySelector('.next-image');
+
+            function showImage(index) {
+                currentImageIndex = index;
+                const image = galleryImages[index];
+                modalImage.src = image.url;
+                modalImage.alt = image.alt;
+            }
+
+            function openModal(index) {
+                showImage(index);
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            function showNextImage() {
+                const nextIndex = (currentImageIndex + 1) % galleryImages.length;
+                showImage(nextIndex);
+            }
+
+            function showPrevImage() {
+                const prevIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+                showImage(prevIndex);
+            }
+
+            // Event Listeners
+            document.querySelectorAll('.gallery-item img').forEach(img => {
+                img.addEventListener('click', () => {
+                    openModal(parseInt(img.dataset.index));
+                });
+            });
+
+            closeButton.addEventListener('click', closeModal);
+            prevButton.addEventListener('click', showPrevImage);
+            nextButton.addEventListener('click', showNextImage);
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (!modal.classList.contains('hidden')) {
+                    if (e.key === 'Escape') closeModal();
+                    if (e.key === 'ArrowLeft') showPrevImage();
+                    if (e.key === 'ArrowRight') showNextImage();
+                }
+            });
+
+            // Close modal when clicking outside the image
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+
+        // Mobile menu functionality
+        const mobileMenuButton = document.querySelector('.mobile-menu-button');
+        const nav = document.querySelector('nav');
+
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', () => {
+                const mobileMenu = document.createElement('div');
+                mobileMenu.className = 'mobile-menu fixed inset-0 bg-white z-40 flex flex-col items-center justify-center';
+                mobileMenu.innerHTML = `
+                    <button class="absolute top-4 right-4 close-menu">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                
+                document.body.appendChild(mobileMenu);
+                document.body.style.overflow = 'hidden';
+                
+                const closeButton = mobileMenu.querySelector('.close-menu');
+                closeButton.addEventListener('click', () => {
+                    mobileMenu.remove();
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+    </script>
+</body>
+</html>
