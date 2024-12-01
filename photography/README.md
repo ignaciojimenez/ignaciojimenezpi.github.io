@@ -2,6 +2,29 @@
 
 A minimalist photography portfolio website with dynamic album loading and smooth interactions.
 
+## Features
+- Dynamic image loading with lazy loading
+- Responsive Masonry grid layout
+- Image optimization (max 2000px, 85% quality)
+- Modal image viewer with keyboard navigation
+- Mobile-friendly design
+- Automatic image list generation
+
+## Project Structure
+```
+photography/
+├── albums/
+│   ├── albums.json         # Album metadata
+│   ├── template.html       # Generic album template
+│   └── [album-name]/      # Individual album directories
+│       ├── index.html     # Album page (from template)
+│       ├── images.json    # List of images in album
+│       └── images/        # Optimized images
+├── create_album.py        # Album creation utility
+├── styles.css            # Global styles
+└── index.html           # Portfolio home page
+```
+
 ## Adding a New Album
 
 ### First Time Setup
@@ -17,8 +40,9 @@ python3 -m venv venv
 
 The script will:
 1. Create a new album directory with optimized images
-2. Create the album's index.html page
-3. Update the albums.json file automatically
+2. Generate images.json with the list of images
+3. Create the album's index.html from template
+4. Update the albums.json file automatically
 
 ```bash
 ./venv/bin/python create_album.py [album-name] "Album Title" "Album Description" [path-to-images]
@@ -43,49 +67,35 @@ The script will:
 ### What Happens
 
 1. Creates album directory in `albums/[album-name]/`
-   - `index.html`: Album page with image grid
+   - `index.html`: Album page with image grid (from template)
+   - `images.json`: List of images in the album
    - `images/`: Directory containing optimized images
      - Resizes large images (max 2000px)
      - Optimizes for web (85% quality)
      - Original images remain untouched
 
-2. Updates `albums/albums.json`
-   - Adds new album to the beginning of the list
-   - Includes title, description, cover image, and URL
-   - Used by main.js to dynamically load albums
+2. Updates `albums.json` with new album metadata:
+   - Album ID (URL-friendly name)
+   - Title
+   - Description
+   - Cover image URL
 
-### Project Structure
+## Technical Details
 
-```
-photography/
-├── albums/
-│   ├── [album-name]/       # One directory per album
-│   │   ├── index.html      # Album page
-│   │   └── images/         # Album-specific images
-│   ├── albums.json         # Album metadata
-│   └── template.html       # Album page template
-├── create_album.py         # Album creation script
-├── index.html             # Main gallery page
-├── main.js               # Gallery initialization
-└── styles.css           # Custom styles
-```
-
-### Development
-
-The website uses:
-- Vanilla JavaScript for dynamic rendering
-- CSS Grid for responsive layout
-- Masonry layout for image grids
-- Intersection Observer for lazy loading
+### Dependencies
+- Python 3 with Pillow for image processing
 - Tailwind CSS for styling
+- Masonry Layout for responsive grid
+- ImagesLoaded for smooth loading
+- Intersection Observer for lazy loading
 
-### Contributing
+### Browser Support
+- Modern browsers with JavaScript enabled
+- Graceful degradation for older browsers
+- Mobile-friendly responsive design
 
-1. Create a new branch for your changes
-2. Make your modifications
-3. Test locally using a web server (e.g., `python3 -m http.server`)
-4. Submit a pull request
-
-### License
-
-MIT License - feel free to use this code for your own portfolio!
+### Performance
+- Lazy loading of images
+- Optimized image sizes
+- Minimal JavaScript dependencies
+- No build step required
