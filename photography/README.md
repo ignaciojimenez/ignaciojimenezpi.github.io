@@ -30,8 +30,11 @@ The script will create optimized copies of your images, create the album page, a
 # Create album from specific images
 ./venv/bin/python create_album.py portraits "Portrait Work" "Recent portrait photography" "photo1.jpg,photo2.jpg,photo3.jpg"
 
-# Use a specific image as cover
+# Use a specific local image as cover
 ./venv/bin/python create_album.py wedding "Smith Wedding" "Smith wedding in Barcelona" ~/Pictures/Smith-Wedding/ --cover ceremony.jpg
+
+# Use an external URL as cover image (e.g., from Unsplash)
+./venv/bin/python create_album.py nature "Nature Gallery" "Beautiful landscapes" ~/Pictures/Nature/ --cover https://images.unsplash.com/photo-1472214103451-9374bd1c798e
 ```
 
 ### What Happens
@@ -47,7 +50,8 @@ The script will create optimized copies of your images, create the album page, a
    - Keyboard navigation
 
 3. Updates landing page (`index.html`)
-   - Adds album preview
+   - Adds album preview with cover image (first image by default, or specified cover)
+   - Supports both local images and external URLs for covers
    - Updates navigation
 
 ### Publishing Changes
