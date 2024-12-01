@@ -9,18 +9,20 @@ A minimalist showcase of my musical projects and bands. Built with vanilla JavaS
 - Elegant hover effects showing band names
 - Direct links to Spotify profiles
 - Graceful fallback for missing images
+- Easy band management through JSON file
 
 ## Structure
 
 ```
 music/
-├── images/          # Band photos
+├── bands.json      # Band data configuration
+├── images/         # Band photos
 │   ├── atencion-tsunami.jpg
 │   ├── incendios.jpg
 │   ├── karen-koltrane.jpg
 │   └── paracaidas.jpg
-├── index.html       # Main page
-└── README.md       # This file
+├── index.html      # Main page
+└── README.md      # This file
 ```
 
 ## Implementation Details
@@ -29,21 +31,28 @@ music/
 - Smooth transitions for hover effects
 - No external dependencies
 - Mobile-friendly design
+- Asynchronous JSON data loading
 
-## Adding/Updating Bands
+## Managing Bands
 
-To add or update a band:
+Bands are configured in `bands.json`. To add or update bands:
 
 1. Add the band's image to the `images/` directory
-2. Update the `bands` array in `index.html`:
+2. Edit `bands.json`:
 
-```javascript
+```json
 {
-    "name": "Band Name",
-    "image": "images/band-name.jpg",
-    "spotifyUrl": "https://open.spotify.com/artist/..."
+    "bands": [
+        {
+            "name": "Band Name",
+            "image": "images/band-name.jpg",
+            "spotifyUrl": "https://open.spotify.com/artist/..."
+        }
+    ]
 }
 ```
+
+No code changes are needed when updating band information - just modify the JSON file!
 
 ## Publishing Changes
 
