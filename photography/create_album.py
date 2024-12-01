@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from PIL import Image
 import argparse
+from datetime import datetime
 
 def load_albums():
     """Load existing albums from albums.json"""
@@ -37,7 +38,7 @@ def generate_images_json(images_dir):
     
     return images
 
-def create_album(album_name, title, description, image_dir, cover_image=None):
+def create_album(album_name, title, description, date, image_dir, cover_image=None):
     """Create a new album with optimized images and update albums.json"""
     # Setup paths
     base_dir = Path(__file__).parent
@@ -125,6 +126,7 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
             'id': album_name,
             'title': title,
             'description': description,
+            'date': date,
             'coverImage': f'albums/{album_name}/images/{os.path.basename(cover_image)}' if cover_image else f'albums/{album_name}/images/{os.path.basename(image_files[0].name)}',
             'images': [img.name for img in image_files]
         }
@@ -160,8 +162,17 @@ if __name__ == '__main__':
     parser.add_argument('album_name', help='URL-friendly name for the album (e.g., "summer-2023")')
     parser.add_argument('title', help='Display title for the album (e.g., "Summer 2023")')
     parser.add_argument('description', help='Short description of the album')
+    parser.add_argument('date', help='Album date in YYYY-MM-DD format (used for sorting)')
     parser.add_argument('image_dir', help='Directory containing images or comma-separated list of image paths')
-    parser.add_argument('--cover', help='Cover image filename (from image_dir) or URL', default=None)
+    parser.add_argument('--cover', help='Cover image filename (from image_dir)', default=None)
     
     args = parser.parse_args()
-    create_album(args.album_name, args.title, args.description, args.image_dir, args.cover)
+    
+    # Validate date format
+    try:
+        datetime.strptime(args.date, '%Y-%m-%d')
+    except ValueError:
+        print("Error: Date must be in YYYY-MM-DD format")
+        sys.exit(1)
+    
+    create_album(args.album_name, args.title, args.description, args.date, args.image_dir, args.cover)
