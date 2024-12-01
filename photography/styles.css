@@ -1,0 +1,121 @@
+/* Custom styles */
+body {
+    font-feature-settings: "liga" 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Gallery grid */
+.gallery-grid {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* Grid sizing */
+.grid-sizer,
+.gallery-item {
+    width: 100%;
+}
+
+@media screen and (min-width: 640px) {
+    .grid-sizer,
+    .gallery-item {
+        width: calc(50% - 5px);
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    .grid-sizer,
+    .gallery-item {
+        width: calc(33.333% - 7px);
+    }
+}
+
+@media screen and (min-width: 1280px) {
+    .grid-sizer,
+    .gallery-item {
+        width: calc(25% - 16px);
+    }
+}
+
+/* Gallery items */
+.gallery-item {
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out,
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-item.loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.gallery-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gallery-item:hover img {
+    transform: scale(1.02);
+}
+
+/* Modal transitions */
+#imageModal {
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#imageModal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#modalImage {
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.4s ease-out,
+                transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#imageModal:not(.hidden) #modalImage {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Navigation hover effects */
+nav a {
+    transition: opacity 0.2s ease;
+}
+
+nav a:hover {
+    opacity: 0.7;
+}
+
+/* Mobile menu animations */
+.mobile-menu {
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Button hover effects */
+button {
+    transition: opacity 0.2s ease;
+}
+
+button:hover {
+    opacity: 0.8;
+}
