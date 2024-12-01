@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music - Ignacio Jiménez Pi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-white text-gray-900">
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-sm z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="../index.html" class="text-xl font-light tracking-wide">IGNACIO JIMÉNEZ PI</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="pt-24 pb-12 px-4 text-center">
+        <h1 class="text-3xl font-light mb-4">Music Projects</h1>
+        <p class="text-gray-600 max-w-2xl mx-auto">A collection of bands and musical projects I'm involved with.</p>
+    </header>
+
+    <!-- Band Grid -->
+    <div class="max-w-7xl mx-auto px-4 pb-16">
+        <div id="bands-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Bands will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // Band data (placeholder bands)
+        const bands = [
+            {
+                "name": "Radiohead",
+                "role": "Guitar, Vocals",
+                "genre": "Alternative Rock",
+                "image": "https://i.scdn.co/image/ab67616d0000b2737e76d198b42dbdb1cda4ff47",
+                "spotifyUrl": "https://open.spotify.com/artist/4Z8W4fKeB5YxbusRsdQVPb",
+                "description": "Experimental rock band known for their innovative sound"
+            },
+            {
+                "name": "Arcade Fire",
+                "role": "Bass, Backing Vocals",
+                "genre": "Indie Rock",
+                "image": "https://i.scdn.co/image/ab67616d0000b273e2f039481c8f31d5d5635aba",
+                "spotifyUrl": "https://open.spotify.com/artist/3kjuyTCjPG1WMFCiyc5IuB",
+                "description": "Multi-instrumental collective with orchestral elements"
+            },
+            {
+                "name": "The National",
+                "role": "Drums",
+                "genre": "Indie Rock",
+                "image": "https://i.scdn.co/image/ab67616d0000b273f7757eec66970ea77b0581b7",
+                "spotifyUrl": "https://open.spotify.com/artist/2cCUtGK9sDU2EoElnk0GNB",
+                "description": "Melancholic rock with intricate arrangements"
+            },
+            {
+                "name": "Sigur Rós",
+                "role": "Keyboards, Electronics",
+                "genre": "Post-Rock",
+                "image": "https://i.scdn.co/image/ab67616d0000b273c3fd8aa65ea3aa9a7b0abdb7",
+                "spotifyUrl": "https://open.spotify.com/artist/6UUrUCIZtQeOf8tC0WuzRy",
+                "description": "Atmospheric post-rock with ethereal soundscapes"
+            },
+            {
+                "name": "Bon Iver",
+                "role": "Guitar, Electronics",
+                "genre": "Indie Folk",
+                "image": "https://i.scdn.co/image/ab67616d0000b273f7655826105500f6e828d266",
+                "spotifyUrl": "https://open.spotify.com/artist/4LEiUm1SRbFMgfqnQTwUbQ",
+                "description": "Folk meets electronic experimentation"
+            }
+        ];
+        
+        // Render bands
+        const bandsGrid = document.getElementById('bands-grid');
+        bands.forEach(band => {
+            const bandElement = document.createElement('div');
+            bandElement.className = 'relative group rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300';
+            bandElement.innerHTML = `
+                <a href="${band.spotifyUrl}" target="_blank" rel="noopener noreferrer" class="block">
+                    <div class="aspect-w-16 aspect-h-9">
+                        <img src="${band.image}" alt="${band.name}" class="w-full h-64 object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">${band.name}</h3>
+                        <p class="text-sm text-gray-600 mb-2">${band.genre}</p>
+                        <p class="text-sm font-medium text-emerald-600 mb-3">${band.role}</p>
+                        <p class="text-gray-700">${band.description}</p>
+                    </div>
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300"></div>
+                </a>
+            `;
+            bandsGrid.appendChild(bandElement);
+        });
+    </script>
+</body>
+</html>
