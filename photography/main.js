@@ -68,20 +68,27 @@ let currentImageIndex = 0;
 function initializeGallery() {
     const galleryContainer = document.querySelector('#gallery');
     
-    // Create and append all gallery items
-    galleryImages.forEach((image, index) => {
-        const galleryItem = document.createElement('div');
-        galleryItem.className = 'gallery-item';
+    // Create and append all album items
+    albums.forEach(album => {
+        const albumItem = document.createElement('div');
+        albumItem.className = 'gallery-item';
         
-        galleryItem.innerHTML = `
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
-                 data-src="${image.url}" 
-                 alt="${image.alt}"
-                 class="gallery-image ${image.size}"
-                 data-index="${index}">
+        albumItem.innerHTML = `
+            <a href="${album.url}" class="block relative group">
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                     data-src="${album.coverImage}" 
+                     alt="${album.title}"
+                     class="gallery-image w-full">
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity duration-300">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <h2 class="text-white text-2xl font-light tracking-wide mb-2">${album.title}</h2>
+                        <p class="text-white/80 text-sm font-light tracking-wide">${album.description}</p>
+                    </div>
+                </div>
+            </a>
         `;
         
-        galleryContainer.appendChild(galleryItem);
+        galleryContainer.appendChild(albumItem);
     });
 }
 
