@@ -126,70 +126,6 @@ function initializeImageLoading(masonry) {
     });
 }
 
-// Modal functionality
-function initializeModal() {
-    const modal = document.getElementById('imageModal');
-    const modalImage = document.getElementById('modalImage');
-    const closeButton = document.querySelector('.close-modal');
-    const prevButton = document.querySelector('.prev-image');
-    const nextButton = document.querySelector('.next-image');
-
-    function showImage(index) {
-        currentImageIndex = index;
-        const image = galleryImages[index];
-        modalImage.src = image.url;
-        modalImage.alt = image.alt;
-    }
-
-    function openModal(index) {
-        showImage(index);
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-        modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-
-    function showNextImage() {
-        const nextIndex = (currentImageIndex + 1) % galleryImages.length;
-        showImage(nextIndex);
-    }
-
-    function showPrevImage() {
-        const prevIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
-        showImage(prevIndex);
-    }
-
-    // Event Listeners
-    document.querySelectorAll('.gallery-item img').forEach(img => {
-        img.addEventListener('click', () => {
-            openModal(parseInt(img.dataset.index));
-        });
-    });
-
-    closeButton.addEventListener('click', closeModal);
-    prevButton.addEventListener('click', showPrevImage);
-    nextButton.addEventListener('click', showNextImage);
-
-    // Keyboard navigation
-    document.addEventListener('keydown', (e) => {
-        if (!modal.classList.contains('hidden')) {
-            if (e.key === 'Escape') closeModal();
-            if (e.key === 'ArrowLeft') showPrevImage();
-            if (e.key === 'ArrowRight') showNextImage();
-        }
-    });
-
-    // Close modal when clicking outside the image
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-}
-
 // Mobile menu functionality
 function initializeMobileMenu() {
     const mobileMenuButton = document.querySelector('.mobile-menu-button');
@@ -204,6 +140,11 @@ function initializeMobileMenu() {
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
+                <nav class="text-center">
+                    <a href="/" class="block py-2 hover:text-gray-600">Home</a>
+                    <a href="/photography" class="block py-2 hover:text-gray-600">Photography</a>
+                    <a href="/music" class="block py-2 hover:text-gray-600">Music</a>
+                </nav>
             `;
             
             document.body.appendChild(mobileMenu);
@@ -257,42 +198,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         galleryContainer.innerHTML = '<p class="text-red-500">Error loading albums. Please try again later.</p>';
     }
 
-    // Initialize modal
-    initializeModal();
-
     // Initialize mobile menu
     initializeMobileMenu();
-
-    // Smooth scroll for navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // Intersection Observer for fade-in animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('opacity-100');
-                entry.target.classList.remove('opacity-0', 'translate-y-10');
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('section').forEach(section => {
-        section.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700');
-        observer.observe(section);
-    });
 });
