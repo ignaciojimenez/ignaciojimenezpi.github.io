@@ -2,14 +2,12 @@
 import os
 import sys
 import json
-import shutil
 from pathlib import Path
 from PIL import Image
 import argparse
-import re
 
 def load_albums():
-    # Setup paths
+    """Load existing albums from albums.json"""
     base_dir = Path(__file__).parent
     albums_file = base_dir / 'albums' / 'albums.json'
     
@@ -25,25 +23,26 @@ def load_albums():
         return {'albums': []}
 
 def create_album(album_name, title, description, image_dir, cover_image=None):
+    """Create a new album with optimized images and update albums.json"""
     # Setup paths
     base_dir = Path(__file__).parent
-    albums_dir = base_dir / 'albums'
-    images_dir = base_dir / 'images' / album_name
-    template_path = albums_dir / 'template.html'
+    album_dir = base_dir / 'albums' / album_name
+    images_dir = album_dir / 'images'
+    template_path = base_dir / 'albums' / 'template.html'
     
     # Verify template exists
     if not template_path.exists():
         print(f"Error: Template file not found at {template_path}")
         return False
     
-    # Create directories if they don't exist
+    # Create directories
+    album_dir.mkdir(parents=True, exist_ok=True)
     images_dir.mkdir(parents=True, exist_ok=True)
     
     # Process images
     gallery_images = []
-    image_files = []
     
-    # Check if image_dir is a directory or a list of files
+    # Get image files
     if os.path.isdir(image_dir):
         image_files = [f for f in Path(image_dir).glob('*') if f.suffix.lower() in ['.jpg', '.jpeg', '.png']]
     else:
@@ -59,7 +58,7 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
             # Create optimized version
             img = Image.open(img_path)
             
-            # Calculate new size while maintaining aspect ratio
+            # Calculate new size maintaining aspect ratio
             max_size = 2000
             ratio = min(max_size/img.width, max_size/img.height)
             new_size = (int(img.width * ratio), int(img.height * ratio))
@@ -67,19 +66,19 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
             # Resize and save
             img = img.resize(new_size, Image.Resampling.LANCZOS)
             
-            # Save to images directory
+            # Save to album's images directory
             new_path = images_dir / img_path.name
             img.save(new_path, quality=85, optimize=True)
             
             # Add to gallery
             gallery_images.append({
-                'url': f'/photography/images/{album_name}/{new_path.name}',
+                'url': f'/photography/albums/{album_name}/images/{new_path.name}',
                 'alt': f'{title} - {new_path.stem}'
             })
             
             # Set as cover if it's the first image and no cover specified
             if not cover_image and len(gallery_images) == 1:
-                cover_image = gallery_images[0]['url']  # Use the full URL
+                cover_image = gallery_images[0]['url']
             
             print(f"Processed: {img_path.name}")
         except Exception as e:
@@ -98,9 +97,13 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
         album_html = template.replace('{{ALBUM_TITLE}}', title)
         album_html = album_html.replace('{{GALLERY_IMAGES}}', json.dumps(gallery_images, indent=4))
         
-        # Save album HTML
-        album_path = albums_dir / f'{album_name}.html'
-        with open(album_path, 'w') as f:
+        # Update relative paths in template
+        album_html = album_html.replace('href="../', 'href="../../')
+        album_html = album_html.replace('src="../', 'src="../../')
+        
+        # Save as index.html in album directory
+        index_path = album_dir / 'index.html'
+        with open(index_path, 'w') as f:
             f.write(album_html)
         
         # Load existing albums
@@ -110,29 +113,29 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
         new_album = {
             'id': album_name,
             'title': title,
-            'coverImage': cover_image if cover_image.startswith('http') else f'/photography/images/{album_name}/{cover_image}',  # Handle both URLs and local files
+            'coverImage': cover_image if cover_image.startswith('http') else f'/photography/albums/{album_name}/images/{cover_image}',
             'description': description,
-            'url': f'albums/{album_name}.html'
+            'url': f'albums/{album_name}/'  # Note: Now points to directory, not HTML file
         }
         
         # Add to beginning of albums list
         albums_data['albums'].insert(0, new_album)
         
         # Save updated albums.json
-        albums_file = albums_dir / 'albums.json'
+        albums_file = base_dir / 'albums' / 'albums.json'
         with open(albums_file, 'w') as f:
             json.dump(albums_data, f, indent=2)
         
         print(f"\nAlbum '{title}' created successfully!")
-        print(f"- Album page: albums/{album_name}.html")
-        print(f"- Images directory: images/{album_name}/")
+        print(f"- Album directory: albums/{album_name}/")
+        print(f"- Album page: albums/{album_name}/index.html")
+        print(f"- Images directory: albums/{album_name}/images/")
         print(f"- Added to albums.json")
         print("\nDon't forget to:")
-        print(f"1. git add photography/albums/{album_name}.html")
-        print(f"2. git add photography/images/{album_name}/*")
-        print("3. git add photography/albums/albums.json")
-        print(f'4. git commit -m "Add new album: {title}"')
-        print("5. git push origin main")
+        print(f"1. git add photography/albums/{album_name}")
+        print("2. git add photography/albums/albums.json")
+        print(f'3. git commit -m "Add new album: {title}"')
+        print("4. git push origin main")
         
         return True
     

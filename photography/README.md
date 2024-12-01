@@ -16,8 +16,8 @@ python3 -m venv venv
 ### Creating an Album
 
 The script will:
-1. Create optimized copies of your images
-2. Create the album page
+1. Create a new album directory with optimized images
+2. Create the album's index.html page
 3. Update the albums.json file automatically
 
 ```bash
@@ -42,17 +42,14 @@ The script will:
 
 ### What Happens
 
-1. Creates optimized copies of your images in `images/[album-name]/`
-   - Resizes large images (max 2000px)
-   - Optimizes for web (85% quality)
-   - Original images remain untouched
+1. Creates album directory in `albums/[album-name]/`
+   - `index.html`: Album page with image grid
+   - `images/`: Directory containing optimized images
+     - Resizes large images (max 2000px)
+     - Optimizes for web (85% quality)
+     - Original images remain untouched
 
-2. Creates album page in `albums/[album-name].html`
-   - Responsive masonry grid layout
-   - Full-screen image viewer
-   - Keyboard navigation
-
-3. Updates `albums/albums.json`
+2. Updates `albums/albums.json`
    - Adds new album to the beginning of the list
    - Includes title, description, cover image, and URL
    - Used by main.js to dynamically load albums
@@ -62,15 +59,15 @@ The script will:
 ```
 photography/
 ├── albums/
-│   ├── albums.json     # Album metadata
-│   ├── template.html   # Album page template
-│   └── [album].html   # Individual album pages
-├── images/
-│   └── [album]/       # Optimized images for each album
-├── create_album.py    # Album creation script
-├── index.html         # Main gallery page
-├── main.js           # Gallery initialization
-└── styles.css        # Custom styles
+│   ├── [album-name]/       # One directory per album
+│   │   ├── index.html      # Album page
+│   │   └── images/         # Album-specific images
+│   ├── albums.json         # Album metadata
+│   └── template.html       # Album page template
+├── create_album.py         # Album creation script
+├── index.html             # Main gallery page
+├── main.js               # Gallery initialization
+└── styles.css           # Custom styles
 ```
 
 ### Development
