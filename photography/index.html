@@ -29,7 +29,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="#" class="text-xl font-light tracking-wide">IGNACIO JIMÉNEZ PI</a>
+                    <a href="../" class="text-xl font-light tracking-wide">IGNACIO JIMÉNEZ PI</a>
                 </div>
                 <div class="md:hidden flex items-center">
                     <button class="mobile-menu-button">
@@ -50,133 +50,6 @@
         </div>
     </div>
 
-    <script>
-        // Album data
-        const albums = [
-            {
-                "id": "nature",
-                "title": "Nature",
-                "coverImage": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e",
-                "description": "The beauty of the natural world",
-                "url": "albums/nature.html"
-            },
-            {
-                "id": "urban",
-                "title": "Urban",
-                "coverImage": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000",
-                "description": "City life and architecture",
-                "url": "albums/urban.html"
-            },
-            {
-                "id": "street",
-                "title": "Street",
-                "coverImage": "https://images.unsplash.com/photo-1476900543704-4312b78632f8",
-                "description": "Life in the streets",
-                "url": "albums/street.html"
-            }
-        ];
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const galleryContainer = document.querySelector('#gallery');
-            
-            // Create and append all album items
-            albums.forEach(album => {
-                const albumItem = document.createElement('div');
-                albumItem.className = 'gallery-item';
-                
-                albumItem.innerHTML = `
-                    <a href="${album.url}" class="block relative group">
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
-                             data-src="${album.coverImage}" 
-                             alt="${album.title}"
-                             class="gallery-image w-full">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity duration-300">
-                            <div class="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <h2 class="text-white text-2xl font-light tracking-wide mb-2">${album.title}</h2>
-                                <p class="text-white/80 text-sm font-light tracking-wide">${album.description}</p>
-                            </div>
-                        </div>
-                    </a>
-                `;
-                
-                galleryContainer.appendChild(albumItem);
-            });
-
-            // Initialize Masonry after all images are loaded
-            imagesLoaded(galleryContainer, () => {
-                const masonry = new Masonry(galleryContainer, {
-                    itemSelector: '.gallery-item',
-                    columnWidth: '.grid-sizer',
-                    gutter: 10,
-                    percentPosition: true,
-                    transitionDuration: '0.3s',
-                    initLayout: false,
-                    resize: true
-                });
-
-                // Initial layout
-                masonry.layout();
-
-                // Load images with intersection observer
-                const loadImage = (entry) => {
-                    const item = entry.target;
-                    const img = item.querySelector('img');
-                    
-                    // Start loading the image
-                    img.src = img.dataset.src;
-                    
-                    img.onload = () => {
-                        item.classList.add('loaded');
-                        masonry.layout();
-                    };
-                };
-
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            loadImage(entry);
-                            observer.unobserve(entry.target);
-                        }
-                    });
-                }, {
-                    root: null,
-                    rootMargin: '50px',
-                    threshold: 0.1
-                });
-
-                // Observe all gallery items
-                document.querySelectorAll('.gallery-item').forEach(item => {
-                    observer.observe(item);
-                });
-            });
-        });
-
-        // Mobile menu functionality
-        const mobileMenuButton = document.querySelector('.mobile-menu-button');
-        const nav = document.querySelector('nav');
-
-        if (mobileMenuButton) {
-            mobileMenuButton.addEventListener('click', () => {
-                const mobileMenu = document.createElement('div');
-                mobileMenu.className = 'mobile-menu fixed inset-0 bg-white z-40 flex flex-col items-center justify-center';
-                mobileMenu.innerHTML = `
-                    <button class="absolute top-4 right-4 close-menu">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                `;
-                
-                document.body.appendChild(mobileMenu);
-                document.body.style.overflow = 'hidden';
-                
-                const closeButton = mobileMenu.querySelector('.close-menu');
-                closeButton.addEventListener('click', () => {
-                    mobileMenu.remove();
-                    document.body.style.overflow = '';
-                });
-            });
-        }
-    </script>
+    <script src="main.js"></script>
 </body>
 </html>
