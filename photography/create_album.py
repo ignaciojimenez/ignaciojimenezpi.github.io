@@ -22,6 +22,21 @@ def load_albums():
         print("Error parsing albums.json, will reinitialize it")
         return {'albums': []}
 
+def generate_images_json(images_dir):
+    """Generate images.json file for an album directory"""
+    images = []
+    for img_path in sorted(Path(images_dir).glob('*')):
+        if img_path.suffix.lower() in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+            images.append(img_path.name)
+    
+    images_json = {'images': images}
+    json_path = Path(images_dir).parent / 'images.json'
+    
+    with open(json_path, 'w') as f:
+        json.dump(images_json, f, indent=4)
+    
+    return images
+
 def create_album(album_name, title, description, image_dir, cover_image=None):
     """Create a new album with optimized images and update albums.json"""
     # Setup paths
@@ -90,12 +105,14 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
         return False
     
     try:
+        # Generate images.json
+        generate_images_json(images_dir)
+        
         # Create album HTML
         with open(template_path, 'r') as f:
             template = f.read()
         
         album_html = template.replace('{{ALBUM_TITLE}}', title)
-        album_html = album_html.replace('{{GALLERY_IMAGES}}', json.dumps(gallery_images, indent=4))
         
         # Update relative paths in template
         album_html = album_html.replace('href="../', 'href="../../')
@@ -115,7 +132,7 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
             'title': title,
             'coverImage': cover_image if cover_image.startswith('http') else f'/photography/albums/{album_name}/images/{cover_image}',
             'description': description,
-            'url': f'albums/{album_name}/'  # Note: Now points to directory, not HTML file
+            'url': f'albums/{album_name}/'
         }
         
         # Add to beginning of albums list
@@ -130,6 +147,7 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
         print(f"- Album directory: albums/{album_name}/")
         print(f"- Album page: albums/{album_name}/index.html")
         print(f"- Images directory: albums/{album_name}/images/")
+        print(f"- Images list: albums/{album_name}/images.json")
         print(f"- Added to albums.json")
         print("\nDon't forget to:")
         print(f"1. git add photography/albums/{album_name}")
