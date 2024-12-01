@@ -5,21 +5,21 @@
             "title": "Nature",
             "coverImage": "https://images.unsplash.com/photo-1472214103451-9374bd1c798e",
             "description": "The beauty of the natural world",
-            "url": "albums/nature.html"
+            "url": "albums/nature/"
         },
         {
             "id": "urban",
             "title": "Urban",
             "coverImage": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000",
             "description": "City life and architecture",
-            "url": "albums/urban.html"
+            "url": "albums/urban/"
         },
         {
             "id": "street",
             "title": "Street",
             "coverImage": "https://images.unsplash.com/photo-1476900543704-4312b78632f8",
             "description": "Life in the streets",
-            "url": "albums/street.html"
+            "url": "albums/street/"
         }
     ]
 }
