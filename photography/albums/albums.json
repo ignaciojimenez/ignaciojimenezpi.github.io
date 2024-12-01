@@ -5,6 +5,7 @@
             "title": "Urban Photography",
             "description": "Exploring city landscapes and urban geometry through film photography",
             "coverImage": "albums/urban/images/modern-architecture.jpg",
+            "date": "2023-12-01",
             "images": [
                 "city-patterns.jpg",
                 "downtown.jpg",
