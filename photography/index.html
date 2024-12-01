@@ -33,113 +33,61 @@
         </div>
     </nav>
 
-    <!-- Image Grid -->
+    <!-- Album Grid -->
     <div class="pt-16 px-4 md:px-8">
-        <div class="gallery-grid" id="gallery">
-            <!-- Images will be loaded here -->
-        </div>
-    </div>
-
-    <!-- Image Modal -->
-    <div id="imageModal" class="modal">
-        <button class="modal-close" onclick="closeModal()">×</button>
-        <button class="modal-nav modal-prev" onclick="showPrevImage()">‹</button>
-        <button class="modal-nav modal-next" onclick="showNextImage()">›</button>
-        <div class="modal-content">
-            <img id="modalImage" class="modal-image" src="" alt="">
+        <div class="gallery-grid" id="albumGrid">
+            <!-- Album covers will be loaded here -->
         </div>
     </div>
 
     <script>
-        const gallery = document.getElementById('gallery');
-        const modal = document.getElementById('imageModal');
-        const modalImage = document.getElementById('modalImage');
-        let currentImageIndex = 0;
-        let images = [];
+        const albumGrid = document.getElementById('albumGrid');
 
-        // Load images from the albums
-        fetch('albums.json')
+        // Load albums data
+        fetch('albums/albums.json')
             .then(response => response.json())
             .then(data => {
-                images = data.albums.flatMap(album => 
-                    album.images.map(img => ({
-                        src: `albums/${album.id}/images/${img}`,
-                        album: album.id
-                    }))
-                );
-                renderGallery();
+                renderAlbums(data.albums);
             });
 
-        function renderGallery() {
-            images.forEach((image, index) => {
+        function renderAlbums(albums) {
+            albums.forEach(album => {
                 const card = document.createElement('div');
-                card.className = 'gallery-item';
+                card.className = 'gallery-item relative group cursor-pointer';
                 
                 const container = document.createElement('div');
-                container.className = 'image-container';
+                container.className = 'image-container relative';
                 
                 const img = document.createElement('img');
-                img.src = image.src;
-                img.alt = image.src.split('/').pop().replace(/\.[^/.]+$/, '').replace(/-/g, ' ');
+                img.src = album.coverImage;
+                img.alt = album.title;
                 img.loading = 'lazy';
+                img.className = 'w-full h-full object-cover';
                 
+                // Add onload handler to show the image
+                img.onload = () => {
+                    card.classList.add('loaded');
+                };
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity duration-300 flex items-center justify-center';
+                
+                const content = document.createElement('div');
+                content.className = 'text-white text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4';
+                content.innerHTML = `
+                    <h3 class="text-xl font-semibold mb-2">${album.title}</h3>
+                    <p class="text-sm">${album.description || ''}</p>
+                `;
+                
+                overlay.appendChild(content);
                 container.appendChild(img);
+                container.appendChild(overlay);
                 card.appendChild(container);
                 
-                card.onclick = () => openModal(index);
-                gallery.appendChild(card);
+                card.onclick = () => window.location.href = `albums/${album.id}`;
+                albumGrid.appendChild(card);
             });
         }
-
-        function openModal(index) {
-            currentImageIndex = index;
-            showImage(index);
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function showImage(index) {
-            modalImage.src = images[index].src;
-        }
-
-        function showPrevImage() {
-            currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-            showImage(currentImageIndex);
-        }
-
-        function showNextImage() {
-            currentImageIndex = (currentImageIndex + 1) % images.length;
-            showImage(currentImageIndex);
-        }
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (!modal.classList.contains('active')) return;
-            
-            switch(e.key) {
-                case 'ArrowLeft':
-                    showPrevImage();
-                    break;
-                case 'ArrowRight':
-                    showNextImage();
-                    break;
-                case 'Escape':
-                    closeModal();
-                    break;
-            }
-        });
-
-        // Close modal when clicking outside the image
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
     </script>
 </body>
 </html>
