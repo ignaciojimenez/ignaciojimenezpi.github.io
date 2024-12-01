@@ -64,8 +64,8 @@ const galleryImages = [
 
 let currentImageIndex = 0;
 
-// Load gallery images
-document.addEventListener('DOMContentLoaded', () => {
+// Gallery initialization
+function initializeGallery() {
     const galleryContainer = document.querySelector('#gallery');
     
     // Create and append all gallery items
@@ -83,56 +83,44 @@ document.addEventListener('DOMContentLoaded', () => {
         
         galleryContainer.appendChild(galleryItem);
     });
+}
 
-    // Initialize Masonry after all images are loaded
-    imagesLoaded(galleryContainer, () => {
-        const masonry = new Masonry(galleryContainer, {
-            itemSelector: '.gallery-item',
-            columnWidth: '.grid-sizer',
-            gutter: 10,
-            percentPosition: true,
-            transitionDuration: '0.3s',
-            initLayout: false,
-            resize: true
-        });
-
-        // Initial layout
-        masonry.layout();
-
-        // Load images with intersection observer
-        const loadImage = (entry) => {
-            const item = entry.target;
-            const img = item.querySelector('img');
-            
-            // Start loading the image
-            img.src = img.dataset.src;
-            
-            img.onload = () => {
-                item.classList.add('loaded');
-                masonry.layout(); // Update layout after each image loads
-            };
+// Image loading with intersection observer
+function initializeImageLoading(masonry) {
+    const loadImage = (entry) => {
+        const item = entry.target;
+        const img = item.querySelector('img');
+        
+        // Start loading the image
+        img.src = img.dataset.src;
+        
+        img.onload = () => {
+            item.classList.add('loaded');
+            masonry.layout();
         };
+    };
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    loadImage(entry);
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, {
-            root: null,
-            rootMargin: '50px',
-            threshold: 0.1
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                loadImage(entry);
+                observer.unobserve(entry.target);
+            }
         });
-
-        // Observe all gallery items
-        document.querySelectorAll('.gallery-item').forEach(item => {
-            observer.observe(item);
-        });
+    }, {
+        root: null,
+        rootMargin: '50px',
+        threshold: 0.1
     });
 
-    // Modal functionality
+    // Observe all gallery items
+    document.querySelectorAll('.gallery-item').forEach(item => {
+        observer.observe(item);
+    });
+}
+
+// Modal functionality
+function initializeModal() {
     const modal = document.getElementById('imageModal');
     const modalImage = document.getElementById('modalImage');
     const closeButton = document.querySelector('.close-modal');
@@ -193,64 +181,111 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal();
         }
     });
-});
-
-// Mobile menu functionality
-const mobileMenuButton = document.querySelector('.mobile-menu-button');
-const nav = document.querySelector('nav');
-
-if (mobileMenuButton) {
-    mobileMenuButton.addEventListener('click', () => {
-        const mobileMenu = document.createElement('div');
-        mobileMenu.className = 'mobile-menu fixed inset-0 bg-white z-40 flex flex-col items-center justify-center';
-        mobileMenu.innerHTML = `
-            <button class="absolute top-4 right-4 close-menu">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        `;
-        
-        document.body.appendChild(mobileMenu);
-        document.body.style.overflow = 'hidden';
-        
-        const closeButton = mobileMenu.querySelector('.close-menu');
-        closeButton.addEventListener('click', () => {
-            mobileMenu.remove();
-            document.body.style.overflow = '';
-        });
-    });
 }
 
-// Smooth scroll for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth'
+// Mobile menu functionality
+function initializeMobileMenu() {
+    const mobileMenuButton = document.querySelector('.mobile-menu-button');
+    
+    if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', () => {
+            const mobileMenu = document.createElement('div');
+            mobileMenu.className = 'mobile-menu fixed inset-0 bg-white z-40 flex flex-col items-center justify-center';
+            mobileMenu.innerHTML = `
+                <button class="absolute top-4 right-4 close-menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            
+            document.body.appendChild(mobileMenu);
+            document.body.style.overflow = 'hidden';
+            
+            const closeButton = mobileMenu.querySelector('.close-menu');
+            closeButton.addEventListener('click', () => {
+                mobileMenu.remove();
+                document.body.style.overflow = '';
             });
+        });
+    }
+}
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', async () => {
+    const galleryContainer = document.querySelector('#gallery');
+    
+    // Fetch albums data
+    try {
+        const response = await fetch('albums/albums.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const data = await response.json();
+        window.albums = data.albums; // Make albums available globally
+        
+        // Initialize gallery
+        initializeGallery();
+
+        // Initialize Masonry after all images are loaded
+        imagesLoaded(galleryContainer, () => {
+            const masonry = new Masonry(galleryContainer, {
+                itemSelector: '.gallery-item',
+                columnWidth: '.grid-sizer',
+                gutter: 10,
+                percentPosition: true,
+                transitionDuration: '0.3s',
+                initLayout: false,
+                resize: true
+            });
+
+            // Initial layout
+            masonry.layout();
+
+            // Initialize image loading
+            initializeImageLoading(masonry);
+        });
+    } catch (error) {
+        console.error('Error loading albums:', error);
+        galleryContainer.innerHTML = '<p class="text-red-500">Error loading albums. Please try again later.</p>';
+    }
+
+    // Initialize modal
+    initializeModal();
+
+    // Initialize mobile menu
+    initializeMobileMenu();
+
+    // Smooth scroll for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
     });
-});
 
-// Intersection Observer for fade-in animations
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
+    // Intersection Observer for fade-in animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('opacity-100');
-            entry.target.classList.remove('opacity-0', 'translate-y-10');
-        }
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('opacity-100');
+                entry.target.classList.remove('opacity-0', 'translate-y-10');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('section').forEach(section => {
+        section.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700');
+        observer.observe(section);
     });
-}, observerOptions);
-
-document.querySelectorAll('section').forEach(section => {
-    section.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-700');
-    observer.observe(section);
 });
