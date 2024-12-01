@@ -98,29 +98,16 @@
     <div class="band-grid"></div>
 
     <script>
-        // Band data
-        const bands = [
-            {
-                "name": "Atención Tsunami",
-                "image": "images/atencion-tsunami.jpg",
-                "spotifyUrl": "https://open.spotify.com/artist/6n8K3rXWsa8hxflQWuJ36x"
-            },
-            {
-                "name": "Incendios",
-                "image": "images/incendios.jpg",
-                "spotifyUrl": "https://open.spotify.com/artist/2ZjI12SZOE1rOiC8LFE3sK"
-            },
-            {
-                "name": "Paracaídas",
-                "image": "images/paracaidas.jpg",
-                "spotifyUrl": "https://open.spotify.com/artist/2yUgglKxNsbff1FyOOxuPw"
-            },
-            {
-                "name": "Karen Koltrane",
-                "image": "images/karen-koltrane.jpg",
-                "spotifyUrl": "https://open.spotify.com/artist/3YYPLxlWg7tCoWHJT5Ltv9"
+        async function loadBands() {
+            try {
+                const response = await fetch('bands.json');
+                const data = await response.json();
+                return data.bands;
+            } catch (error) {
+                console.error('Error loading bands:', error);
+                return [];
             }
-        ];
+        }
 
         function createBandCard(band) {
             return `
@@ -138,8 +125,9 @@
             `;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const bandGrid = document.querySelector('.band-grid');
+            const bands = await loadBands();
             bands.forEach(band => {
                 bandGrid.innerHTML += createBandCard(band);
             });

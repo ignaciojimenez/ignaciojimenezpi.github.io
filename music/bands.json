@@ -1,0 +1,24 @@
+{
+    "bands": [
+        {
+            "name": "Atención Tsunami",
+            "image": "images/atencion-tsunami.jpg",
+            "spotifyUrl": "https://open.spotify.com/artist/6n8K3rXWsa8hxflQWuJ36x"
+        },
+        {
+            "name": "Incendios",
+            "image": "images/incendios.jpg",
+            "spotifyUrl": "https://open.spotify.com/artist/2ZjI12SZOE1rOiC8LFE3sK"
+        },
+        {
+            "name": "Paracaídas",
+            "image": "images/paracaidas.jpg",
+            "spotifyUrl": "https://open.spotify.com/artist/2yUgglKxNsbff1FyOOxuPw"
+        },
+        {
+            "name": "Karen Koltrane",
+            "image": "images/karen-koltrane.jpg",
+            "spotifyUrl": "https://open.spotify.com/artist/3YYPLxlWg7tCoWHJT5Ltv9"
+        }
+    ]
+}
