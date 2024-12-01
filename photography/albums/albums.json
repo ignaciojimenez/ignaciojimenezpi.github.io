@@ -1,11 +1,24 @@
 {
-  "albums": [
-    {
-      "id": "urban",
-      "title": "Urban",
-      "cover": "albums/urban/images/modern-architecture.jpg",
-      "description": "City life and architecture",
-      "url": "albums/urban/"
-    }
-  ]
+    "albums": [
+        {
+            "id": "urban",
+            "title": "Urban Photography",
+            "description": "Exploring city landscapes and urban geometry through film photography",
+            "coverImage": "albums/urban/images/modern-architecture.jpg",
+            "images": [
+                "city-patterns.jpg",
+                "downtown.jpg",
+                "urban-minimalism.jpg",
+                "modern-architecture.jpg",
+                "city-reflections.jpg",
+                "city-streets.jpg",
+                "urban-abstract.jpg",
+                "urban-geometry.jpg",
+                "urban-perspective.jpg",
+                "urban-details.jpg",
+                "city-lights.jpg",
+                "city-skyline.jpg"
+            ]
+        }
+    ]
 }
