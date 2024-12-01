@@ -112,16 +112,10 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
         with open(template_path, 'r') as f:
             template = f.read()
         
-        album_html = template.replace('{{ALBUM_TITLE}}', title)
-        
-        # Update relative paths in template
-        album_html = album_html.replace('href="../', 'href="../../')
-        album_html = album_html.replace('src="../', 'src="../../')
-        
         # Save as index.html in album directory
         index_path = album_dir / 'index.html'
         with open(index_path, 'w') as f:
-            f.write(album_html)
+            f.write(template)
         
         # Load existing albums
         albums_data = load_albums()
@@ -130,9 +124,9 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
         new_album = {
             'id': album_name,
             'title': title,
-            'coverImage': cover_image if cover_image.startswith('http') else f'/photography/albums/{album_name}/images/{cover_image}',
             'description': description,
-            'url': f'albums/{album_name}/'
+            'coverImage': f'albums/{album_name}/images/{os.path.basename(cover_image)}' if cover_image else f'albums/{album_name}/images/{os.path.basename(image_files[0].name)}',
+            'images': [img.name for img in image_files]
         }
         
         # Add to beginning of albums list
