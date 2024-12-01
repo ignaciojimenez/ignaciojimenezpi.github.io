@@ -82,7 +82,7 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
             
             # Set as cover if it's the first image and no cover specified
             if not cover_image and len(gallery_images) == 1:
-                cover_image = new_path.name
+                cover_image = gallery_images[0]['url']  # Use the full URL
             
             print(f"Processed: {img_path.name}")
         except Exception as e:
@@ -159,7 +159,7 @@ def create_album(album_name, title, description, image_dir, cover_image=None):
         new_album = {
             'id': album_name,
             'title': title,
-            'coverImage': f'/photography/images/{album_name}/{cover_image}',
+            'coverImage': cover_image if cover_image.startswith('http') else f'/photography/images/{album_name}/{cover_image}',  # Handle both URLs and local files
             'description': description,
             'url': f'albums/{album_name}.html'
         }
