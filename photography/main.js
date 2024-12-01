@@ -14,11 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Add grid sizer element
-        const gridSizer = document.createElement('div');
-        gridSizer.className = 'grid-sizer';
-        galleryContainer.appendChild(gridSizer);
-
         // Create and append album cards
         data.albums.forEach(album => {
             console.log('Creating card for album:', album);
@@ -26,21 +21,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             galleryContainer.appendChild(albumCard);
         });
 
-        // Initialize Masonry after all images are loaded
-        console.log('Initializing Masonry...');
-        const masonry = new Masonry(galleryContainer, {
-            itemSelector: '.gallery-item',
-            columnWidth: '.grid-sizer',
-            gutter: 15,
-            horizontalOrder: true,
-            percentPosition: true,
-            initLayout: false
-        });
-
-        // Layout Masonry after each image loads
-        imagesLoaded(galleryContainer, () => {
-            console.log('All images loaded, doing layout');
-            masonry.layout();
+        // Initialize image loading
+        const images = document.querySelectorAll('.gallery-item img');
+        images.forEach(img => {
+            if (img.complete) {
+                handleImageLoad(img);
+            } else {
+                img.addEventListener('load', () => handleImageLoad(img));
+            }
+            img.addEventListener('error', handleImageError);
         });
 
     } catch (error) {
@@ -74,8 +63,6 @@ function createAlbumCard(album) {
     img.alt = album.title;
     img.style.opacity = '0';
     img.style.transition = 'opacity 0.3s ease-in';
-    
-    // Set image source
     img.src = album.cover;
     
     // Create overlay
@@ -90,34 +77,6 @@ function createAlbumCard(album) {
         <p class="text-sm opacity-90">${album.description}</p>
     `;
 
-    // Handle image load
-    img.onload = () => {
-        console.log('Image loaded:', album.cover);
-        img.style.opacity = '1';
-        placeholder.style.opacity = '0';
-        
-        // Add loaded class for entrance animation
-        setTimeout(() => {
-            card.classList.add('loaded');
-        }, 100);
-        
-        // Remove placeholder after fade out
-        setTimeout(() => {
-            placeholder.remove();
-        }, 300);
-        
-        // Trigger Masonry layout
-        const masonry = Masonry.data(document.getElementById('gallery'));
-        if (masonry) {
-            masonry.layout();
-        }
-    };
-
-    img.onerror = () => {
-        console.error('Failed to load image:', album.cover);
-        placeholder.innerHTML = '<span class="text-red-500">Failed to load image</span>';
-    };
-
     // Assemble the card
     imageContainer.appendChild(img);
     imageContainer.appendChild(overlay);
@@ -126,6 +85,49 @@ function createAlbumCard(album) {
     card.appendChild(link);
     
     return card;
+}
+
+// Handle image load
+function handleImageLoad(img) {
+    console.log('Image loaded:', img.src);
+    img.style.opacity = '1';
+    const card = img.closest('.gallery-item');
+    if (card) {
+        // Get image dimensions
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
+        
+        // Assign appropriate size class based on aspect ratio
+        if (aspectRatio > 2) {
+            card.classList.add('full');
+        } else if (aspectRatio > 1.5) {
+            card.classList.add('extra-wide');
+        } else if (aspectRatio > 1) {
+            card.classList.add('wide');
+        }
+        
+        // Add loaded class for entrance animation
+        setTimeout(() => {
+            card.classList.add('loaded');
+        }, 100);
+        
+        // Remove placeholder
+        const placeholder = card.querySelector('.placeholder');
+        if (placeholder) {
+            placeholder.style.opacity = '0';
+            setTimeout(() => {
+                placeholder.remove();
+            }, 300);
+        }
+    }
+}
+
+// Handle image error
+function handleImageError(img) {
+    console.error('Failed to load image:', img.src);
+    const placeholder = img.parentElement.querySelector('.placeholder');
+    if (placeholder) {
+        placeholder.innerHTML = '<span class="text-red-500">Failed to load image</span>';
+    }
 }
 
 // Mobile menu toggle

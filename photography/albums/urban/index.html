@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loading... - Ignacio Jiménez Pi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
-    <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
     <link rel="stylesheet" href="../../styles.css">
     <script>
         tailwind.config = {
@@ -45,29 +43,30 @@
     <!-- Image Grid -->
     <div class="pt-16 px-4 md:px-8 flex justify-center">
         <div class="gallery-grid" id="gallery">
-            <div class="grid-sizer"></div>
             <!-- Images will be loaded here by JavaScript -->
         </div>
     </div>
 
     <!-- Image Modal -->
-    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center">
-        <button class="absolute top-4 right-4 text-white close-modal">
+    <div class="modal" id="imageModal">
+        <button class="modal-close" onclick="closeModal()">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
-        <img id="modalImage" class="max-h-[90vh] max-w-[90vw] object-contain" src="" alt="">
-        <button class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white prev-image">
+        <button class="modal-nav modal-prev" onclick="showPrevImage()">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path>
             </svg>
         </button>
-        <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white next-image">
+        <button class="modal-nav modal-next" onclick="showNextImage()">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path>
             </svg>
         </button>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image" src="" alt="">
+        </div>
     </div>
 
     <script>
@@ -75,175 +74,239 @@
         const albumId = window.location.pathname.split('/').filter(Boolean).pop();
 
         // Fetch and load album data and images
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Fetch album metadata
-                const albumsResponse = await fetch('../../albums/albums.json');
-                const albumsData = await albumsResponse.json();
-                const album = albumsData.albums.find(a => a.id === albumId);
-                
-                if (!album) {
-                    throw new Error('Album not found');
-                }
-
+        fetch('images.json')
+            .then(response => response.json())
+            .then(data => {
                 // Update page title
-                document.title = `${album.title} - Ignacio Jiménez Pi`;
-
-                // Fetch images list
-                const imagesResponse = await fetch('images.json');
-                const imagesData = await imagesResponse.json();
-                const galleryImages = imagesData.images.map(imageName => ({
-                    url: `images/${imageName}`,
-                    alt: imageName.replace(/\.[^/.]+$/, '').split('-').join(' ')
-                }));
-
-                const galleryContainer = document.querySelector('#gallery');
+                document.title = 'Urban - Ignacio Jiménez Pi';
                 
-                // Create and append all gallery items
-                galleryImages.forEach((image, index) => {
-                    const galleryItem = document.createElement('div');
-                    galleryItem.className = 'gallery-item';
+                // Get the gallery container
+                const gallery = document.getElementById('gallery');
+                
+                // Create a buffer to hold images while loading
+                const imageBuffer = [];
+                let loadedImages = 0;
+                
+                // Function to create gallery rows
+                function createGalleryRows() {
+                    if (loadedImages < data.images.length) return;
                     
-                    galleryItem.innerHTML = `
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
-                             data-src="${image.url}" 
-                             alt="${image.alt}"
-                             data-index="${index}">
-                    `;
+                    // Clear the gallery
+                    gallery.innerHTML = '';
                     
-                    galleryContainer.appendChild(galleryItem);
-                });
-
-                // Initialize Masonry after all images are loaded
-                imagesLoaded(galleryContainer, () => {
-                    const masonry = new Masonry(galleryContainer, {
-                        itemSelector: '.gallery-item',
-                        columnWidth: '.grid-sizer',
-                        gutter: 10,
-                        percentPosition: true,
-                        transitionDuration: '0.3s',
-                        initLayout: false,
-                        resize: true
-                    });
-
-                    // Initial layout
-                    masonry.layout();
-
-                    // Store images for modal
-                    window.galleryImages = galleryImages;
-                    let currentImageIndex = 0;
-
-                    // Load images with intersection observer
-                    const loadImage = (entry) => {
-                        const item = entry.target;
-                        const img = item.querySelector('img');
+                    // Get container width
+                    const containerWidth = gallery.clientWidth;
+                    const targetRowHeight = window.innerWidth < 640 ? 165 : 
+                                         window.innerWidth < 1024 ? 248 :
+                                         window.innerWidth < 1280 ? 286 :
+                                         330;
+                    
+                    let currentRow = [];
+                    let currentRowWidth = 0;
+                    
+                    // Process all loaded images
+                    imageBuffer.forEach((imgData, index) => {
+                        const { img, card, aspectRatio } = imgData;
+                        const imgWidth = targetRowHeight * aspectRatio;
                         
-                        // Start loading the image
-                        img.src = img.dataset.src;
-                        
-                        img.onload = () => {
-                            item.classList.add('loaded');
-                            masonry.layout();
-                            observer.unobserve(item);
-                        };
-                    };
-
-                    const observer = new IntersectionObserver((entries) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                loadImage(entry);
+                        // For narrow screens, force one image per row
+                        if (containerWidth < 500) {
+                            const rowDiv = document.createElement('div');
+                            rowDiv.className = 'gallery-row';
+                            
+                            // Scale image to fit container width
+                            const width = containerWidth;
+                            const height = width / aspectRatio;
+                            
+                            card.style.width = `${width}px`;
+                            card.style.height = `${height}px`;
+                            rowDiv.appendChild(card);
+                            gallery.appendChild(rowDiv);
+                        } else {
+                            // Normal multi-image row logic
+                            if (currentRow.length > 0 && (currentRowWidth + imgWidth > containerWidth || currentRow.length === 3)) {
+                                // Create row with current images
+                                const rowDiv = document.createElement('div');
+                                rowDiv.className = 'gallery-row';
+                                
+                                // Calculate scaling factor to fill width
+                                const scale = (containerWidth - (currentRow.length - 1) * 10) / currentRowWidth;
+                                
+                                // Apply scaled dimensions to images in row
+                                currentRow.forEach(item => {
+                                    const width = item.width * scale;
+                                    item.card.style.width = `${width}px`;
+                                    item.card.style.height = `${targetRowHeight}px`;
+                                    rowDiv.appendChild(item.card);
+                                });
+                                
+                                gallery.appendChild(rowDiv);
+                                currentRow = [];
+                                currentRowWidth = 0;
                             }
-                        });
-                    });
-
-                    // Observe all gallery items
-                    document.querySelectorAll('.gallery-item').forEach(item => {
-                        observer.observe(item);
-                    });
-
-                    // Modal functions
-                    const showImage = (index) => {
-                        const modalImage = document.getElementById('modalImage');
-                        modalImage.src = window.galleryImages[index].url;
-                        modalImage.alt = window.galleryImages[index].alt;
-                        currentImageIndex = index;
-                    };
-
-                    const openModal = (index) => {
-                        document.getElementById('imageModal').classList.remove('hidden');
-                        showImage(index);
-                    };
-
-                    const closeModal = () => {
-                        document.getElementById('imageModal').classList.add('hidden');
-                    };
-
-                    const showNextImage = () => {
-                        const nextIndex = (currentImageIndex + 1) % window.galleryImages.length;
-                        showImage(nextIndex);
-                    };
-
-                    const showPrevImage = () => {
-                        const prevIndex = (currentImageIndex - 1 + window.galleryImages.length) % window.galleryImages.length;
-                        showImage(prevIndex);
-                    };
-
-                    // Event Listeners
-                    document.querySelectorAll('.gallery-item img').forEach(img => {
-                        img.addEventListener('click', () => {
-                            openModal(parseInt(img.dataset.index));
-                        });
-                    });
-
-                    document.querySelector('.close-modal').addEventListener('click', closeModal);
-                    document.querySelector('.next-image').addEventListener('click', showNextImage);
-                    document.querySelector('.prev-image').addEventListener('click', showPrevImage);
-
-                    // Close modal with escape key
-                    document.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape') closeModal();
-                        if (e.key === 'ArrowRight') showNextImage();
-                        if (e.key === 'ArrowLeft') showPrevImage();
-                    });
-
-                    // Close modal when clicking outside the image
-                    document.getElementById('imageModal').addEventListener('click', (e) => {
-                        if (e.target === document.getElementById('imageModal')) {
-                            closeModal();
+                            
+                            // Add image to current row
+                            currentRow.push({
+                                card,
+                                width: imgWidth,
+                                aspectRatio
+                            });
+                            currentRowWidth += imgWidth;
+                            
+                            // Handle last row
+                            if (index === imageBuffer.length - 1 && currentRow.length > 0) {
+                                const rowDiv = document.createElement('div');
+                                rowDiv.className = 'gallery-row';
+                                
+                                // Calculate scaling factor to fill width
+                                const scale = (containerWidth - (currentRow.length - 1) * 10) / currentRowWidth;
+                                
+                                // Apply scaled dimensions to images in row
+                                currentRow.forEach(item => {
+                                    const width = item.width * scale;
+                                    item.card.style.width = `${width}px`;
+                                    item.card.style.height = `${targetRowHeight}px`;
+                                    rowDiv.appendChild(item.card);
+                                });
+                                
+                                gallery.appendChild(rowDiv);
+                            }
                         }
                     });
+                }
+                
+                // Create and append image elements
+                data.images.forEach((filename, index) => {
+                    const imageCard = document.createElement('div');
+                    imageCard.className = 'gallery-item';
+                    imageCard.onclick = () => openModal(index);
+                    
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-container';
+                    
+                    // Create placeholder
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'placeholder';
+                    placeholder.innerHTML = '<svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                    imageContainer.appendChild(placeholder);
+                    
+                    const img = document.createElement('img');
+                    img.style.opacity = '0';
+                    img.style.transition = 'opacity 0.3s ease-in';
+                    img.dataset.index = index;
+                    img.alt = filename.replace(/\.[^/.]+$/, '').replace(/-/g, ' ');
+                    img.src = `images/${filename}`;
+                    
+                    // Handle image load
+                    img.onload = () => {
+                        img.style.opacity = '1';
+                        placeholder.style.opacity = '0';
+                        
+                        // Store image data for layout calculation
+                        imageBuffer[index] = {
+                            img,
+                            card: imageCard,
+                            aspectRatio: img.naturalWidth / img.naturalHeight
+                        };
+                        loadedImages++;
+                        
+                        // Add loaded class for entrance animation
+                        setTimeout(() => {
+                            imageCard.classList.add('loaded');
+                        }, 100);
+                        
+                        // Remove placeholder after fade out
+                        setTimeout(() => {
+                            placeholder.remove();
+                        }, 300);
+                        
+                        // Try to create rows when all images are loaded
+                        createGalleryRows();
+                    };
+                    
+                    img.onerror = () => {
+                        placeholder.innerHTML = '<span class="text-red-500">Failed to load image</span>';
+                        loadedImages++;
+                    };
+                    
+                    imageContainer.appendChild(img);
+                    imageCard.appendChild(imageContainer);
                 });
-
-            } catch (error) {
+                
+                // Store images data for modal
+                window.imagesData = data.images;
+                
+                // Handle window resize
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(createGalleryRows, 100);
+                });
+            })
+            .catch(error => {
                 console.error('Error loading album:', error);
-                document.title = 'Error - Ignacio Jiménez Pi';
+                document.getElementById('gallery').innerHTML = '<p class="text-red-500">Error loading album</p>';
+            });
+
+        // Modal functionality
+        let currentImageIndex = 0;
+        const modal = document.getElementById('imageModal');
+
+        function showImage(index) {
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = `images/${window.imagesData[index]}`;
+            currentImageIndex = index;
+        }
+
+        function openModal(index) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            showImage(index);
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function showNextImage() {
+            const nextIndex = (currentImageIndex + 1) % window.imagesData.length;
+            showImage(nextIndex);
+        }
+
+        function showPrevImage() {
+            const prevIndex = (currentImageIndex - 1 + window.imagesData.length) % window.imagesData.length;
+            showImage(prevIndex);
+        }
+
+        // Event Listeners
+        document.addEventListener('keydown', (e) => {
+            if (!modal.classList.contains('active')) return;
+            
+            switch(e.key) {
+                case 'ArrowRight':
+                    showNextImage();
+                    break;
+                case 'ArrowLeft':
+                    showPrevImage();
+                    break;
+                case 'Escape':
+                    closeModal();
+                    break;
             }
         });
 
-        // Mobile menu functionality
-        const mobileMenuButton = document.querySelector('.mobile-menu-button');
-        if (mobileMenuButton) {
-            mobileMenuButton.addEventListener('click', () => {
-                const mobileMenu = document.createElement('div');
-                mobileMenu.className = 'mobile-menu fixed inset-0 bg-white z-40 flex flex-col items-center justify-center';
-                mobileMenu.innerHTML = `
-                    <button class="absolute top-4 right-4 close-menu">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                `;
-                
-                document.body.appendChild(mobileMenu);
-                document.body.style.overflow = 'hidden';
-                
-                const closeButton = mobileMenu.querySelector('.close-menu');
-                closeButton.addEventListener('click', () => {
-                    mobileMenu.remove();
-                    document.body.style.overflow = '';
-                });
-            });
-        }
+        // Close modal when clicking outside the image
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Mobile menu toggle
+        document.querySelector('.mobile-menu-button')?.addEventListener('click', () => {
+            document.querySelector('.mobile-menu')?.classList.toggle('hidden');
+        });
     </script>
 </body>
 </html>
