@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban - Ignacio Jiménez Pi</title>
+    <title>Loading... - Ignacio Jiménez Pi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
     <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
@@ -71,194 +71,157 @@
     </div>
 
     <script>
-        // Urban gallery images
-        const galleryImages = [
-            {
-                url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
-                alt: 'Modern Architecture'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1514924013411-cbf25faa35bb',
-                alt: 'City Skyline'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1444723121867-7a241cacace9',
-                alt: 'City Lights'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1465447142348-e9952c393450',
-                alt: 'Urban Geometry'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1451976426598-a7593bd6d0b2',
-                alt: 'City Streets'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1486325212027-8081e485255e',
-                alt: 'Downtown'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad',
-                alt: 'Urban Abstract'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1495542779398-9fec7dc7986c',
-                alt: 'City Patterns'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390',
-                alt: 'Urban Details'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742',
-                alt: 'Urban Minimalism'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1517935706615-2717063c2225',
-                alt: 'City Reflections'
-            },
-            {
-                url: 'https://images.unsplash.com/photo-1496568816309-51d7c20e3b21',
-                alt: 'Urban Perspective'
-            }
-        ];
+        // Get current album ID from URL
+        const albumId = window.location.pathname.split('/').filter(Boolean).pop();
 
-        let currentImageIndex = 0;
-
-        // Load gallery images
-        document.addEventListener('DOMContentLoaded', () => {
-            const galleryContainer = document.querySelector('#gallery');
-            
-            // Create and append all gallery items
-            galleryImages.forEach((image, index) => {
-                const galleryItem = document.createElement('div');
-                galleryItem.className = 'gallery-item';
+        // Fetch and load album data and images
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Fetch album metadata
+                const albumsResponse = await fetch('../../albums/albums.json');
+                const albumsData = await albumsResponse.json();
+                const album = albumsData.albums.find(a => a.id === albumId);
                 
-                galleryItem.innerHTML = `
-                    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
-                         data-src="${image.url}" 
-                         alt="${image.alt}"
-                         data-index="${index}">
-                `;
-                
-                galleryContainer.appendChild(galleryItem);
-            });
+                if (!album) {
+                    throw new Error('Album not found');
+                }
 
-            // Initialize Masonry after all images are loaded
-            imagesLoaded(galleryContainer, () => {
-                const masonry = new Masonry(galleryContainer, {
-                    itemSelector: '.gallery-item',
-                    columnWidth: '.grid-sizer',
-                    gutter: 10,
-                    percentPosition: true,
-                    transitionDuration: '0.3s',
-                    initLayout: false,
-                    resize: true
+                // Update page title
+                document.title = `${album.title} - Ignacio Jiménez Pi`;
+
+                // Fetch images list
+                const imagesResponse = await fetch('images.json');
+                const imagesData = await imagesResponse.json();
+                const galleryImages = imagesData.images.map(imageName => ({
+                    url: `images/${imageName}`,
+                    alt: imageName.replace(/\.[^/.]+$/, '').split('-').join(' ')
+                }));
+
+                const galleryContainer = document.querySelector('#gallery');
+                
+                // Create and append all gallery items
+                galleryImages.forEach((image, index) => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item';
+                    
+                    galleryItem.innerHTML = `
+                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" 
+                             data-src="${image.url}" 
+                             alt="${image.alt}"
+                             data-index="${index}">
+                    `;
+                    
+                    galleryContainer.appendChild(galleryItem);
                 });
 
-                // Initial layout
-                masonry.layout();
+                // Initialize Masonry after all images are loaded
+                imagesLoaded(galleryContainer, () => {
+                    const masonry = new Masonry(galleryContainer, {
+                        itemSelector: '.gallery-item',
+                        columnWidth: '.grid-sizer',
+                        gutter: 10,
+                        percentPosition: true,
+                        transitionDuration: '0.3s',
+                        initLayout: false,
+                        resize: true
+                    });
 
-                // Load images with intersection observer
-                const loadImage = (entry) => {
-                    const item = entry.target;
-                    const img = item.querySelector('img');
-                    
-                    // Start loading the image
-                    img.src = img.dataset.src;
-                    
-                    img.onload = () => {
-                        item.classList.add('loaded');
-                        masonry.layout();
+                    // Initial layout
+                    masonry.layout();
+
+                    // Store images for modal
+                    window.galleryImages = galleryImages;
+                    let currentImageIndex = 0;
+
+                    // Load images with intersection observer
+                    const loadImage = (entry) => {
+                        const item = entry.target;
+                        const img = item.querySelector('img');
+                        
+                        // Start loading the image
+                        img.src = img.dataset.src;
+                        
+                        img.onload = () => {
+                            item.classList.add('loaded');
+                            masonry.layout();
+                            observer.unobserve(item);
+                        };
                     };
-                };
 
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            loadImage(entry);
-                            observer.unobserve(entry.target);
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                loadImage(entry);
+                            }
+                        });
+                    });
+
+                    // Observe all gallery items
+                    document.querySelectorAll('.gallery-item').forEach(item => {
+                        observer.observe(item);
+                    });
+
+                    // Modal functions
+                    const showImage = (index) => {
+                        const modalImage = document.getElementById('modalImage');
+                        modalImage.src = window.galleryImages[index].url;
+                        modalImage.alt = window.galleryImages[index].alt;
+                        currentImageIndex = index;
+                    };
+
+                    const openModal = (index) => {
+                        document.getElementById('imageModal').classList.remove('hidden');
+                        showImage(index);
+                    };
+
+                    const closeModal = () => {
+                        document.getElementById('imageModal').classList.add('hidden');
+                    };
+
+                    const showNextImage = () => {
+                        const nextIndex = (currentImageIndex + 1) % window.galleryImages.length;
+                        showImage(nextIndex);
+                    };
+
+                    const showPrevImage = () => {
+                        const prevIndex = (currentImageIndex - 1 + window.galleryImages.length) % window.galleryImages.length;
+                        showImage(prevIndex);
+                    };
+
+                    // Event Listeners
+                    document.querySelectorAll('.gallery-item img').forEach(img => {
+                        img.addEventListener('click', () => {
+                            openModal(parseInt(img.dataset.index));
+                        });
+                    });
+
+                    document.querySelector('.close-modal').addEventListener('click', closeModal);
+                    document.querySelector('.next-image').addEventListener('click', showNextImage);
+                    document.querySelector('.prev-image').addEventListener('click', showPrevImage);
+
+                    // Close modal with escape key
+                    document.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') closeModal();
+                        if (e.key === 'ArrowRight') showNextImage();
+                        if (e.key === 'ArrowLeft') showPrevImage();
+                    });
+
+                    // Close modal when clicking outside the image
+                    document.getElementById('imageModal').addEventListener('click', (e) => {
+                        if (e.target === document.getElementById('imageModal')) {
+                            closeModal();
                         }
                     });
-                }, {
-                    root: null,
-                    rootMargin: '50px',
-                    threshold: 0.1
                 });
 
-                // Observe all gallery items
-                document.querySelectorAll('.gallery-item').forEach(item => {
-                    observer.observe(item);
-                });
-            });
-
-            // Modal functionality
-            const modal = document.getElementById('imageModal');
-            const modalImage = document.getElementById('modalImage');
-            const closeButton = document.querySelector('.close-modal');
-            const prevButton = document.querySelector('.prev-image');
-            const nextButton = document.querySelector('.next-image');
-
-            function showImage(index) {
-                currentImageIndex = index;
-                const image = galleryImages[index];
-                modalImage.src = image.url;
-                modalImage.alt = image.alt;
+            } catch (error) {
+                console.error('Error loading album:', error);
+                document.title = 'Error - Ignacio Jiménez Pi';
             }
-
-            function openModal(index) {
-                showImage(index);
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-
-            function closeModal() {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-            }
-
-            function showNextImage() {
-                const nextIndex = (currentImageIndex + 1) % galleryImages.length;
-                showImage(nextIndex);
-            }
-
-            function showPrevImage() {
-                const prevIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
-                showImage(prevIndex);
-            }
-
-            // Event Listeners
-            document.querySelectorAll('.gallery-item img').forEach(img => {
-                img.addEventListener('click', () => {
-                    openModal(parseInt(img.dataset.index));
-                });
-            });
-
-            closeButton.addEventListener('click', closeModal);
-            prevButton.addEventListener('click', showPrevImage);
-            nextButton.addEventListener('click', showNextImage);
-
-            // Keyboard navigation
-            document.addEventListener('keydown', (e) => {
-                if (!modal.classList.contains('hidden')) {
-                    if (e.key === 'Escape') closeModal();
-                    if (e.key === 'ArrowLeft') showPrevImage();
-                    if (e.key === 'ArrowRight') showNextImage();
-                }
-            });
-
-            // Close modal when clicking outside the image
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
         });
 
         // Mobile menu functionality
         const mobileMenuButton = document.querySelector('.mobile-menu-button');
-        const nav = document.querySelector('nav');
-
         if (mobileMenuButton) {
             mobileMenuButton.addEventListener('click', () => {
                 const mobileMenu = document.createElement('div');
