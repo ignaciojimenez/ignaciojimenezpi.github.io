@@ -20,6 +20,62 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .band-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .band-card {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #f5f5f5;
+        }
+        .band-image {
+            width: 100%;
+            display: block;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .band-card:hover .band-image {
+            transform: scale(1.05);
+        }
+        .band-image.error {
+            aspect-ratio: 16/9;
+            background-image: url('https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=800&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        .band-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .band-card:hover .band-overlay {
+            opacity: 1;
+        }
+        .band-name {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 1rem;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .band-card:hover .band-name {
+            transform: translateY(0);
+        }
+    </style>
 </head>
 <body class="bg-white text-gray-900">
     <!-- Navigation -->
@@ -35,82 +91,58 @@
 
     <!-- Header -->
     <header class="pt-24 pb-12 px-4 text-center">
-        <h1 class="text-3xl font-light mb-4">Music Projects</h1>
-        <p class="text-gray-600 max-w-2xl mx-auto">A collection of bands and musical projects I'm involved with.</p>
+        <p class="text-gray-600 max-w-2xl mx-auto">A collection of bands and musical projects I am (or have been) involved with.</p>
     </header>
 
     <!-- Band Grid -->
-    <div class="max-w-7xl mx-auto px-4 pb-16">
-        <div id="bands-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Bands will be inserted here by JavaScript -->
-        </div>
-    </div>
+    <div class="band-grid"></div>
 
     <script>
-        // Band data (placeholder bands)
+        // Band data
         const bands = [
             {
-                "name": "Radiohead",
-                "role": "Guitar, Vocals",
-                "genre": "Alternative Rock",
-                "image": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=800&q=80",
-                "spotifyUrl": "https://open.spotify.com/artist/4Z8W4fKeB5YxbusRsdQVPb",
-                "description": "Experimental rock band known for their innovative sound"
+                "name": "Atención Tsunami",
+                "image": "images/atencion-tsunami.jpg",
+                "spotifyUrl": "https://open.spotify.com/artist/6n8K3rXWsa8hxflQWuJ36x"
             },
             {
-                "name": "Arcade Fire",
-                "role": "Bass, Backing Vocals",
-                "genre": "Indie Rock",
-                "image": "https://images.unsplash.com/photo-1501612780327-45045538702b?auto=format&fit=crop&w=800&q=80",
-                "spotifyUrl": "https://open.spotify.com/artist/3kjuyTCjPG1WMFCiyc5IuB",
-                "description": "Multi-instrumental collective with orchestral elements"
+                "name": "Incendios",
+                "image": "images/incendios.jpg",
+                "spotifyUrl": "https://open.spotify.com/artist/2ZjI12SZOE1rOiC8LFE3sK"
             },
             {
-                "name": "The National",
-                "role": "Drums",
-                "genre": "Indie Rock",
-                "image": "https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?auto=format&fit=crop&w=800&q=80",
-                "spotifyUrl": "https://open.spotify.com/artist/2cCUtGK9sDU2EoElnk0GNB",
-                "description": "Melancholic rock with intricate arrangements"
+                "name": "Paracaídas",
+                "image": "images/paracaidas.jpg",
+                "spotifyUrl": "https://open.spotify.com/artist/2yUgglKxNsbff1FyOOxuPw"
             },
             {
-                "name": "Sigur Rós",
-                "role": "Keyboards, Electronics",
-                "genre": "Post-Rock",
-                "image": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=800&q=80",
-                "spotifyUrl": "https://open.spotify.com/artist/6UUrUCIZtQeOf8tC0WuzRy",
-                "description": "Atmospheric post-rock with ethereal soundscapes"
-            },
-            {
-                "name": "Bon Iver",
-                "role": "Guitar, Electronics",
-                "genre": "Indie Folk",
-                "image": "https://images.unsplash.com/photo-1511735111819-9a3f7709049c?auto=format&fit=crop&w=800&q=80",
-                "spotifyUrl": "https://open.spotify.com/artist/4LEiUm1SRbFMgfqnQTwUbQ",
-                "description": "Folk meets electronic experimentation"
+                "name": "Karen Koltrane",
+                "image": "images/karen-koltrane.jpg",
+                "spotifyUrl": "https://open.spotify.com/artist/3YYPLxlWg7tCoWHJT5Ltv9"
             }
         ];
-        
-        // Render bands
-        const bandsGrid = document.getElementById('bands-grid');
-        bands.forEach(band => {
-            const bandElement = document.createElement('div');
-            bandElement.className = 'relative group rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300';
-            bandElement.innerHTML = `
-                <a href="${band.spotifyUrl}" target="_blank" rel="noopener noreferrer" class="block">
-                    <div class="aspect-w-16 aspect-h-9">
-                        <img src="${band.image}" alt="${band.name}" class="w-full h-64 object-cover">
+
+        function createBandCard(band) {
+            return `
+                <a href="${band.spotifyUrl}" target="_blank" rel="noopener noreferrer" class="band-card">
+                    <img 
+                        src="${band.image}" 
+                        alt="${band.name}" 
+                        class="band-image"
+                        onerror="this.classList.add('error')"
+                    >
+                    <div class="band-overlay">
+                        <h3 class="band-name">${band.name}</h3>
                     </div>
-                    <div class="p-6">
-                        <h3 class="text-xl font-semibold mb-2">${band.name}</h3>
-                        <p class="text-sm text-gray-600 mb-2">${band.genre}</p>
-                        <p class="text-sm font-medium text-emerald-600 mb-3">${band.role}</p>
-                        <p class="text-gray-700">${band.description}</p>
-                    </div>
-                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-opacity duration-300"></div>
                 </a>
             `;
-            bandsGrid.appendChild(bandElement);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const bandGrid = document.querySelector('.band-grid');
+            bands.forEach(band => {
+                bandGrid.innerHTML += createBandCard(band);
+            });
         });
     </script>
 </body>
