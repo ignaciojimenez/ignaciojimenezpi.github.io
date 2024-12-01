@@ -1,39 +1,49 @@
-# Music Projects
+# Music Section
 
-A minimalist website showcasing my musical projects and bands.
+A minimalist showcase of my musical projects and bands. Built with vanilla JavaScript and modern CSS.
 
 ## Features
 
-- Responsive grid layout of band cards
-- Links to Spotify profiles
-- Hover effects and smooth transitions
-- Mobile-friendly design
+- Clean, minimal design focusing on band imagery
+- Responsive grid layout that respects image aspect ratios
+- Elegant hover effects showing band names
+- Direct links to Spotify profiles
+- Graceful fallback for missing images
 
 ## Structure
 
-- `index.html`: Main page with band grid
-- `styles.css`: Custom styles for the music section
+```
+music/
+├── images/          # Band photos
+│   ├── atencion-tsunami.jpg
+│   ├── incendios.jpg
+│   ├── karen-koltrane.jpg
+│   └── paracaidas.jpg
+├── index.html       # Main page
+└── README.md       # This file
+```
+
+## Implementation Details
+
+- Uses CSS Grid for responsive layout
+- Smooth transitions for hover effects
+- No external dependencies
+- Mobile-friendly design
 
 ## Adding/Updating Bands
 
-To add or update bands, modify the `bands` array in `index.html`. Each band object should have:
+To add or update a band:
+
+1. Add the band's image to the `images/` directory
+2. Update the `bands` array in `index.html`:
 
 ```javascript
 {
     "name": "Band Name",
-    "role": "Your Role",
-    "genre": "Music Genre",
-    "image": "URL to band image",
-    "spotifyUrl": "Spotify profile URL",
-    "description": "Short description"
+    "image": "images/band-name.jpg",
+    "spotifyUrl": "https://open.spotify.com/artist/..."
 }
 ```
-
-## Development
-
-1. Uses Tailwind CSS for styling (via CDN)
-2. Custom CSS for specific effects
-3. Vanilla JavaScript for rendering
 
 ## Publishing Changes
 
@@ -42,4 +52,3 @@ After making changes:
 git add music/*
 git commit -m "Update music projects"
 git push origin main
-```
