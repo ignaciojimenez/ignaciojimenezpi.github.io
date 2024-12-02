@@ -3,9 +3,60 @@ class AlbumViewer {
         this.currentImageIndex = 0;
         this.modal = document.getElementById('imageModal');
         this.gallery = document.getElementById('gallery');
-        this.imageBuffer = [];
-        this.loadedImages = 0;
+        this.imageBuffer = new Map();
         this.setupEventListeners();
+        this.targetHeight = 315;
+        this.isResizing = false;
+        
+        // Create intersection observer
+        this.observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('loaded');
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '50px',
+            threshold: 0.1
+        });
+
+        // Debounce resize handler
+        this.debouncedResize = this.debounce(() => {
+            if (window.imagesData) {
+                this.isResizing = false;
+                this.reflow();
+            }
+        }, 150);
+
+        window.addEventListener('resize', () => {
+            if (!this.isResizing) {
+                this.isResizing = true;
+                document.querySelectorAll('.gallery-item').forEach(item => {
+                    item.classList.add('resizing');
+                });
+            }
+            this.debouncedResize();
+        });
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    getMaxImagesPerRow() {
+        const width = window.innerWidth;
+        if (width < 640) return 1;
+        if (width < 1024) return 2;
+        return 3;
     }
 
     init() {
@@ -19,7 +70,6 @@ class AlbumViewer {
                 document.title = data.title || 'Urban - Ignacio Jiménez Pi';
                 window.imagesData = data.images;
                 this.processImages(data.images);
-                this.setupResizeHandler();
             })
             .catch(error => {
                 console.error('Error loading album:', error);
@@ -28,129 +78,130 @@ class AlbumViewer {
     }
 
     processImages(images) {
-        this.gallery.innerHTML = '';
-        images.forEach((filename, index) => {
-            const imageCard = this.createImageCard(filename, index);
-            this.loadImage(imageCard, filename, index);
+        if (!images || images.length === 0) return;
+        
+        const loadPromises = images.map((filename, index) => {
+            return new Promise((resolve) => {
+                if (this.imageBuffer.has(filename)) {
+                    resolve();
+                    return;
+                }
+
+                const img = new Image();
+                img.src = `images/${filename}`;
+                
+                img.onload = () => {
+                    this.imageBuffer.set(filename, {
+                        aspectRatio: img.width / img.height,
+                        filename
+                    });
+                    resolve();
+                };
+                
+                img.onerror = () => {
+                    console.error(`Failed to load image: ${filename}`);
+                    resolve();
+                };
+            });
         });
+
+        Promise.all(loadPromises).then(() => {
+            this.reflow(true);
+        });
+    }
+
+    reflow(isInitial = false) {
+        const images = window.imagesData;
+        if (!images || images.length === 0) return;
+
+        const existingItems = new Map();
+        if (!isInitial) {
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                const img = item.querySelector('img');
+                if (img) {
+                    existingItems.set(img.src.split('/').pop(), item);
+                }
+            });
+        }
+
+        this.gallery.innerHTML = '';
+        let currentRow = [];
+        let currentRowAspectRatios = [];
+        const maxImagesPerRow = this.getMaxImagesPerRow();
+        const containerWidth = this.gallery.clientWidth;
+        const gap = 10;
+
+        images.forEach((filename, index) => {
+            const imageData = this.imageBuffer.get(filename);
+            if (!imageData) return;
+
+            currentRowAspectRatios.push(imageData.aspectRatio);
+            
+            let imageCard;
+            if (existingItems.has(filename)) {
+                imageCard = existingItems.get(filename);
+                imageCard.style.removeProperty('width');
+                imageCard.style.removeProperty('height');
+            } else {
+                imageCard = this.createImageCard(filename, index);
+            }
+            
+            currentRow.push(imageCard);
+
+            if (currentRow.length === maxImagesPerRow || index === images.length - 1) {
+                this.createRowFromImages(currentRow, currentRowAspectRatios, this.targetHeight, containerWidth, gap);
+                currentRow = [];
+                currentRowAspectRatios = [];
+            }
+        });
+
+        // Remove resizing class after layout is complete
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.gallery-item').forEach(item => {
+                item.classList.remove('resizing');
+            });
+        });
+    }
+
+    createRowFromImages(images, aspectRatios, targetHeight, containerWidth, gap) {
+        const row = document.createElement('div');
+        row.className = 'gallery-row';
+        
+        const totalNaturalWidth = aspectRatios.reduce((sum, ratio) => sum + (targetHeight * ratio), 0);
+        const totalGapWidth = (images.length - 1) * gap;
+        const scale = (containerWidth - totalGapWidth) / totalNaturalWidth;
+        
+        images.forEach((imageCard, i) => {
+            const width = Math.floor(targetHeight * aspectRatios[i] * scale);
+            
+            requestAnimationFrame(() => {
+                imageCard.style.width = `${width}px`;
+                imageCard.style.height = `${targetHeight}px`;
+            });
+            
+            row.appendChild(imageCard);
+            
+            if (!imageCard.classList.contains('loaded')) {
+                this.observer.observe(imageCard);
+            }
+        });
+        
+        this.gallery.appendChild(row);
     }
 
     createImageCard(filename, index) {
         const imageCard = document.createElement('div');
         imageCard.className = 'gallery-item';
-        imageCard.onclick = () => this.openModal(index);
-
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'image-container';
-        imageCard.appendChild(imageContainer);
-
-        const placeholder = document.createElement('div');
-        placeholder.className = 'placeholder';
-        placeholder.innerHTML = '<svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-        imageContainer.appendChild(placeholder);
-
-        return imageCard;
-    }
-
-    loadImage(imageCard, filename, index) {
+        
         const img = document.createElement('img');
-        img.style.opacity = '0';
-        img.style.transition = 'opacity 0.3s ease-in';
-        img.dataset.index = index;
-        img.alt = filename.replace(/\.[^/.]+$/, '').replace(/-/g, ' ');
         img.src = `images/${filename}`;
-
-        img.onload = () => this.handleImageLoad(img, imageCard, index);
-        img.onerror = () => this.handleImageError(imageCard);
-
-        const imageContainer = imageCard.querySelector('.image-container');
-        imageContainer.appendChild(img);
-    }
-
-    handleImageLoad(img, imageCard, index) {
-        img.style.opacity = '1';
-        const placeholder = imageCard.querySelector('.placeholder');
-        if (placeholder) {
-            placeholder.style.opacity = '0';
-            setTimeout(() => placeholder.remove(), 300);
-        }
-
-        this.imageBuffer[index] = {
-            img,
-            card: imageCard,
-            aspectRatio: img.naturalWidth / img.naturalHeight
-        };
-        this.loadedImages++;
-
-        setTimeout(() => {
-            imageCard.classList.add('loaded');
-        }, 100);
-
-        this.createGalleryRows();
-    }
-
-    handleImageError(imageCard) {
-        const placeholder = imageCard.querySelector('.placeholder');
-        if (placeholder) {
-            placeholder.innerHTML = '<span class="text-red-500">Failed to load image</span>';
-        }
-        this.loadedImages++;
-    }
-
-    createGalleryRows() {
-        if (this.loadedImages < window.imagesData.length) return;
-
-        this.gallery.innerHTML = '';
-        const containerWidth = this.gallery.clientWidth;
-        const targetRowHeight = 300;
-        let currentRow = [];
-        let currentRowWidth = 0;
-
-        this.imageBuffer.forEach((imgData, index) => {
-            if (!imgData) return;
-            
-            const { card, aspectRatio } = imgData;
-            const imgWidth = targetRowHeight * aspectRatio;
-            
-            if (currentRow.length > 0 && (currentRowWidth + imgWidth > containerWidth || currentRow.length === 3)) {
-                this.finalizeRow(currentRow, currentRowWidth, containerWidth, targetRowHeight);
-                currentRow = [];
-                currentRowWidth = 0;
-            }
-
-            currentRow.push({ card, width: imgWidth });
-            currentRowWidth += imgWidth;
-
-            if (index === this.imageBuffer.length - 1 && currentRow.length > 0) {
-                this.finalizeRow(currentRow, currentRowWidth, containerWidth, targetRowHeight);
-            }
-        });
-    }
-
-    finalizeRow(row, rowWidth, containerWidth, targetHeight) {
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'gallery-row';
+        img.alt = `Image ${index + 1}`;
+        img.loading = 'lazy';
         
-        const gap = 10;
-        const totalGapWidth = (row.length - 1) * gap;
-        const scale = (containerWidth - totalGapWidth) / rowWidth;
+        imageCard.appendChild(img);
+        imageCard.addEventListener('click', () => this.openModal(index));
         
-        row.forEach(item => {
-            const width = Math.floor(item.width * scale);
-            item.card.style.width = `${width}px`;
-            item.card.style.height = `${Math.floor(targetHeight)}px`;
-            rowDiv.appendChild(item.card);
-        });
-
-        this.gallery.appendChild(rowDiv);
-    }
-
-    setupResizeHandler() {
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => this.createGalleryRows(), 100);
-        });
+        return imageCard;
     }
 
     setupEventListeners() {

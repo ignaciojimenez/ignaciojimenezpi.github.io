@@ -1,6 +1,24 @@
 // Gallery loading and rendering functions
 function renderAlbums(albums) {
     const albumGrid = document.getElementById('albumGrid');
+    
+    // Create intersection observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Add visible class after a small delay to ensure CSS transition works
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, 100);
+                observer.unobserve(entry.target); // Stop observing once visible
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '50px', // Start loading slightly before they come into view
+        threshold: 0.1
+    });
+
     albums.forEach(album => {
         const card = document.createElement('div');
         card.className = 'album-item';
@@ -15,7 +33,8 @@ function renderAlbums(albums) {
         img.className = 'w-full h-full object-cover';
         
         img.onload = () => {
-            card.classList.add('loaded');
+            // Remove loaded class and let intersection observer handle visibility
+            observer.observe(card);
         };
         
         const overlay = document.createElement('div');
@@ -39,8 +58,11 @@ function renderAlbums(albums) {
         container.appendChild(img);
         container.appendChild(overlay);
         card.appendChild(container);
-        
-        card.onclick = () => window.location.href = `albums/${album.id}`;
+
+        card.addEventListener('click', () => {
+            window.location.href = `albums/${album.id}`;
+        });
+
         albumGrid.appendChild(card);
     });
 }
