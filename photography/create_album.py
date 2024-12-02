@@ -157,22 +157,73 @@ def create_album(album_name, title, description, date, image_dir, cover_image=No
         print(f"Error creating album: {str(e)}")
         return False
 
+def add_images_to_album(album_name, image_dir):
+    """Add images to an existing album"""
+    # Setup paths
+    base_dir = Path(__file__).parent
+    album_dir = base_dir / 'albums' / album_name
+    images_dir = album_dir / 'images'
+    
+    # Verify album exists
+    if not album_dir.exists():
+        print(f"Error: Album {album_name} not found")
+        return False
+    
+    # Process images
+    if os.path.isdir(image_dir):
+        image_files = [f for f in Path(image_dir).glob('*') if f.suffix.lower() in ['.jpg', '.jpeg', '.png']]
+    else:
+        image_files = [Path(f) for f in image_dir.split(',') if Path(f).suffix.lower() in ['.jpg', '.jpeg', '.png']]
+    
+    if not image_files:
+        print(f"Error: No valid images found in {image_dir}")
+        return False
+    
+    # Process each image
+    for img_path in image_files:
+        try:
+            # Create optimized version
+            img = Image.open(img_path)
+            
+            # Calculate new size maintaining aspect ratio
+            max_size = 2000
+            ratio = min(max_size/img.width, max_size/img.height)
+            new_size = (int(img.width * ratio), int(img.height * ratio))
+            
+            # Resize and save
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+            
+            # Save to album's images directory
+            new_path = images_dir / img_path.name
+            img.save(new_path, quality=85, optimize=True)
+            
+            print(f"Added: {img_path.name}")
+        except Exception as e:
+            print(f"Error processing {img_path.name}: {str(e)}")
+            continue
+    
+    # Update images.json
+    generate_images_json(images_dir)
+    print(f"\nUpdated images.json for album {album_name}")
+    return True
+
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Create a new photo album')
+    parser = argparse.ArgumentParser(description='Create a new photo album or add images to existing album')
     parser.add_argument('album_name', help='URL-friendly name for the album (e.g., "summer-2023")')
-    parser.add_argument('title', help='Display title for the album (e.g., "Summer 2023")')
-    parser.add_argument('description', help='Short description of the album')
-    parser.add_argument('date', help='Album date in YYYY-MM-DD format (used for sorting)')
-    parser.add_argument('image_dir', help='Directory containing images or comma-separated list of image paths')
-    parser.add_argument('--cover', help='Cover image filename (from image_dir)', default=None)
+    parser.add_argument('--title', help='Display title for the album (e.g., "Summer 2023")')
+    parser.add_argument('--description', help='Album description')
+    parser.add_argument('--date', help='Album date (YYYY-MM-DD)')
+    parser.add_argument('--image-dir', required=True, help='Directory containing images or comma-separated list of image paths')
+    parser.add_argument('--cover-image', help='Path to cover image (optional)')
+    parser.add_argument('--add-only', action='store_true', help='Only add images to existing album')
     
     args = parser.parse_args()
     
-    # Validate date format
-    try:
-        datetime.strptime(args.date, '%Y-%m-%d')
-    except ValueError:
-        print("Error: Date must be in YYYY-MM-DD format")
-        sys.exit(1)
+    if args.add_only:
+        success = add_images_to_album(args.album_name, args.image_dir)
+    else:
+        if not all([args.title, args.description, args.date]):
+            parser.error("--title, --description, and --date are required when creating a new album")
+        success = create_album(args.album_name, args.title, args.description, args.date, args.image_dir, args.cover_image)
     
-    create_album(args.album_name, args.title, args.description, args.date, args.image_dir, args.cover)
+    sys.exit(0 if success else 1)
