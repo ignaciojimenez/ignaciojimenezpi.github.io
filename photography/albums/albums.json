@@ -1,25 +1,46 @@
 {
-    "albums": [
-        {
-            "id": "urban",
-            "title": "Urban Photography",
-            "description": "Exploring city landscapes and urban geometry through film photography",
-            "coverImage": "albums/urban/images/modern-architecture.jpg",
-            "date": "2023-12-01",
-            "images": [
-                "city-patterns.jpg",
-                "downtown.jpg",
-                "urban-minimalism.jpg",
-                "modern-architecture.jpg",
-                "city-reflections.jpg",
-                "city-streets.jpg",
-                "urban-abstract.jpg",
-                "urban-geometry.jpg",
-                "urban-perspective.jpg",
-                "urban-details.jpg",
-                "city-lights.jpg",
-                "city-skyline.jpg"
-            ]
-        }
-    ]
+  "albums": [
+    {
+      "id": "urban-test",
+      "title": "Urban test",
+      "description": "Stupid description",
+      "date": "2001-03-03",
+      "coverImage": "albums/urban-test/images/city-patterns.jpg",
+      "images": [
+        "city-patterns.jpg",
+        "downtown.jpg",
+        "urban-minimalism.jpg",
+        "modern-architecture.jpg",
+        "city-reflections.jpg",
+        "city-streets.jpg",
+        "urban-abstract.jpg",
+        "urban-geometry.jpg",
+        "urban-perspective.jpg",
+        "urban-details.jpg",
+        "city-lights.jpg",
+        "city-skyline.jpg"
+      ]
+    },
+    {
+      "id": "urban",
+      "title": "Urban Photography",
+      "description": "Exploring city landscapes and urban geometry through film photography",
+      "coverImage": "albums/urban/images/modern-architecture.jpg",
+      "date": "2023-12-01",
+      "images": [
+        "city-patterns.jpg",
+        "downtown.jpg",
+        "urban-minimalism.jpg",
+        "modern-architecture.jpg",
+        "city-reflections.jpg",
+        "city-streets.jpg",
+        "urban-abstract.jpg",
+        "urban-geometry.jpg",
+        "urban-perspective.jpg",
+        "urban-details.jpg",
+        "city-lights.jpg",
+        "city-skyline.jpg"
+      ]
+    }
+  ]
 }
