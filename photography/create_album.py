@@ -127,7 +127,7 @@ def create_album(album_name, title, description, date, image_dir, cover_image=No
             'title': title,
             'description': description,
             'date': date,
-            'coverImage': f'albums/{album_name}/images/{os.path.basename(cover_image)}' if cover_image else f'albums/{album_name}/images/{os.path.basename(image_files[0].name)}',
+            'coverImage': cover_image if cover_image else f'albums/{album_name}/images/{os.path.basename(image_files[0].name)}',
             'images': [img.name for img in image_files]
         }
         

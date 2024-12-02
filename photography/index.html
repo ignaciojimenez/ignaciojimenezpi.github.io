@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ignacio Jiménez Pi - Film Photography</title>
+    <title>Photography - Ignacio Jiménez Pi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
     <script>
         tailwind.config = {
             theme: {
@@ -34,70 +34,17 @@
     </nav>
 
     <!-- Album Grid -->
-    <div class="pt-16 px-4 md:px-8">
-        <div class="gallery-grid" id="albumGrid">
-            <!-- Album covers will be loaded here -->
+    <div class="pt-12 px-4 md:px-8">
+        <div id="albumGrid" class="album-grid">
+            <!-- Albums will be loaded here -->
         </div>
     </div>
 
+    <script src="js/gallery.js"></script>
     <script>
-        const albumGrid = document.getElementById('albumGrid');
-
-        // Load albums data
-        fetch('albums/albums.json')
-            .then(response => response.json())
-            .then(data => {
-                // Sort albums by date (newest first)
-                data.albums.sort((a, b) => new Date(b.date) - new Date(a.date));
-                renderAlbums(data.albums);
-            });
-
-        function renderAlbums(albums) {
-            albums.forEach(album => {
-                const card = document.createElement('div');
-                card.className = 'gallery-item relative group cursor-pointer';
-                
-                const container = document.createElement('div');
-                container.className = 'image-container relative';
-                
-                const img = document.createElement('img');
-                img.src = album.coverImage;
-                img.alt = album.title;
-                img.loading = 'lazy';
-                img.className = 'w-full h-full object-cover';
-                
-                // Add onload handler to show the image
-                img.onload = () => {
-                    card.classList.add('loaded');
-                };
-                
-                const overlay = document.createElement('div');
-                overlay.className = 'absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-opacity duration-300 flex items-center justify-center';
-                
-                const content = document.createElement('div');
-                content.className = 'text-white text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4';
-                
-                // Format the date
-                const dateStr = album.date ? new Date(album.date).toLocaleDateString('en-US', { 
-                    year: 'numeric',
-                    month: 'long'
-                }) : '';
-                
-                content.innerHTML = `
-                    <h3 class="text-xl font-semibold mb-2">${album.title}</h3>
-                    ${dateStr ? `<p class="text-sm mb-2">${dateStr}</p>` : ''}
-                    <p class="text-sm">${album.description || ''}</p>
-                `;
-                
-                overlay.appendChild(content);
-                container.appendChild(img);
-                container.appendChild(overlay);
-                card.appendChild(container);
-                
-                card.onclick = () => window.location.href = `albums/${album.id}`;
-                albumGrid.appendChild(card);
-            });
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            initGallery();
+        });
     </script>
 </body>
 </html>

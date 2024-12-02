@@ -5,18 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loading... - Ignacio Jiménez Pi</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="../../styles.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="../../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -41,25 +30,25 @@
     </nav>
 
     <!-- Image Grid -->
-    <div class="pt-16 px-4 md:px-8 flex justify-center">
+    <div class="pt-12 px-4 md:px-8 flex justify-center">
         <div class="gallery-grid" id="gallery">
             <!-- Images will be loaded here by JavaScript -->
         </div>
     </div>
 
-    <!-- Image Modal -->
+    <!-- Modal -->
     <div class="modal" id="imageModal">
-        <button class="modal-close" onclick="closeModal()">
+        <button class="modal-close" onclick="albumViewer.closeModal()">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
-        <button class="modal-nav modal-prev" onclick="showPrevImage()">
+        <button class="modal-nav modal-prev" onclick="albumViewer.showPrevImage()">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path>
             </svg>
         </button>
-        <button class="modal-nav modal-next" onclick="showNextImage()">
+        <button class="modal-nav modal-next" onclick="albumViewer.showNextImage()">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path>
             </svg>
@@ -69,251 +58,11 @@
         </div>
     </div>
 
+    <script src="../../js/album-viewer.js"></script>
     <script>
-        // Get current album ID from URL
-        const albumId = window.location.pathname.split('/').filter(Boolean).pop();
-
-        // First fetch album metadata to set the title
-        fetch('../../albums/albums.json')
-            .then(response => response.json())
-            .then(data => {
-                const album = data.albums.find(a => a.id === albumId);
-                if (album) {
-                    document.title = `${album.title} - Ignacio Jiménez Pi`;
-                }
-            })
-            .catch(error => console.error('Error loading album metadata:', error));
-
-        // Fetch and load album data and images
-        fetch('images.json')
-            .then(response => response.json())
-            .then(data => {
-                // Get the gallery container
-                const gallery = document.getElementById('gallery');
-                
-                // Create a buffer to hold images while loading
-                const imageBuffer = [];
-                let loadedImages = 0;
-                
-                // Function to create gallery rows
-                function createGalleryRows() {
-                    if (loadedImages < data.images.length) return;
-                    
-                    // Clear the gallery
-                    gallery.innerHTML = '';
-                    
-                    // Get container width
-                    const containerWidth = gallery.clientWidth;
-                    const targetRowHeight = window.innerWidth < 640 ? 165 : 
-                                         window.innerWidth < 1024 ? 248 :
-                                         window.innerWidth < 1280 ? 286 :
-                                         330;
-                    
-                    let currentRow = [];
-                    let currentRowWidth = 0;
-                    
-                    // Process all loaded images
-                    imageBuffer.forEach((imgData, index) => {
-                        const { img, card, aspectRatio } = imgData;
-                        const imgWidth = targetRowHeight * aspectRatio;
-                        
-                        // For narrow screens, force one image per row
-                        if (containerWidth < 500) {
-                            const rowDiv = document.createElement('div');
-                            rowDiv.className = 'gallery-row';
-                            
-                            // Scale image to fit container width
-                            const width = containerWidth;
-                            const height = width / aspectRatio;
-                            
-                            card.style.width = `${width}px`;
-                            card.style.height = `${height}px`;
-                            rowDiv.appendChild(card);
-                            gallery.appendChild(rowDiv);
-                        } else {
-                            // Normal multi-image row logic
-                            if (currentRow.length > 0 && (currentRowWidth + imgWidth > containerWidth || currentRow.length === 3)) {
-                                // Create row with current images
-                                const rowDiv = document.createElement('div');
-                                rowDiv.className = 'gallery-row';
-                                
-                                // Calculate scaling factor to fill width
-                                const scale = (containerWidth - (currentRow.length - 1) * 10) / currentRowWidth;
-                                
-                                // Apply scaled dimensions to images in row
-                                currentRow.forEach(item => {
-                                    const width = item.width * scale;
-                                    item.card.style.width = `${width}px`;
-                                    item.card.style.height = `${targetRowHeight}px`;
-                                    rowDiv.appendChild(item.card);
-                                });
-                                
-                                gallery.appendChild(rowDiv);
-                                currentRow = [];
-                                currentRowWidth = 0;
-                            }
-                            
-                            // Add image to current row
-                            currentRow.push({
-                                card,
-                                width: imgWidth,
-                                aspectRatio
-                            });
-                            currentRowWidth += imgWidth;
-                            
-                            // Handle last row
-                            if (index === imageBuffer.length - 1 && currentRow.length > 0) {
-                                const rowDiv = document.createElement('div');
-                                rowDiv.className = 'gallery-row';
-                                
-                                // Calculate scaling factor to fill width
-                                const scale = (containerWidth - (currentRow.length - 1) * 10) / currentRowWidth;
-                                
-                                // Apply scaled dimensions to images in row
-                                currentRow.forEach(item => {
-                                    const width = item.width * scale;
-                                    item.card.style.width = `${width}px`;
-                                    item.card.style.height = `${targetRowHeight}px`;
-                                    rowDiv.appendChild(item.card);
-                                });
-                                
-                                gallery.appendChild(rowDiv);
-                            }
-                        }
-                    });
-                }
-                
-                // Create and append image elements
-                data.images.forEach((filename, index) => {
-                    const imageCard = document.createElement('div');
-                    imageCard.className = 'gallery-item';
-                    imageCard.onclick = () => openModal(index);
-                    
-                    const imageContainer = document.createElement('div');
-                    imageContainer.className = 'image-container';
-                    
-                    // Create placeholder
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'placeholder';
-                    placeholder.innerHTML = '<svg class="animate-spin h-8 w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
-                    imageContainer.appendChild(placeholder);
-                    
-                    const img = document.createElement('img');
-                    img.style.opacity = '0';
-                    img.style.transition = 'opacity 0.3s ease-in';
-                    img.dataset.index = index;
-                    img.alt = filename.replace(/\.[^/.]+$/, '').replace(/-/g, ' ');
-                    img.src = `images/${filename}`;
-                    
-                    // Handle image load
-                    img.onload = () => {
-                        img.style.opacity = '1';
-                        placeholder.style.opacity = '0';
-                        
-                        // Store image data for layout calculation
-                        imageBuffer[index] = {
-                            img,
-                            card: imageCard,
-                            aspectRatio: img.naturalWidth / img.naturalHeight
-                        };
-                        loadedImages++;
-                        
-                        // Add loaded class for entrance animation
-                        setTimeout(() => {
-                            imageCard.classList.add('loaded');
-                        }, 100);
-                        
-                        // Remove placeholder after fade out
-                        setTimeout(() => {
-                            placeholder.remove();
-                        }, 300);
-                        
-                        // Try to create rows when all images are loaded
-                        createGalleryRows();
-                    };
-                    
-                    img.onerror = () => {
-                        placeholder.innerHTML = '<span class="text-red-500">Failed to load image</span>';
-                        loadedImages++;
-                    };
-                    
-                    imageContainer.appendChild(img);
-                    imageCard.appendChild(imageContainer);
-                });
-                
-                // Store images data for modal
-                window.imagesData = data.images;
-                
-                // Handle window resize
-                let resizeTimeout;
-                window.addEventListener('resize', () => {
-                    clearTimeout(resizeTimeout);
-                    resizeTimeout = setTimeout(createGalleryRows, 100);
-                });
-            })
-            .catch(error => {
-                console.error('Error loading album:', error);
-                document.getElementById('gallery').innerHTML = '<p class="text-red-500">Error loading album</p>';
-            });
-
-        // Modal functionality
-        let currentImageIndex = 0;
-        const modal = document.getElementById('imageModal');
-
-        function showImage(index) {
-            const modalImage = document.getElementById('modalImage');
-            modalImage.src = `images/${window.imagesData[index]}`;
-            currentImageIndex = index;
-        }
-
-        function openModal(index) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            showImage(index);
-        }
-
-        function closeModal() {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function showNextImage() {
-            const nextIndex = (currentImageIndex + 1) % window.imagesData.length;
-            showImage(nextIndex);
-        }
-
-        function showPrevImage() {
-            const prevIndex = (currentImageIndex - 1 + window.imagesData.length) % window.imagesData.length;
-            showImage(prevIndex);
-        }
-
-        // Event Listeners
-        document.addEventListener('keydown', (e) => {
-            if (!modal.classList.contains('active')) return;
-            
-            switch(e.key) {
-                case 'ArrowRight':
-                    showNextImage();
-                    break;
-                case 'ArrowLeft':
-                    showPrevImage();
-                    break;
-                case 'Escape':
-                    closeModal();
-                    break;
-            }
-        });
-
-        // Close modal when clicking outside the image
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-
-        // Mobile menu toggle
-        document.querySelector('.mobile-menu-button')?.addEventListener('click', () => {
-            document.querySelector('.mobile-menu')?.classList.toggle('hidden');
+        document.addEventListener('DOMContentLoaded', () => {
+            window.albumViewer = new AlbumViewer();
+            albumViewer.init();
         });
     </script>
 </body>
