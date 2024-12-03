@@ -7,6 +7,12 @@ on:
         description: 'Name of the album'
         required: true
         type: string
+  push:
+    branches:
+      - photography-automation
+  pull_request:
+    branches:
+      - photography-automation
 
 jobs:
   test:
