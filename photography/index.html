@@ -3,6 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Photography portfolio by Ignacio Jiménez Pi - Capturing moments through film photography">
+    <meta name="author" content="Ignacio Jiménez Pi">
+    <meta name="keywords" content="photography, film photography, portfolio, Ignacio Jiménez Pi">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Photography - Ignacio Jiménez Pi">
+    <meta property="og:description" content="Film photography portfolio by Ignacio Jiménez Pi">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://ignaciojimenezpi.github.io/photography/albums/cover.jpg">
+    <meta property="og:url" content="https://ignaciojimenezpi.github.io/photography">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Photography - Ignacio Jiménez Pi">
+    <meta name="twitter:description" content="Film photography portfolio by Ignacio Jiménez Pi">
+    <meta name="twitter:image" content="https://ignaciojimenezpi.github.io/photography/albums/cover.jpg">
+    
     <title>Photography - Ignacio Jiménez Pi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/styles.css">
@@ -20,27 +37,37 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="albums/albums.json" as="fetch" crossorigin="anonymous">
+    <link rel="preload" href="js/gallery.js" as="script">
+    <link rel="preload" href="css/styles.css" as="style">
 </head>
 <body class="bg-white text-gray-900">
+    <!-- Skip to main content for accessibility -->
+    <a href="#albumGrid" class="sr-only focus:not-sr-only focus:absolute focus:p-4">Skip to main content</a>
+    
     <!-- Navigation -->
-    <nav class="w-full bg-white z-50 h-12 flex items-center pt-1">
+    <nav class="w-full bg-white z-50 h-12 flex items-center pt-1" role="navigation">
         <div class="max-w-[1600px] mx-auto px-8 w-full">
             <div class="flex justify-between">
                 <div class="flex items-center">
-                    <a href="/" class="text-xl font-light tracking-wide">IGNACIO JIMÉNEZ PI</a>
+                    <a href="/" class="text-xl font-light tracking-wide hover:text-gray-600 transition-colors" aria-label="Home">IGNACIO JIMÉNEZ PI</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Album Grid -->
-    <div class="px-8 mt-2">
-        <div id="albumGrid" class="album-grid">
-            <!-- Albums will be loaded here -->
+    <main>
+        <div class="px-8 mt-2">
+            <div id="albumGrid" class="album-grid" role="region" aria-label="Photography Albums">
+                <!-- Albums will be loaded here -->
+            </div>
         </div>
-    </div>
+    </main>
 
-    <script src="js/gallery.js"></script>
+    <script src="js/gallery.js?v=1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             initGallery();
