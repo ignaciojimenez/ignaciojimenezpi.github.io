@@ -1,0 +1,726 @@
+{
+  "city-patterns.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/city-patterns.jpg",
+      "width": 2000,
+      "height": 1498,
+      "webp": "albums/urban-test/images/city-patterns.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/city-patterns.jpg",
+        "width": 400,
+        "height": 299,
+        "webp": "albums/urban-test/responsive/thumbnail/city-patterns.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/city-patterns.jpg",
+        "width": 800,
+        "height": 599,
+        "webp": "albums/urban-test/responsive/small/city-patterns.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/city-patterns.jpg",
+        "width": 1200,
+        "height": 898,
+        "webp": "albums/urban-test/responsive/medium/city-patterns.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/city-patterns.jpg",
+        "width": 1600,
+        "height": 1198,
+        "webp": "albums/urban-test/responsive/large/city-patterns.webp"
+      }
+    }
+  },
+  "downtown.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/downtown.jpg",
+      "width": 2000,
+      "height": 1333,
+      "webp": "albums/urban-test/images/downtown.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/downtown.jpg",
+        "width": 400,
+        "height": 266,
+        "webp": "albums/urban-test/responsive/thumbnail/downtown.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/downtown.jpg",
+        "width": 800,
+        "height": 533,
+        "webp": "albums/urban-test/responsive/small/downtown.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/downtown.jpg",
+        "width": 1200,
+        "height": 799,
+        "webp": "albums/urban-test/responsive/medium/downtown.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/downtown.jpg",
+        "width": 1600,
+        "height": 1066,
+        "webp": "albums/urban-test/responsive/large/downtown.webp"
+      }
+    }
+  },
+  "urban-minimalism.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-minimalism.jpg",
+      "width": 1567,
+      "height": 2000,
+      "webp": "albums/urban-test/images/urban-minimalism.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-minimalism.jpg",
+        "width": 400,
+        "height": 510,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-minimalism.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-minimalism.jpg",
+        "width": 800,
+        "height": 1021,
+        "webp": "albums/urban-test/responsive/small/urban-minimalism.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-minimalism.jpg",
+        "width": 1200,
+        "height": 1531,
+        "webp": "albums/urban-test/responsive/medium/urban-minimalism.webp"
+      }
+    }
+  },
+  "urban-stock-10.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-10.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-10.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-10.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-10.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-10.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-10.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-10.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-10.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-10.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-10.webp"
+      }
+    }
+  },
+  "modern-architecture.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/modern-architecture.jpg",
+      "width": 2000,
+      "height": 1333,
+      "webp": "albums/urban-test/images/modern-architecture.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/modern-architecture.jpg",
+        "width": 400,
+        "height": 266,
+        "webp": "albums/urban-test/responsive/thumbnail/modern-architecture.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/modern-architecture.jpg",
+        "width": 800,
+        "height": 533,
+        "webp": "albums/urban-test/responsive/small/modern-architecture.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/modern-architecture.jpg",
+        "width": 1200,
+        "height": 799,
+        "webp": "albums/urban-test/responsive/medium/modern-architecture.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/modern-architecture.jpg",
+        "width": 1600,
+        "height": 1066,
+        "webp": "albums/urban-test/responsive/large/modern-architecture.webp"
+      }
+    }
+  },
+  "urban-stock-9.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-9.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-9.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-9.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-9.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-9.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-9.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-9.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-9.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-9.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-9.webp"
+      }
+    }
+  },
+  "urban-stock-8.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-8.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-8.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-8.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-8.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-8.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-8.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-8.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-8.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-8.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-8.webp"
+      }
+    }
+  },
+  "city-reflections.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/city-reflections.jpg",
+      "width": 1600,
+      "height": 2000,
+      "webp": "albums/urban-test/images/city-reflections.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/city-reflections.jpg",
+        "width": 400,
+        "height": 500,
+        "webp": "albums/urban-test/responsive/thumbnail/city-reflections.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/city-reflections.jpg",
+        "width": 800,
+        "height": 1000,
+        "webp": "albums/urban-test/responsive/small/city-reflections.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/city-reflections.jpg",
+        "width": 1200,
+        "height": 1500,
+        "webp": "albums/urban-test/responsive/medium/city-reflections.webp"
+      }
+    }
+  },
+  "city-streets.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/city-streets.jpg",
+      "width": 2000,
+      "height": 1333,
+      "webp": "albums/urban-test/images/city-streets.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/city-streets.jpg",
+        "width": 400,
+        "height": 266,
+        "webp": "albums/urban-test/responsive/thumbnail/city-streets.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/city-streets.jpg",
+        "width": 800,
+        "height": 533,
+        "webp": "albums/urban-test/responsive/small/city-streets.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/city-streets.jpg",
+        "width": 1200,
+        "height": 799,
+        "webp": "albums/urban-test/responsive/medium/city-streets.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/city-streets.jpg",
+        "width": 1600,
+        "height": 1066,
+        "webp": "albums/urban-test/responsive/large/city-streets.webp"
+      }
+    }
+  },
+  "urban-abstract.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-abstract.jpg",
+      "width": 2000,
+      "height": 1333,
+      "webp": "albums/urban-test/images/urban-abstract.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-abstract.jpg",
+        "width": 400,
+        "height": 266,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-abstract.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-abstract.jpg",
+        "width": 800,
+        "height": 533,
+        "webp": "albums/urban-test/responsive/small/urban-abstract.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-abstract.jpg",
+        "width": 1200,
+        "height": 799,
+        "webp": "albums/urban-test/responsive/medium/urban-abstract.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-abstract.jpg",
+        "width": 1600,
+        "height": 1066,
+        "webp": "albums/urban-test/responsive/large/urban-abstract.webp"
+      }
+    }
+  },
+  "urban-stock-1.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-1.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-1.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-1.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-1.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-1.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-1.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-1.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-1.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-1.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-1.webp"
+      }
+    }
+  },
+  "urban-geometry.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-geometry.jpg",
+      "width": 2000,
+      "height": 1498,
+      "webp": "albums/urban-test/images/urban-geometry.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-geometry.jpg",
+        "width": 400,
+        "height": 299,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-geometry.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-geometry.jpg",
+        "width": 800,
+        "height": 599,
+        "webp": "albums/urban-test/responsive/small/urban-geometry.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-geometry.jpg",
+        "width": 1200,
+        "height": 898,
+        "webp": "albums/urban-test/responsive/medium/urban-geometry.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-geometry.jpg",
+        "width": 1600,
+        "height": 1198,
+        "webp": "albums/urban-test/responsive/large/urban-geometry.webp"
+      }
+    }
+  },
+  "urban-stock-3.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-3.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-3.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-3.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-3.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-3.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-3.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-3.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-3.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-3.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-3.webp"
+      }
+    }
+  },
+  "urban-stock-2.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-2.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-2.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-2.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-2.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-2.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-2.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-2.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-2.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-2.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-2.webp"
+      }
+    }
+  },
+  "urban-perspective.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-perspective.jpg",
+      "width": 2000,
+      "height": 1125,
+      "webp": "albums/urban-test/images/urban-perspective.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-perspective.jpg",
+        "width": 400,
+        "height": 225,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-perspective.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-perspective.jpg",
+        "width": 800,
+        "height": 450,
+        "webp": "albums/urban-test/responsive/small/urban-perspective.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-perspective.jpg",
+        "width": 1200,
+        "height": 675,
+        "webp": "albums/urban-test/responsive/medium/urban-perspective.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-perspective.jpg",
+        "width": 1600,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/large/urban-perspective.webp"
+      }
+    }
+  },
+  "urban-stock-6.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-6.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-6.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-6.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-6.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-6.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-6.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-6.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-6.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-6.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-6.webp"
+      }
+    }
+  },
+  "urban-stock-7.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-7.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-7.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-7.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-7.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-7.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-7.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-7.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-7.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-7.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-7.webp"
+      }
+    }
+  },
+  "urban-details.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-details.jpg",
+      "width": 1598,
+      "height": 2000,
+      "webp": "albums/urban-test/images/urban-details.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-details.jpg",
+        "width": 400,
+        "height": 500,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-details.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-details.jpg",
+        "width": 800,
+        "height": 1001,
+        "webp": "albums/urban-test/responsive/small/urban-details.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-details.jpg",
+        "width": 1200,
+        "height": 1501,
+        "webp": "albums/urban-test/responsive/medium/urban-details.webp"
+      }
+    }
+  },
+  "urban-stock-5.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-5.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-5.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-5.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-5.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-5.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-5.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-5.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-5.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-5.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-5.webp"
+      }
+    }
+  },
+  "urban-stock-4.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/urban-stock-4.jpg",
+      "width": 2000,
+      "height": 1500,
+      "webp": "albums/urban-test/images/urban-stock-4.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/urban-stock-4.jpg",
+        "width": 400,
+        "height": 300,
+        "webp": "albums/urban-test/responsive/thumbnail/urban-stock-4.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/urban-stock-4.jpg",
+        "width": 800,
+        "height": 600,
+        "webp": "albums/urban-test/responsive/small/urban-stock-4.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/urban-stock-4.jpg",
+        "width": 1200,
+        "height": 900,
+        "webp": "albums/urban-test/responsive/medium/urban-stock-4.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/urban-stock-4.jpg",
+        "width": 1600,
+        "height": 1200,
+        "webp": "albums/urban-test/responsive/large/urban-stock-4.webp"
+      }
+    }
+  },
+  "city-lights.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/city-lights.jpg",
+      "width": 2000,
+      "height": 1333,
+      "webp": "albums/urban-test/images/city-lights.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/city-lights.jpg",
+        "width": 400,
+        "height": 266,
+        "webp": "albums/urban-test/responsive/thumbnail/city-lights.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/city-lights.jpg",
+        "width": 800,
+        "height": 533,
+        "webp": "albums/urban-test/responsive/small/city-lights.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/city-lights.jpg",
+        "width": 1200,
+        "height": 799,
+        "webp": "albums/urban-test/responsive/medium/city-lights.webp"
+      },
+      "large": {
+        "path": "albums/urban-test/responsive/large/city-lights.jpg",
+        "width": 1600,
+        "height": 1066,
+        "webp": "albums/urban-test/responsive/large/city-lights.webp"
+      }
+    }
+  },
+  "city-skyline.jpg": {
+    "original": {
+      "path": "albums/urban-test/images/city-skyline.jpg",
+      "width": 1343,
+      "height": 2000,
+      "webp": "albums/urban-test/images/city-skyline.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "albums/urban-test/responsive/thumbnail/city-skyline.jpg",
+        "width": 400,
+        "height": 595,
+        "webp": "albums/urban-test/responsive/thumbnail/city-skyline.webp"
+      },
+      "small": {
+        "path": "albums/urban-test/responsive/small/city-skyline.jpg",
+        "width": 800,
+        "height": 1191,
+        "webp": "albums/urban-test/responsive/small/city-skyline.webp"
+      },
+      "medium": {
+        "path": "albums/urban-test/responsive/medium/city-skyline.jpg",
+        "width": 1200,
+        "height": 1787,
+        "webp": "albums/urban-test/responsive/medium/city-skyline.webp"
+      }
+    }
+  }
+}
