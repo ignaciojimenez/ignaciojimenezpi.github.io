@@ -7,6 +7,14 @@ on:
         description: 'Name of the album'
         required: true
         type: string
+      album_date:
+        description: 'Date of the album (YYYY-MM-DD)'
+        required: true
+        type: string
+      album_description:
+        description: 'Description of the album'
+        required: false
+        type: string
   push:
     branches:
       - photography-automation
@@ -15,7 +23,7 @@ on:
       - photography-automation
 
 jobs:
-  test:
+  process_album:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -25,7 +33,36 @@ jobs:
         with:
           python-version: '3.10'
           
-      - name: Test
+      - name: Install dependencies
         run: |
-          echo "Hello from GitHub Actions"
-          python --version
+          python -m pip install --upgrade pip
+          pip install pillow jsonschema
+          
+      - name: Setup album structure
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Processing album: ${{ github.event.inputs.album_name }}"
+          echo "Date: ${{ github.event.inputs.album_date }}"
+          echo "Description: ${{ github.event.inputs.album_description }}"
+          
+          # Create album directory structure
+          mkdir -p "photography/albums/${{ github.event.inputs.album_name }}"
+          mkdir -p "photography/albums/${{ github.event.inputs.album_name }}/original"
+          mkdir -p "photography/albums/${{ github.event.inputs.album_name }}/processed"
+          
+          # Create album metadata
+          cat > "photography/albums/${{ github.event.inputs.album_name }}/metadata.json" << EOF
+          {
+            "name": "${{ github.event.inputs.album_name }}",
+            "date": "${{ github.event.inputs.album_date }}",
+            "description": "${{ github.event.inputs.album_description }}",
+            "created_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "status": "pending"
+          }
+          EOF
+          
+      - name: List created structure
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Created album structure:"
+          ls -R photography/albums/${{ github.event.inputs.album_name }}
