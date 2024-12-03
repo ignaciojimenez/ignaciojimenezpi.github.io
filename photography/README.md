@@ -1,28 +1,31 @@
 # Photography Portfolio
 
-A minimalist photography portfolio website with dynamic album loading and smooth interactions.
+A minimalist photography portfolio website with dynamic album loading, responsive images, and modern web optimizations.
 
 ## Features
 - Dynamic image loading with lazy loading
 - Responsive grid layout with hover effects
+- WebP image support with fallbacks
 - Chronological album sorting (newest first)
-- Image optimization (max 2000px, 85% quality)
-- Modal image viewer with keyboard navigation
+- Progressive Web App capabilities
 - Mobile-friendly design
-- Automatic image list generation
+- Automated image optimization
 
 ## Project Structure
 ```
 photography/
 ├── albums/
 │   ├── albums.json         # Album metadata and configuration
-│   ├── template.html       # Generic album template
 │   └── [album-name]/      # Individual album directories
-│       ├── index.html     # Album page (from template)
-│       ├── images.json    # List of images in album
-│       └── images/        # Optimized images
-├── create_album.py        # Album creation utility
-├── styles.css            # Global styles
+│       ├── images/        # Original images
+│       ├── responsive/    # Responsive image versions
+│       └── metadata.json  # Album metadata and EXIF data
+├── utils/                 # Album management utilities
+│   ├── config.py         # Configuration settings
+│   ├── validation.py     # Data validation
+│   ├── image_processor.py # Image optimization
+│   └── create_album.py   # Album creation utility
+├── js/                   # Frontend JavaScript
 └── index.html           # Portfolio home page
 ```
 
@@ -34,8 +37,8 @@ Each album in `albums.json` has the following structure:
   "title": "Album Title",
   "description": "Album description",
   "date": "YYYY-MM-DD",
-  "coverImage": "path/to/cover/image",
-  "images": ["image1.jpg", "image2.jpg"]
+  "coverImage": "album-name/images/cover.jpg",
+  "images": ["album-name/images/image1.jpg"]
 }
 ```
 
@@ -45,47 +48,42 @@ Each album in `albums.json` has the following structure:
 
 1. Create Python virtual environment (only needed once):
 ```bash
-# In the photography directory
+cd utils
 python3 -m venv venv
-./venv/bin/pip install Pillow
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ### Creating an Album
 
 The script will:
-1. Create a new album directory with optimized images
-2. Generate images.json with the list of images
-3. Create the album's index.html from template
-4. Update the albums.json file automatically
+1. Create album directory structure
+2. Generate responsive images and WebP versions
+3. Extract and store image metadata
+4. Update albums.json automatically
 
 ```bash
-./venv/bin/python create_album.py [album-name] "Album Title" "Album Description" "YYYY-MM-DD" [path-to-images] --cover [cover-image]
+python -m utils.create_album "album-name" \
+  --title "Album Title" \
+  --description "Album Description" \
+  --date "YYYY-MM-DD" \
+  --images path/to/images \
+  --cover cover-image.jpg
 ```
-
-#### Required Parameters
-- `album-name`: URL-friendly name (e.g., "summer-2023")
-- `Album Title`: Display title (e.g., "Summer 2023")
-- `Album Description`: Short description of the album
-- `YYYY-MM-DD`: Date of the album (used for sorting)
-- `path-to-images`: Directory containing the images
-
-#### Optional Parameters
-- `--cover`: Specify a cover image (must be in the images directory)
 
 #### Example
 ```bash
-./venv/bin/python create_album.py urban "Urban Photography" "City landscapes" "2023-12-01" path/to/images --cover modern-architecture.jpg
+python -m utils.create_album urban \
+  --title "Urban Photography" \
+  --description "City landscapes" \
+  --date "2023-12-01" \
+  --images path/to/images \
+  --cover modern-architecture.jpg
 ```
 
-## Features
-### Landing Page
-- Albums sorted chronologically (newest first)
-- Hover effects showing album title, date, and description
-- Responsive grid layout
-- Lazy loading for better performance
-
-### Album Pages
-- Responsive image grid
-- Modal viewer with keyboard navigation
-- Image lazy loading
-- Smooth loading transitions
+## Development
+Start a local server:
+```bash
+python -m http.server 8000
+```
+Visit `http://localhost:8000/photography/`
