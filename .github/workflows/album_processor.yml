@@ -47,14 +47,44 @@ jobs:
           python -m pip install --upgrade pip
           pip install pillow jsonschema
           
+      - name: Verify Python environment
+        run: |
+          echo "Python version:"
+          python --version
+          echo "\nPillow version:"
+          python -c "from PIL import Image; print(Image.__version__)"
+          echo "\nJSON Schema version:"
+          python -c "import jsonschema; print(jsonschema.__version__)"
+          
+      - name: Verify repository structure
+        run: |
+          echo "Checking repository structure..."
+          echo "\nUtils directory contents:"
+          ls -l photography/utils/
+          echo "\nAlbums directory:"
+          ls -l photography/albums/
+          echo "\nChecking create_album.py:"
+          test -f photography/utils/create_album.py && echo " create_album.py exists" || echo " create_album.py not found"
+          test -x photography/utils/create_album.py && echo " create_album.py is executable" || echo " create_album.py not executable"
+          
       - name: Create temporary directory for images
         run: |
           mkdir -p "/tmp/album_images/${{ github.event.inputs.album_name }}"
-          echo "Created temporary directory for images"
+          echo "Created temporary directory: /tmp/album_images/${{ github.event.inputs.album_name }}"
+          echo "Directory permissions:"
+          ls -ld "/tmp/album_images/${{ github.event.inputs.album_name }}"
           
       - name: Create album using existing script
         run: |
           cd photography/utils
+          echo "Running create_album.py with parameters:"
+          echo "  - name: ${{ github.event.inputs.album_name }}"
+          echo "  - title: ${{ github.event.inputs.album_title }}"
+          echo "  - date: ${{ github.event.inputs.album_date }}"
+          echo "  - description: ${{ github.event.inputs.album_description }}"
+          echo "  - image-dir: /tmp/album_images/${{ github.event.inputs.album_name }}"
+          echo "  - cover-image: ${{ github.event.inputs.cover_image }}"
+          echo "\nExecuting script..."
           python create_album.py \
             --name "${{ github.event.inputs.album_name }}" \
             --title "${{ github.event.inputs.album_title }}" \
@@ -63,7 +93,22 @@ jobs:
             --image-dir "/tmp/album_images/${{ github.event.inputs.album_name }}" \
             --cover-image "${{ github.event.inputs.cover_image }}"
           
-      - name: Show album structure
+      - name: Verify album creation
         run: |
-          echo "Created album structure:"
-          ls -R photography/albums/${{ github.event.inputs.album_name }}
+          echo "Verifying album creation..."
+          ALBUM_DIR="photography/albums/${{ github.event.inputs.album_name }}"
+          
+          echo "\nChecking album directory structure:"
+          ls -R "$ALBUM_DIR"
+          
+          echo "\nChecking index.html:"
+          test -f "$ALBUM_DIR/index.html" && echo " index.html exists" || echo " index.html not found"
+          
+          echo "\nChecking images directory:"
+          test -d "$ALBUM_DIR/images" && echo " images directory exists" || echo " images directory not found"
+          
+          echo "\nChecking albums.json update:"
+          grep -q "${{ github.event.inputs.album_name }}" photography/albums/albums.json && \
+            echo " Album entry found in albums.json" || echo " Album not found in albums.json"
+          
+          echo "\nAlbum creation verification complete."
