@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Allow: /photography/
+Allow: /photography/albums/
+
+Sitemap: https://ignaciojimenezpi.github.io/sitemap.xml
