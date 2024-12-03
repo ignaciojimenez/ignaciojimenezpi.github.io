@@ -15,6 +15,7 @@ on:
         description: 'Description of the album'
         required: false
         type: string
+        default: ''
   push:
     branches:
       - photography-automation
@@ -22,11 +23,17 @@ on:
     branches:
       - photography-automation
 
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   process_album:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       
       - name: Set up Python
         uses: actions/setup-python@v4
