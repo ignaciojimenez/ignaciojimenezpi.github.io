@@ -75,6 +75,8 @@ jobs:
           ls -ld "/tmp/album_images/${{ github.event.inputs.album_name }}"
           
       - name: Create album using existing script
+        env:
+          PYTHONPATH: ${{ github.workspace }}/photography/utils
         run: |
           echo "Running create_album.py with parameters:"
           echo "  - name: ${{ github.event.inputs.album_name }}"
@@ -84,14 +86,32 @@ jobs:
           echo "  - image-dir: /tmp/album_images/${{ github.event.inputs.album_name }}"
           echo "  - cover-image: ${{ github.event.inputs.cover_image }}"
           echo "\nExecuting script..."
-          cd photography
-          PYTHONPATH=. python utils/create_album.py \
-            --name "${{ github.event.inputs.album_name }}" \
-            --title "${{ github.event.inputs.album_title }}" \
-            --description "${{ github.event.inputs.album_description }}" \
-            --date "${{ github.event.inputs.album_date }}" \
-            --image-dir "/tmp/album_images/${{ github.event.inputs.album_name }}" \
-            --cover-image "${{ github.event.inputs.cover_image }}"
+          
+          # Create a temporary wrapper script to handle imports
+          cat > /tmp/run_album.py << 'EOF'
+import sys
+import os
+sys.path.insert(0, os.environ['PYTHONPATH'])
+from create_album import create_album
+
+if __name__ == '__main__':
+    create_album(
+        album_name=sys.argv[1],
+        title=sys.argv[2],
+        description=sys.argv[3],
+        date=sys.argv[4],
+        image_dir=sys.argv[5],
+        cover_image=sys.argv[6] if len(sys.argv) > 6 else None
+    )
+EOF
+          
+          python /tmp/run_album.py \
+            "${{ github.event.inputs.album_name }}" \
+            "${{ github.event.inputs.album_title }}" \
+            "${{ github.event.inputs.album_description }}" \
+            "${{ github.event.inputs.album_date }}" \
+            "/tmp/album_images/${{ github.event.inputs.album_name }}" \
+            "${{ github.event.inputs.cover_image }}"
           
       - name: Verify album creation
         run: |
