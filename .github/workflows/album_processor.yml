@@ -63,6 +63,16 @@ jobs:
             "/tmp/album_images/${{ github.event.inputs.album_name }}" \
             "${{ github.event.inputs.cover_image }}"
           
+      - name: Process images
+        run: |
+          echo "Processing images..."
+          cd photography
+          for img in /tmp/album_images/${{ github.event.inputs.album_name }}/*; do
+            if [[ -f "$img" ]]; then
+              python utils/image_processor.py "$img" "albums/${{ github.event.inputs.album_name }}/images/"
+            fi
+          done
+
       - name: Verify album creation
         run: |
           echo "Verifying album creation..."
@@ -80,3 +90,15 @@ jobs:
           echo "Checking albums.json update:"
           grep -q "${{ github.event.inputs.album_name }}" photography/albums/albums.json && \
             echo "✓ Album entry found in albums.json" || echo "✗ Album not found in albums.json"
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - name: Commit and push changes
+        run: |
+          git add photography/albums/${{ github.event.inputs.album_name }}
+          git add photography/albums/albums.json
+          git commit -m "Add new album: ${{ github.event.inputs.album_name }}"
+          git push origin photography-automation

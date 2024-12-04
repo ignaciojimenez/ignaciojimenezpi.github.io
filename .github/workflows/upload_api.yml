@@ -1,0 +1,88 @@
+name: Photo Upload API
+
+on:
+  repository_dispatch:
+    types: [photo-upload]
+
+permissions:
+  contents: write
+
+jobs:
+  process_upload:
+    runs-on: ubuntu-latest
+    steps:
+      # First checkout the upload branch that has the original images
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.client_payload.branch_name }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pillow jsonschema requests
+          
+      - name: Process album
+        id: process_album
+        run: |
+          cd photography
+          # Use our existing create_album script which handles everything
+          python utils/workflow_runner.py \
+            "${{ github.event.client_payload.album_name }}" \
+            "${{ github.event.client_payload.album_title }}" \
+            "${{ github.event.client_payload.description }}" \
+            "${{ github.event.client_payload.date }}" \
+            "albums/${{ github.event.client_payload.album_name }}/images" \
+            "${{ github.event.client_payload.cover_image }}"
+          
+      - name: Verify Album
+        id: verify
+        run: |
+          cd photography
+          echo "Verifying album structure and contents..."
+          python -c "from utils.verify_album import verify_album; exit(0 if verify_album('${{ github.event.client_payload.album_name }}') else 1)"
+          
+      - name: Configure Git
+        if: success()
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - name: Commit processed album
+        if: success()
+        run: |
+          git add photography/albums/${{ github.event.client_payload.album_name }}
+          git add photography/albums/albums.json
+          git commit -m "Process album: ${{ github.event.client_payload.album_name }}"
+      
+      # Checkout photography-automation branch and merge changes
+      - name: Merge to photography-automation
+        if: success()
+        run: |
+          # Save current changes
+          git stash
+          
+          # Checkout target branch
+          git fetch origin
+          git checkout photography-automation
+          git pull origin photography-automation
+          
+          # Merge changes from upload branch
+          git merge --no-ff ${{ github.event.client_payload.branch_name }} -m "Merge processed album: ${{ github.event.client_payload.album_name }}"
+          
+          # Push changes
+          git push origin photography-automation
+          
+          # Delete the temporary upload branch
+          git push origin --delete ${{ github.event.client_payload.branch_name }}
+        
+      - name: Handle Failure
+        if: failure()
+        run: |
+          echo "Album processing failed. Cleaning up..."
+          # Delete the temporary branch on failure
+          git push origin --delete ${{ github.event.client_payload.branch_name }} || true
