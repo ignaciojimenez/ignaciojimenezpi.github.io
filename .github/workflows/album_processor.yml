@@ -47,65 +47,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install pillow jsonschema
           
-      - name: Verify Python environment
-        run: |
-          echo "Python version:"
-          python --version
-          echo "\nPillow version:"
-          python -c "from PIL import Image; print(Image.__version__)"
-          echo "\nJSON Schema version:"
-          python -c "import jsonschema; print(jsonschema.__version__)"
-          
-      - name: Verify repository structure
-        run: |
-          echo "Checking repository structure..."
-          echo "\nUtils directory contents:"
-          ls -l photography/utils/
-          echo "\nAlbums directory:"
-          ls -l photography/albums/
-          echo "\nChecking create_album.py:"
-          test -f photography/utils/create_album.py && echo " create_album.py exists" || echo " create_album.py not found"
-          test -x photography/utils/create_album.py && echo " create_album.py is executable" || echo " create_album.py not executable"
-          
       - name: Create temporary directory for images
         run: |
           mkdir -p "/tmp/album_images/${{ github.event.inputs.album_name }}"
           echo "Created temporary directory: /tmp/album_images/${{ github.event.inputs.album_name }}"
-          echo "Directory permissions:"
-          ls -ld "/tmp/album_images/${{ github.event.inputs.album_name }}"
           
       - name: Create album using existing script
         env:
           PYTHONPATH: ${{ github.workspace }}/photography/utils
         run: |
-          echo "Running create_album.py with parameters:"
-          echo "  - name: ${{ github.event.inputs.album_name }}"
-          echo "  - title: ${{ github.event.inputs.album_title }}"
-          echo "  - date: ${{ github.event.inputs.album_date }}"
-          echo "  - description: ${{ github.event.inputs.album_description }}"
-          echo "  - image-dir: /tmp/album_images/${{ github.event.inputs.album_name }}"
-          echo "  - cover-image: ${{ github.event.inputs.cover_image }}"
-          echo "\nExecuting script..."
-          
-          # Create a temporary wrapper script to handle imports
-          cat > /tmp/run_album.py << 'EOF'
-import sys
-import os
-sys.path.insert(0, os.environ['PYTHONPATH'])
-from create_album import create_album
-
-if __name__ == '__main__':
-    create_album(
-        album_name=sys.argv[1],
-        title=sys.argv[2],
-        description=sys.argv[3],
-        date=sys.argv[4],
-        image_dir=sys.argv[5],
-        cover_image=sys.argv[6] if len(sys.argv) > 6 else None
-    )
-EOF
-          
-          python /tmp/run_album.py \
+          cd photography/utils
+          python workflow_runner.py \
             "${{ github.event.inputs.album_name }}" \
             "${{ github.event.inputs.album_title }}" \
             "${{ github.event.inputs.album_description }}" \
@@ -118,17 +70,15 @@ EOF
           echo "Verifying album creation..."
           ALBUM_DIR="photography/albums/${{ github.event.inputs.album_name }}"
           
-          echo "\nChecking album directory structure:"
-          ls -R "$ALBUM_DIR"
+          echo "Checking album directory structure:"
+          ls -R "$ALBUM_DIR" || echo "Album directory not found"
           
-          echo "\nChecking index.html:"
-          test -f "$ALBUM_DIR/index.html" && echo " index.html exists" || echo " index.html not found"
+          echo "Checking index.html:"
+          test -f "$ALBUM_DIR/index.html" && echo "✓ index.html exists" || echo "✗ index.html not found"
           
-          echo "\nChecking images directory:"
-          test -d "$ALBUM_DIR/images" && echo " images directory exists" || echo " images directory not found"
+          echo "Checking images directory:"
+          test -d "$ALBUM_DIR/images" && echo "✓ images directory exists" || echo "✗ images directory not found"
           
-          echo "\nChecking albums.json update:"
+          echo "Checking albums.json update:"
           grep -q "${{ github.event.inputs.album_name }}" photography/albums/albums.json && \
-            echo " Album entry found in albums.json" || echo " Album not found in albums.json"
-          
-          echo "\nAlbum creation verification complete."
+            echo "✓ Album entry found in albums.json" || echo "✗ Album not found in albums.json"
