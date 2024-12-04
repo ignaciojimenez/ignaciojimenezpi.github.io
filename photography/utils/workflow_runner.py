@@ -2,7 +2,10 @@
 
 import sys
 import os
-from create_album import create_album
+
+# Add the parent directory to Python path to make the utils package importable
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.create_album import create_album
 
 if __name__ == '__main__':
     create_album(

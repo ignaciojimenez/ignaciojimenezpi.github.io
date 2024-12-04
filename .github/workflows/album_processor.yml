@@ -53,11 +53,9 @@ jobs:
           echo "Created temporary directory: /tmp/album_images/${{ github.event.inputs.album_name }}"
           
       - name: Create album using existing script
-        env:
-          PYTHONPATH: ${{ github.workspace }}/photography/utils
         run: |
-          cd photography/utils
-          python workflow_runner.py \
+          cd photography
+          python utils/workflow_runner.py \
             "${{ github.event.inputs.album_name }}" \
             "${{ github.event.inputs.album_title }}" \
             "${{ github.event.inputs.album_description }}" \
