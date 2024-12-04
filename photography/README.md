@@ -44,7 +44,39 @@ Each album in `albums.json` has the following structure:
 
 ## Adding a New Album
 
-### First Time Setup
+### Using GitHub Actions (Recommended)
+
+You can create new albums using the GitHub Actions workflow either through the web interface or using the GitHub CLI.
+
+#### Using GitHub CLI
+```bash
+gh workflow run album_processor.yml --ref photography-automation \
+  -f album_name="your-album-name" \
+  -f album_title="Your Album Title" \
+  -f album_date="YYYY-MM-DD" \
+  -f album_description="Your album description" \
+  -f cover_image=""
+```
+
+Required parameters:
+- `album_name`: URL-friendly name for the album (e.g., "winter-2023")
+- `album_title`: Display title for the album (e.g., "Winter Adventures 2023")
+- `album_date`: Date in YYYY-MM-DD format
+
+Optional parameters:
+- `album_description`: Description of the album
+- `cover_image`: Name of the cover image file (if empty, first image will be used)
+
+#### Using GitHub Web Interface
+1. Go to the "Actions" tab in the repository
+2. Click on the "Process New Album" workflow
+3. Click "Run workflow"
+4. Fill in the required parameters
+5. Click "Run workflow"
+
+Note: The workflow will create the album structure but will fail if no images are present in the source directory. This is expected behavior - you'll need to add images to the album directory after it's created.
+
+### Manual Setup (Alternative)
 
 1. Create Python virtual environment (only needed once):
 ```bash
@@ -54,14 +86,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Creating an Album
-
-The script will:
-1. Create album directory structure
-2. Generate responsive images and WebP versions
-3. Extract and store image metadata
-4. Update albums.json automatically
-
+2. Run the create_album script:
 ```bash
 python -m utils.create_album "album-name" \
   --title "Album Title" \
