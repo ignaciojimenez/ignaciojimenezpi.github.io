@@ -61,6 +61,37 @@
         "urban/images/urban-stock-9.jpg",
         "urban/images/urban-stock-10.jpg"
       ]
+    },
+    {
+      "id": "new-test",
+      "title": "New test album",
+      "description": "Just testing this stuff",
+      "date": "2011-01-01",
+      "coverImage": "new-test/images/city-patterns.jpg",
+      "images": [
+        "new-test/images/city-patterns.jpg",
+        "new-test/images/downtown.jpg",
+        "new-test/images/urban-minimalism.jpg",
+        "new-test/images/urban-stock-10.jpg",
+        "new-test/images/modern-architecture.jpg",
+        "new-test/images/urban-stock-9.jpg",
+        "new-test/images/urban-stock-8.jpg",
+        "new-test/images/city-reflections.jpg",
+        "new-test/images/city-streets.jpg",
+        "new-test/images/urban-abstract.jpg",
+        "new-test/images/urban-stock-1.jpg",
+        "new-test/images/urban-geometry.jpg",
+        "new-test/images/urban-stock-3.jpg",
+        "new-test/images/urban-stock-2.jpg",
+        "new-test/images/urban-perspective.jpg",
+        "new-test/images/urban-stock-6.jpg",
+        "new-test/images/urban-stock-7.jpg",
+        "new-test/images/urban-details.jpg",
+        "new-test/images/urban-stock-5.jpg",
+        "new-test/images/urban-stock-4.jpg",
+        "new-test/images/city-lights.jpg",
+        "new-test/images/city-skyline.jpg"
+      ]
     }
   ]
 }
