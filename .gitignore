@@ -1,9 +1,30 @@
 .DS_Store
-node_modules/
 *.log
 
 # Python virtual environment
 photography/venv/
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python distribution/packaging
+dist/
+build/
+*.egg-info/
+*.egg
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
 
 # Test files
 photography/test-images/
