@@ -3,10 +3,10 @@
 import os
 import sys
 import json
-from pathlib import Path
-import logging
 import shutil
+import logging
 import argparse
+from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime
 
@@ -192,9 +192,56 @@ def add_images_to_album(album_name: str, image_dir: str) -> bool:
         logger.error(f"Failed to add images: {e}")
         return False
 
+def delete_album(album_name: str) -> bool:
+    """Delete an album and all its associated files and metadata."""
+    success = False
+    try:
+        # Remove from albums.json first
+        if ALBUMS_JSON.exists():
+            try:
+                with open(ALBUMS_JSON, 'r') as f:
+                    data = json.load(f)
+                
+                # Find and remove the album from the albums array
+                if 'albums' in data:
+                    original_length = len(data['albums'])
+                    data['albums'] = [album for album in data['albums'] if album.get('id') != album_name]
+                    
+                    if len(data['albums']) < original_length:
+                        with open(ALBUMS_JSON, 'w') as f:
+                            json.dump(data, f, indent=2)
+                        logger.info(f"Removed '{album_name}' from albums.json")
+                        success = True
+            except Exception as e:
+                logger.error(f"Failed to update albums.json: {e}")
+                return False
+
+        # Try to delete album directory if it exists
+        album_dir = ALBUMS_DIR / album_name
+        if album_dir.exists():
+            shutil.rmtree(album_dir)
+            logger.info(f"Deleted album directory: {album_dir}")
+            success = True
+
+        # Try to delete album HTML file if it exists
+        album_html = ALBUMS_DIR / f"{album_name}.html"
+        if album_html.exists():
+            album_html.unlink()
+            logger.info(f"Deleted album HTML file: {album_html}")
+            success = True
+
+        if not success:
+            logger.warning(f"Album '{album_name}' not found in filesystem or metadata")
+            
+        return success
+
+    except Exception as e:
+        logger.error(f"Failed to delete album: {e}")
+        return False
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Create a new photo album or add images to an existing album',
+        description='Create, modify, or delete photo albums',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -202,7 +249,10 @@ Examples:
     %(prog)s new-album --title "My New Album" --description "Photos from my trip" --date 2023-12-25 --images ./photos
 
     # Add images to existing album
-    %(prog)s --add existing-album --images ./more-photos
+    %(prog)s existing-album --add --images ./more-photos
+
+    # Delete an album
+    %(prog)s existing-album --delete
     """
     )
     
@@ -213,10 +263,17 @@ Examples:
     parser.add_argument('--images', help='Directory containing images to process')
     parser.add_argument('--cover', help='Cover image filename (must be in images directory)')
     parser.add_argument('--add', action='store_true', help='Add images to existing album')
+    parser.add_argument('--delete', action='store_true', help='Delete the specified album')
     
     args = parser.parse_args()
     
-    if args.add:
+    if args.delete:
+        if delete_album(args.album_name):
+            print(f"Successfully deleted album: {args.album_name}")
+        else:
+            print("Failed to delete album")
+            sys.exit(1)
+    elif args.add:
         if not args.images:
             parser.error("--images is required when adding to an album")
         
