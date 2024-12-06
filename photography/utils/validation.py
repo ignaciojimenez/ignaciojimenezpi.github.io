@@ -7,7 +7,7 @@ from datetime import datetime
 import jsonschema
 from PIL import Image
 import logging
-from .config import METADATA_SCHEMA, ALBUM_SCHEMA, ALLOWED_EXTENSIONS
+from config import METADATA_SCHEMA, ALBUM_SCHEMA, ALLOWED_EXTENSIONS
 
 # Configure logging
 logging.basicConfig(
