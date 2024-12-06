@@ -63,8 +63,14 @@ class ImageProcessor:
         for size_name, size_config in RESPONSIVE_SIZES.items():
             target_width = size_config['width']
             
-            # Skip if original is smaller
+            # If original is smaller, use original dimensions
             if img.width <= target_width:
+                versions[size_name] = {
+                    "path": str(source_path.relative_to(self.album_dir)),
+                    "width": img.width,
+                    "height": img.height,
+                    "webp": str(source_path.with_suffix('.webp').relative_to(self.album_dir))
+                }
                 continue
             
             # Calculate height maintaining aspect ratio
