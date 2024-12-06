@@ -10,14 +10,14 @@ import argparse
 from typing import Dict, List, Optional
 from datetime import datetime
 
-from .config import BASE_DIR, ALBUMS_DIR, ALBUMS_JSON
-from .validation import (
+from config import BASE_DIR, ALBUMS_DIR, ALBUMS_JSON
+from validation import (
     validate_album_data,
     validate_album_structure,
     validate_image_paths,
     ValidationError
 )
-from .image_processor import ImageProcessor
+from image_processor import ImageProcessor
 
 # Configure logging
 logging.basicConfig(

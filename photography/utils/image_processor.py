@@ -6,8 +6,8 @@ from PIL import Image, ImageOps
 import logging
 from concurrent.futures import ThreadPoolExecutor
 import json
-from .config import RESPONSIVE_SIZES, JPEG_QUALITY, WEBP_QUALITY
-from .validation import validate_image_file, validate_metadata
+from config import RESPONSIVE_SIZES, JPEG_QUALITY, WEBP_QUALITY
+from validation import validate_image_file, validate_metadata
 
 # Configure logging
 logging.basicConfig(
