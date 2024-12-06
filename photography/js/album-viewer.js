@@ -392,11 +392,13 @@ class AlbumViewer {
         const imageData = window.imagesData[index];
         
         if (imageData.metadata?.responsive) {
-            // For modal view, use large or original depending on screen size
-            const srcset = `${imageData.metadata.responsive.large.path} ${imageData.metadata.responsive.large.width}w, ${imageData.metadata.original.path} ${imageData.metadata.original.width}w`;
+            // For modal view, use the largest available size or original
+            const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
+            const largeWidth = imageData.metadata.responsive.large?.width || imageData.metadata.original.width;
+            const srcset = `${largePath} ${largeWidth}w, ${imageData.metadata.original.path} ${imageData.metadata.original.width}w`;
             modalImage.srcset = srcset;
             modalImage.sizes = '100vw'; // Modal takes full viewport width
-            modalImage.src = imageData.metadata.responsive.large.path; // Fallback
+            modalImage.src = largePath || imageData.path; // Fallback
         } else {
             modalImage.src = imageData.path;
         }
