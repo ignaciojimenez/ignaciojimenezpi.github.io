@@ -45,8 +45,8 @@ def validate_metadata(metadata: Dict) -> None:
 def validate_album_data(
     album_id: str,
     title: str,
-    description: str,
     date: str,
+    description: Optional[str] = "",
     cover_image: Optional[str] = None,
     images: Optional[List[str]] = None
 ) -> Dict:
@@ -58,7 +58,7 @@ def validate_album_data(
         album_data = {
             "id": album_id,
             "title": title,
-            "description": description,
+            "description": description or "",
             "date": date,
             "coverImage": cover_image or "",
             "images": images or []
