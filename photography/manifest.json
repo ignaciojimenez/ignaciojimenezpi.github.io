@@ -1,0 +1,21 @@
+{
+  "name": "Ignacio Jiménez Pi Photography",
+  "short_name": "Photography",
+  "description": "Film photography portfolio by Ignacio Jiménez Pi",
+  "start_url": "/photography/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
