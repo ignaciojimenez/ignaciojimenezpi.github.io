@@ -392,7 +392,7 @@ class AlbumViewer {
         modalContent.appendChild(nextButton);
         
         const closeButton = document.createElement('button');
-        closeButton.className = 'close-button';
+        closeButton.className = 'modal-close';
         closeButton.setAttribute('aria-label', 'Close modal');
         closeButton.textContent = '×';
         modalContent.appendChild(closeButton);
@@ -409,7 +409,8 @@ class AlbumViewer {
                 #imageModal.active { display: flex !important; }
                 #imageModal .modal-content { position: relative; margin: auto; max-width: 90%; max-height: 90%; }
                 #imageModal .modal-content img { max-width: 100%; max-height: 90vh; display: block; margin: 0 auto; }
-                #imageModal .nav-button { 
+                #imageModal .modal-prev,
+                #imageModal .modal-next { 
                     position: absolute !important; 
                     top: 50% !important; 
                     transform: translateY(-50%) !important; 
@@ -421,19 +422,20 @@ class AlbumViewer {
                     font-size: 1.5rem !important;
                     z-index: 1001 !important;
                 }
-                #imageModal .nav-button.hidden,
-                #imageModal button.nav-button.hidden,
-                #prevButton.hidden,
-                #nextButton.hidden { 
+                #imageModal .modal-prev.hidden,
+                #imageModal .modal-next.hidden { 
                     display: none !important;
                     opacity: 0 !important;
                     visibility: hidden !important;
                     pointer-events: none !important;
                 }
-                #imageModal .nav-button:hover { background: rgba(255,255,255,0.2) !important; }
-                #imageModal .prev { left: 1rem !important; }
-                #imageModal .next { right: 1rem !important; }
-                #imageModal .close-button { 
+                #imageModal .modal-prev:hover,
+                #imageModal .modal-next:hover { 
+                    background: rgba(255,255,255,0.2) !important; 
+                }
+                #imageModal .modal-prev { left: 1rem !important; }
+                #imageModal .modal-next { right: 1rem !important; }
+                #imageModal .modal-close { 
                     position: absolute !important; 
                     top: -2rem !important; 
                     right: 0 !important; 
@@ -536,7 +538,7 @@ class AlbumViewer {
     setupEventListeners() {
         if (this.modal) {
             // Close button
-            const closeButton = this.modal.querySelector('.close-button');
+            const closeButton = this.modal.querySelector('.modal-close');
             if (closeButton) {
                 closeButton.addEventListener('click', () => this.closeModal());
             } else {
