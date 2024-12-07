@@ -4,12 +4,23 @@ class AlbumViewer {
         this.modal = document.getElementById('imageModal');
         this.gallery = document.getElementById('gallery');
         this.imageBuffer = new Map();
-        this.setupEventListeners();
         this.targetHeight = 315;
         this.isResizing = false;
         this.albumId = this.getAlbumIdFromUrl();
         
-        // Create intersection observer
+        // Create modal if it doesn't exist
+        if (!this.modal) {
+            this.createModal();
+            this.modal = document.getElementById('imageModal');
+        }
+        
+        // Initialize button references
+        this.initializeButtonReferences();
+        
+        // Setup event listeners
+        this.setupEventListeners();
+        
+        // Create intersection observer for lazy loading
         this.observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -30,6 +41,7 @@ class AlbumViewer {
             }
         }, 150);
 
+        // Setup resize handling
         window.addEventListener('resize', () => {
             if (!this.isResizing) {
                 this.isResizing = true;
@@ -47,8 +59,6 @@ class AlbumViewer {
         const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
         const parts = cleanPath.split('/');
         const albumId = parts[parts.length - 1];
-        console.log('Clean path:', cleanPath);
-        console.log('Album ID:', albumId);
         return albumId;
     }
 
@@ -92,11 +102,9 @@ class AlbumViewer {
             // Load album metadata
             let metadata = null;
             try {
-                console.log('Loading metadata for album:', this.albumId);
                 const metadataResponse = await fetch(`/photography/albums/${this.albumId}/metadata.json`);
                 if (metadataResponse.ok) {
                     metadata = await metadataResponse.json();
-                    console.log('Raw metadata:', metadata);
                 }
             } catch (error) {
                 console.warn('Could not load metadata:', error);
@@ -114,12 +122,10 @@ class AlbumViewer {
             // Process images with metadata if available
             window.imagesData = album.images.map(imagePath => {
                 const filename = imagePath.split('/').pop();
-                console.log('Processing image:', filename, 'from path:', imagePath);
                 
                 // Get metadata for this image
                 const imageMetadata = metadata?.[filename];
-                console.log('Found metadata:', imageMetadata);
-
+                
                 if (imageMetadata) {
                     // Create a deep copy to avoid modifying the original metadata
                     const processedMetadata = JSON.parse(JSON.stringify(imageMetadata));
@@ -162,7 +168,6 @@ class AlbumViewer {
                         });
                     }
                     
-                    console.log('Processed metadata:', processedMetadata);
                     return {
                         filename,
                         path: imagePath,
@@ -177,7 +182,6 @@ class AlbumViewer {
                 };
             });
             
-            console.log('Processed image data:', window.imagesData);
             this.processImages(window.imagesData);
         } catch (error) {
             console.error('Error loading album:', error);
@@ -316,10 +320,6 @@ class AlbumViewer {
         const imageData = window.imagesData[index];
         
         if (imageData.metadata?.responsive) {
-            console.log('Creating srcset for image:', filename);
-            console.log('Image data:', imageData);
-            console.log('Responsive data:', imageData.metadata.responsive);
-            
             // Create srcset for responsive images including the original
             const srcsetEntries = [];
             
@@ -337,19 +337,16 @@ class AlbumViewer {
                 srcsetEntries.push(`${imageData.metadata.original.path} ${imageData.metadata.original.width}w`);
             }
             
-            console.log('Generated srcset entries:', srcsetEntries);
-            
             if (srcsetEntries.length > 0) {
                 img.srcset = srcsetEntries.join(', ');
                 img.sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
                 // Use medium size as fallback, or the first available size
-                const mediumPath = imageData.metadata.responsive.medium?.path || imageData.metadata.responsive[sizes.find(size => imageData.metadata.responsive[size]?.path)]?.path;
+                const mediumPath = imageData.metadata.responsive.medium?.path || imageData.metadata.original.path;
                 img.src = mediumPath || imageData.path;
             } else {
                 img.src = imageData.path;
             }
         } else {
-            console.log('No metadata found for image:', imageData);
             img.src = imageData.path;
         }
         
@@ -357,18 +354,208 @@ class AlbumViewer {
         img.loading = 'lazy';
         
         imageCard.appendChild(img);
-        imageCard.addEventListener('click', () => this.openModal(index));
+        imageCard.addEventListener('click', () => this.showModal(index));
         
         return imageCard;
     }
 
-    setupEventListeners() {
-        document.addEventListener('keydown', (e) => this.handleKeyPress(e));
-        this.modal.addEventListener('click', (e) => {
-            if (e.target === this.modal) {
-                this.closeModal();
+    createModal() {
+        // Remove existing modal if it exists
+        const existingModal = document.getElementById('imageModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Create the modal structure
+        const modal = document.createElement('div');
+        modal.id = 'imageModal';
+        modal.className = 'modal';
+        
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content';
+        
+        const img = document.createElement('img');
+        img.id = 'modalImage';
+        img.alt = '';
+        modalContent.appendChild(img);
+        
+        const prevButton = document.createElement('button');
+        prevButton.className = 'modal-prev';
+        prevButton.setAttribute('aria-label', 'Previous image');
+        prevButton.textContent = '←';
+        modalContent.appendChild(prevButton);
+        
+        const nextButton = document.createElement('button');
+        nextButton.className = 'modal-next';
+        nextButton.setAttribute('aria-label', 'Next image');
+        nextButton.textContent = '→';
+        modalContent.appendChild(nextButton);
+        
+        const closeButton = document.createElement('button');
+        closeButton.className = 'close-button';
+        closeButton.setAttribute('aria-label', 'Close modal');
+        closeButton.textContent = '×';
+        modalContent.appendChild(closeButton);
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // Add styles if not already present
+        if (!document.getElementById('modalStyles')) {
+            const style = document.createElement('style');
+            style.id = 'modalStyles';
+            style.textContent = `
+                #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; }
+                #imageModal.active { display: flex !important; }
+                #imageModal .modal-content { position: relative; margin: auto; max-width: 90%; max-height: 90%; }
+                #imageModal .modal-content img { max-width: 100%; max-height: 90vh; display: block; margin: 0 auto; }
+                #imageModal .nav-button { 
+                    position: absolute !important; 
+                    top: 50% !important; 
+                    transform: translateY(-50%) !important; 
+                    background: rgba(255,255,255,0.1) !important; 
+                    color: white !important; 
+                    border: none !important; 
+                    padding: 1rem !important; 
+                    cursor: pointer !important; 
+                    font-size: 1.5rem !important;
+                    z-index: 1001 !important;
+                }
+                #imageModal .nav-button.hidden,
+                #imageModal button.nav-button.hidden,
+                #prevButton.hidden,
+                #nextButton.hidden { 
+                    display: none !important;
+                    opacity: 0 !important;
+                    visibility: hidden !important;
+                    pointer-events: none !important;
+                }
+                #imageModal .nav-button:hover { background: rgba(255,255,255,0.2) !important; }
+                #imageModal .prev { left: 1rem !important; }
+                #imageModal .next { right: 1rem !important; }
+                #imageModal .close-button { 
+                    position: absolute !important; 
+                    top: -2rem !important; 
+                    right: 0 !important; 
+                    color: white !important; 
+                    background: none !important; 
+                    border: none !important;
+                    font-size: 2rem !important; 
+                    cursor: pointer !important; 
+                    padding: 0.5rem !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    initializeButtonReferences() {
+        if (this.modal) {
+            this.prevButton = this.modal.querySelector('.modal-prev');
+            this.nextButton = this.modal.querySelector('.modal-next');
+            if (!this.prevButton || !this.nextButton) {
+                console.warn('Navigation buttons not found in modal');
             }
+        } else {
+            console.warn('Modal not found during button initialization');
+        }
+    }
+
+    updateNavigationButtons() {
+        const prevButton = this.modal.querySelector('.modal-prev');
+        const nextButton = this.modal.querySelector('.modal-next');
+        
+        if (prevButton && nextButton) {
+            // At first image
+            if (this.currentImageIndex === 0) {
+                prevButton.style.display = 'none';
+                prevButton.classList.add('hidden');
+            } else {
+                prevButton.style.display = 'block';
+                prevButton.classList.remove('hidden');
+            }
+            
+            // At last image
+            if (this.currentImageIndex === window.imagesData.length - 1) {
+                nextButton.style.display = 'none';
+                nextButton.classList.add('hidden');
+            } else {
+                nextButton.style.display = 'block';
+                nextButton.classList.remove('hidden');
+            }
+        }
+    }
+
+    showModal(index) {
+        this.currentImageIndex = index;
+        this.modal.classList.add('active');
+        this.showImage(index);
+    }
+
+    closeModal() {
+        this.modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    showImage(index) {
+        const modalImage = document.getElementById('modalImage');
+        const imageData = window.imagesData[index];
+        
+        if (imageData.metadata?.responsive) {
+            const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
+            const largeWidth = imageData.metadata.responsive.large?.width || imageData.metadata.original.width;
+            const srcset = `${largePath} ${largeWidth}w, ${imageData.metadata.original.path} ${imageData.metadata.original.width}w`;
+            modalImage.srcset = srcset;
+            modalImage.sizes = '100vw';
+            modalImage.src = largePath || imageData.path;
+        } else {
+            modalImage.src = imageData.path;
+        }
+        
+        this.currentImageIndex = index;
+        // Force button update after setting new index
+        requestAnimationFrame(() => {
+            this.updateNavigationButtons();
         });
+    }
+
+    showNextImage() {
+        const nextIndex = this.currentImageIndex + 1;
+        if (nextIndex < window.imagesData.length) {
+            this.showImage(nextIndex);
+        }
+    }
+
+    showPrevImage() {
+        const prevIndex = this.currentImageIndex - 1;
+        if (prevIndex >= 0) {
+            this.showImage(prevIndex);
+        }
+    }
+
+    setupEventListeners() {
+        if (this.modal) {
+            // Close button
+            const closeButton = this.modal.querySelector('.close-button');
+            if (closeButton) {
+                closeButton.addEventListener('click', () => this.closeModal());
+            } else {
+                console.warn('Close button not found');
+            }
+
+            // Navigation buttons
+            if (this.prevButton && this.nextButton) {
+                this.prevButton.addEventListener('click', () => this.showPrevImage());
+                this.nextButton.addEventListener('click', () => this.showNextImage());
+            } else {
+                console.warn('Navigation buttons not found during event setup');
+            }
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+        } else {
+            console.warn('Modal not found during event listener setup');
+        }
     }
 
     handleKeyPress(e) {
@@ -385,45 +572,5 @@ class AlbumViewer {
                 this.closeModal();
                 break;
         }
-    }
-
-    showImage(index) {
-        const modalImage = document.getElementById('modalImage');
-        const imageData = window.imagesData[index];
-        
-        if (imageData.metadata?.responsive) {
-            // For modal view, use the largest available size or original
-            const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
-            const largeWidth = imageData.metadata.responsive.large?.width || imageData.metadata.original.width;
-            const srcset = `${largePath} ${largeWidth}w, ${imageData.metadata.original.path} ${imageData.metadata.original.width}w`;
-            modalImage.srcset = srcset;
-            modalImage.sizes = '100vw'; // Modal takes full viewport width
-            modalImage.src = largePath || imageData.path; // Fallback
-        } else {
-            modalImage.src = imageData.path;
-        }
-        
-        this.currentImageIndex = index;
-    }
-
-    openModal(index) {
-        this.modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        this.showImage(index);
-    }
-
-    closeModal() {
-        this.modal.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-
-    showNextImage() {
-        const nextIndex = (this.currentImageIndex + 1) % window.imagesData.length;
-        this.showImage(nextIndex);
-    }
-
-    showPrevImage() {
-        const prevIndex = (this.currentImageIndex - 1 + window.imagesData.length) % window.imagesData.length;
-        this.showImage(prevIndex);
     }
 }
