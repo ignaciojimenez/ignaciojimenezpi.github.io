@@ -116,19 +116,23 @@ def process_images(source_dir: str, album_dir: Path) -> List[str]:
 def create_album(
     album_name: str,
     title: str,
-    description: str,
     date: str,
     image_dir: str,
+    description: Optional[str] = "",
     cover_image: Optional[str] = None
 ) -> bool:
     """Create a new album with optimized images."""
     try:
+        # Validate input directory exists
+        if not os.path.isdir(image_dir):
+            raise ValidationError(f"Image directory does not exist: {image_dir}")
+            
         # Validate and create album data
         album_data = validate_album_data(
             album_id=album_name,
             title=title,
-            description=description,
-            date=date
+            date=date,
+            description=description
         )
         
         logger.info(f"Creating album: {title} ({album_name})")
@@ -138,6 +142,9 @@ def create_album(
         
         # Process images
         image_files = process_images(image_dir, album_dir)
+        
+        if not image_files:
+            raise ValidationError(f"No valid images found in directory: {image_dir}")
         
         # Format image paths relative to album
         album_data['images'] = [f"{album_name}/images/{img}" for img in image_files]
@@ -156,8 +163,11 @@ def create_album(
         logger.info(f"Successfully created album: {album_name}")
         return True
         
+    except ValidationError as e:
+        logger.error(f"Validation error: {e}")
+        return False
     except Exception as e:
-        logger.error(f"Failed to create album: {e}")
+        logger.error(f"Unexpected error while creating album: {e}")
         return False
 
 def add_images_to_album(album_name: str, image_dir: str) -> bool:
@@ -283,15 +293,15 @@ Examples:
             print("Failed to add images to album")
             sys.exit(1)
     else:
-        if not all([args.title, args.description, args.date, args.images]):
-            parser.error("--title, --description, --date, and --images are required when creating a new album")
+        if not all([args.title, args.date, args.images]):
+            parser.error("--title, --date, and --images are required when creating a new album")
         
         if create_album(
             album_name=args.album_name,
             title=args.title,
-            description=args.description,
             date=args.date,
             image_dir=args.images,
+            description=args.description,
             cover_image=args.cover
         ):
             print(f"Successfully created album: {args.album_name}")
