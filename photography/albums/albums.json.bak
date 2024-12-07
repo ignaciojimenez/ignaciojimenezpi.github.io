@@ -1,0 +1,89 @@
+{
+  "albums": [
+    {
+      "id": "urban-test",
+      "title": "Urban test",
+      "description": "",
+      "date": "2001-03-03",
+      "coverImage": "urban-test/images/city-patterns.jpg",
+      "images": [
+        "urban-test/images/city-patterns.jpg",
+        "urban-test/images/downtown.jpg",
+        "urban-test/images/urban-minimalism.jpg",
+        "urban-test/images/modern-architecture.jpg",
+        "urban-test/images/city-reflections.jpg",
+        "urban-test/images/city-streets.jpg",
+        "urban-test/images/urban-abstract.jpg",
+        "urban-test/images/urban-geometry.jpg",
+        "urban-test/images/urban-perspective.jpg",
+        "urban-test/images/urban-details.jpg",
+        "urban-test/images/city-lights.jpg",
+        "urban-test/images/city-skyline.jpg",
+        "urban-test/images/urban-stock-1.jpg",
+        "urban-test/images/urban-stock-2.jpg",
+        "urban-test/images/urban-stock-3.jpg",
+        "urban-test/images/urban-stock-4.jpg",
+        "urban-test/images/urban-stock-5.jpg",
+        "urban-test/images/urban-stock-6.jpg",
+        "urban-test/images/urban-stock-7.jpg",
+        "urban-test/images/urban-stock-8.jpg",
+        "urban-test/images/urban-stock-9.jpg",
+        "urban-test/images/urban-stock-10.jpg"
+      ]
+    },
+    {
+      "id": "urban",
+      "title": "Urban Photography",
+      "description": "Exploring city landscapes and urban geometry through film photography",
+      "coverImage": "urban/images/modern-architecture.jpg",
+      "date": "2023-12-01",
+      "images": [
+        "urban/images/city-patterns.jpg",
+        "urban/images/downtown.jpg",
+        "urban/images/urban-minimalism.jpg",
+        "urban/images/modern-architecture.jpg",
+        "urban/images/city-reflections.jpg",
+        "urban/images/city-streets.jpg",
+        "urban/images/urban-abstract.jpg",
+        "urban/images/urban-geometry.jpg",
+        "urban/images/urban-perspective.jpg",
+        "urban/images/urban-details.jpg",
+        "urban/images/city-lights.jpg",
+        "urban/images/city-skyline.jpg",
+        "urban/images/urban-stock-1.jpg",
+        "urban/images/urban-stock-2.jpg",
+        "urban/images/urban-stock-3.jpg",
+        "urban/images/urban-stock-4.jpg",
+        "urban/images/urban-stock-5.jpg",
+        "urban/images/urban-stock-6.jpg",
+        "urban/images/urban-stock-7.jpg",
+        "urban/images/urban-stock-8.jpg",
+        "urban/images/urban-stock-9.jpg",
+        "urban/images/urban-stock-10.jpg"
+      ]
+    },
+    {
+      "id": "paris-may-24",
+      "title": "Paris",
+      "description": "",
+      "date": "2024-05-01",
+      "coverImage": "paris-may-24/images/IMG_3326.JPG",
+      "images": [
+        "paris-may-24/images/IMG_3326.JPG",
+        "paris-may-24/images/IMG_3285.JPG",
+        "paris-may-24/images/IMG_3324.JPG",
+        "paris-may-24/images/IMG_3269.JPG",
+        "paris-may-24/images/IMG_3309.JPG",
+        "paris-may-24/images/IMG_3320.JPG",
+        "paris-may-24/images/IMG_3268.JPG",
+        "paris-may-24/images/IMG_3322.JPG",
+        "paris-may-24/images/IMG_3299.JPG",
+        "paris-may-24/images/IMG_3310.JPG",
+        "paris-may-24/images/IMG_3304.JPG",
+        "paris-may-24/images/IMG_3274.JPG",
+        "paris-may-24/images/IMG_3315.JPG",
+        "paris-may-24/images/IMG_3302.JPG"
+      ]
+    }
+  ]
+}
