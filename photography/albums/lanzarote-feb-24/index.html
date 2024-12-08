@@ -12,6 +12,17 @@
     <link rel="manifest" href="../../../images/favicon/site.webmanifest">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="../../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +34,7 @@
         <div class="max-w-[1600px] mx-auto px-8 w-full">
             <div class="flex justify-between">
                 <div class="flex items-center">
-                    <a href="../../" class="text-xl font-light tracking-wide">IGNACIO JIMÉNEZ PI - FILM PHOTOGRAPHY</a>
+                    <a href="../../" class="text-xl font-light tracking-wide hover:text-gray-600 transition-colors" aria-label="Photography Home">IGNACIO JIMÉNEZ PI</a>
                 </div>
             </div>
         </div>
