@@ -163,21 +163,6 @@
         "chicago-23/images/000046460028.jpg",
         "chicago-23/images/000046460029.jpg"
       ]
-    },
-    {
-      "id": "andreus-40",
-      "title": "Andreu's 40",
-      "description": "",
-      "date": "2023-05-05",
-      "coverImage": "andreus-40/images/000010320029.jpg",
-      "images": [
-        "andreus-40/images/000010320029.jpg",
-        "andreus-40/images/000010320030.jpg",
-        "andreus-40/images/000010320031.jpg",
-        "andreus-40/images/000010320027.jpg",
-        "andreus-40/images/000010320026.jpg",
-        "andreus-40/images/000010320032.jpg"
-      ]
     }
   ]
 }
