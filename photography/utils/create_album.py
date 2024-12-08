@@ -9,6 +9,7 @@ import argparse
 from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime
+import tempfile
 
 from config import BASE_DIR, ALBUMS_DIR, ALBUMS_JSON
 from validation import (
@@ -170,8 +171,13 @@ def create_album(
         logger.error(f"Unexpected error while creating album: {e}")
         return False
 
-def add_images_to_album(album_name: str, image_dir: str) -> bool:
-    """Add images to an existing album."""
+def add_images_to_album(album_name: str, image_path: str) -> bool:
+    """Add images to an existing album.
+    
+    Args:
+        album_name: Name of the album to add images to
+        image_path: Path to an image file or directory containing images
+    """
     try:
         album_dir = ALBUMS_DIR / album_name
         if not album_dir.exists():
@@ -180,8 +186,15 @@ def add_images_to_album(album_name: str, image_dir: str) -> bool:
         # Validate album structure
         validate_album_structure(album_dir)
         
-        # Process new images
-        new_images = process_images(image_dir, album_dir)
+        # Create a temporary directory if image_path is a single file
+        source_path = Path(image_path)
+        if source_path.is_file():
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_path = Path(temp_dir)
+                shutil.copy2(source_path, temp_path / source_path.name)
+                new_images = process_images(temp_dir, album_dir)
+        else:
+            new_images = process_images(image_path, album_dir)
         
         # Update albums.json
         with open(ALBUMS_JSON, 'r') as f:
