@@ -7,6 +7,7 @@ class AlbumViewer {
         this.targetHeight = 315;
         this.isResizing = false;
         this.albumId = this.getAlbumIdFromUrl();
+        this.lastHeight = null; // Modified this line
         
         // Create modal if it doesn't exist
         if (!this.modal) {
@@ -33,6 +34,9 @@ class AlbumViewer {
             threshold: 0.1
         });
 
+        // Track initial width
+        let initialWidth = window.innerWidth;
+
         // Debounce resize handler
         this.debouncedResize = this.debounce(() => {
             if (window.imagesData) {
@@ -43,13 +47,21 @@ class AlbumViewer {
 
         // Setup resize handling
         window.addEventListener('resize', () => {
-            if (!this.isResizing) {
-                this.isResizing = true;
-                document.querySelectorAll('.gallery-item').forEach(item => {
-                    item.classList.add('resizing');
-                });
+            const currentWidth = window.innerWidth;
+
+            // Only trigger reflow if width has changed
+            if (currentWidth !== initialWidth) {
+                if (!this.isResizing) {
+                    this.isResizing = true;
+                    document.querySelectorAll('.gallery-item').forEach(item => {
+                        item.classList.add('resizing');
+                    });
+                }
+                this.debouncedResize();
+
+                // Update initial width
+                initialWidth = currentWidth;
             }
-            this.debouncedResize();
         });
     }
 
@@ -234,8 +246,7 @@ class AlbumViewer {
     }
 
     reflow(isInitial = false) {
-        const images = window.imagesData;
-        if (!images || images.length === 0) return;
+        if (!window.imagesData) return;
 
         const existingItems = new Map();
         if (!isInitial) {
@@ -254,7 +265,7 @@ class AlbumViewer {
         const containerWidth = this.gallery.clientWidth;
         const gap = 10;
 
-        images.forEach((image, index) => {
+        window.imagesData.forEach((image, index) => {
             const imageData = this.imageBuffer.get(image.filename);
             if (!imageData) return;
 
@@ -271,7 +282,7 @@ class AlbumViewer {
             
             currentRow.push(imageCard);
 
-            if (currentRow.length === maxImagesPerRow || index === images.length - 1) {
+            if (currentRow.length === maxImagesPerRow || index === window.imagesData.length - 1) {
                 this.createRowFromImages(currentRow, currentRowAspectRatios, this.targetHeight, containerWidth, gap);
                 currentRow = [];
                 currentRowAspectRatios = [];
@@ -284,6 +295,8 @@ class AlbumViewer {
                 item.classList.remove('resizing');
             });
         });
+
+        this.isResizing = false;
     }
 
     createRowFromImages(images, aspectRatios, targetHeight, containerWidth, gap) {
