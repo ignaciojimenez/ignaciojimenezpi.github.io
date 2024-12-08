@@ -549,6 +549,43 @@ class AlbumViewer {
     }
 
     setupEventListeners() {
+        // Existing keyboard event listener
+        document.addEventListener('keydown', this.handleKeyPress.bind(this));
+
+        // Swipe gesture support for modal
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // Touch start event
+        this.modal.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        // Touch end event
+        this.modal.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            this.handleSwipe(touchStartX, touchEndX);
+        }, { passive: true });
+
+        // Optional: Mouse swipe support for desktop
+        let mouseStartX = 0;
+        let isMouseDown = false;
+
+        this.modal.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            mouseStartX = e.screenX;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isMouseDown) return;
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isMouseDown) return;
+            isMouseDown = false;
+            this.handleSwipe(mouseStartX, e.screenX);
+        });
+
         if (this.modal) {
             const prevButton = this.modal.querySelector('.modal-prev');
             const nextButton = this.modal.querySelector('.modal-next');
@@ -577,9 +614,6 @@ class AlbumViewer {
             if (closeButton) {
                 closeButton.addEventListener('click', () => this.closeModal());
             }
-
-            // Keyboard navigation
-            document.addEventListener('keydown', (e) => this.handleKeyPress(e));
         } else {
             console.warn('Modal not found during event listener setup');
         }
@@ -598,6 +632,21 @@ class AlbumViewer {
             case 'Escape':
                 this.closeModal();
                 break;
+        }
+    }
+
+    handleSwipe(startX, endX) {
+        const threshold = 50; // Minimum distance for a swipe
+        const swipeDistance = endX - startX;
+
+        if (Math.abs(swipeDistance) > threshold) {
+            if (swipeDistance > 0) {
+                // Swipe right (previous image)
+                this.showPrevImage();
+            } else {
+                // Swipe left (next image)
+                this.showNextImage();
+            }
         }
     }
 }
