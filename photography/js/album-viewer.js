@@ -504,7 +504,9 @@ class AlbumViewer {
     showModal(index) {
         this.currentImageIndex = index;
         this.modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
         this.showImage(index);
+        this.modal.focus(); // Set focus to the modal
     }
 
     closeModal() {
@@ -550,7 +552,11 @@ class AlbumViewer {
 
     setupEventListeners() {
         // Existing keyboard event listener
-        document.addEventListener('keydown', this.handleKeyPress.bind(this));
+        document.addEventListener('keydown', (e) => {
+            if (this.modal.classList.contains('active')) {
+                this.handleKeyPress(e);
+            }
+        });
 
         // Swipe gesture support for modal
         let touchStartX = 0;
