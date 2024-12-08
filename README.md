@@ -1,14 +1,14 @@
 # Ignacio Jimenez - Personal Website
 
-My personal website hosted on GitHub Pages.
+My personal website hosted on GitHub Pages, available at [ignacio.jimenezpi.com](https://ignacio.jimenezpi.com).
 
 ## Projects
 
 ### [Music Portfolio](/music)
-A minimalist music portfolio to share some of my music projects.
+A minimalist music portfolio to share some of my music projects, available at [ignacio.jimenezpi.com/music](https://ignacio.jimenezpi.com/music).
 
 ### [Photography Portfolio](/photography)
-A minimalist photography portfolio built with modern web technologies. Features responsive images, WebP support, and efficient album management.
+A minimalist photography portfolio available at [ignacio.jimenezpi.com/photography](https://ignacio.jimenezpi.com/photography).
 
 ## Development
 
