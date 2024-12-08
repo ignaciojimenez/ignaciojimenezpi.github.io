@@ -24,11 +24,6 @@ python3 create_album.py album-name --add --images path/to/more-images
 ```bash
 python3 delete_image.py album-name image-name.jpg
 ```
-This will:
-- Remove the image from albums.json
-- Delete the image and its responsive versions
-- Update metadata.json
-- Update album cover if needed
 
 ### Delete Album
 ```bash
