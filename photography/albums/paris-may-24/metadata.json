@@ -101,6 +101,40 @@
       }
     }
   },
+  "IMG_3286.JPG": {
+    "original": {
+      "path": "images/IMG_3286.JPG",
+      "width": 2075,
+      "height": 3129,
+      "webp": "images/IMG_3286.webp"
+    },
+    "responsive": {
+      "thumbnail": {
+        "path": "responsive/thumbnail/IMG_3286.JPG",
+        "width": 400,
+        "height": 603,
+        "webp": "responsive/thumbnail/IMG_3286.webp"
+      },
+      "small": {
+        "path": "responsive/small/IMG_3286.JPG",
+        "width": 800,
+        "height": 1206,
+        "webp": "responsive/small/IMG_3286.webp"
+      },
+      "medium": {
+        "path": "responsive/medium/IMG_3286.JPG",
+        "width": 1200,
+        "height": 1809,
+        "webp": "responsive/medium/IMG_3286.webp"
+      },
+      "large": {
+        "path": "responsive/large/IMG_3286.JPG",
+        "width": 1600,
+        "height": 2412,
+        "webp": "responsive/large/IMG_3286.webp"
+      }
+    }
+  },
   "IMG_3269.JPG": {
     "original": {
       "path": "images/IMG_3269.JPG",
