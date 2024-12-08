@@ -17,12 +17,32 @@ python3 create_album.py album-name \
 
 ### Add Images to Album
 ```bash
+# Add directory of images
 python3 create_album.py album-name --add --images path/to/more-images
+
+# Add single image
+python3 create_album.py album-name --add --images path/to/single-image.jpg
 ```
 
-### Delete Image from Album
+### Change Album Cover
 ```bash
-python3 delete_image.py album-name image-name.jpg
+# Interactive selection from album images
+python3 create_album.py album-name --change-cover
+
+# Directly specify cover image
+python3 create_album.py album-name --change-cover --cover path/to/image.jpg
+```
+
+### Delete Images from Album
+```bash
+# Interactive mode - select multiple images
+python3 delete_image.py --interactive
+
+# Interactive mode with pre-selected album
+python3 delete_image.py --interactive --album album-name
+
+# Direct mode - delete single image
+python3 delete_image.py --album album-name --image image-name.jpg
 ```
 
 ### Delete Album
@@ -35,12 +55,31 @@ python3 create_album.py album-name --delete
 - Dynamic image loading
 - Mobile-friendly design
 - Automated image optimization
-- Album management utilities
+- Comprehensive album management utilities:
+  - Create and delete albums
+  - Add single images or directories
+  - Interactive image deletion
+  - Change album cover images
+  - Automatic responsive image generation
 
 ## Project Structure
 ```
 photography/
 ├── albums/              # Album content and metadata
-├── utils/              # Album management scripts
+│   ├── */              # Individual album directories
+│   │   ├── images/     # Original images
+│   │   ├── responsive/ # Responsive image versions
+│   │   └── metadata.json
+│   └── albums.json     # Album index and configuration
+├── css/                # Stylesheet directory
+│   └── styles.css      # Main stylesheet
 ├── js/                 # Frontend JavaScript
-└── index.html         # Portfolio home page
+│   ├── album-viewer.js # Album viewing functionality
+│   ├── gallery.js      # Gallery layout and interactions
+│   └── sw.js          # Service worker for offline support
+├── utils/              # Album management scripts
+│   ├── create_album.py # Album creation and modification
+│   ├── delete_image.py # Image deletion utility
+│   └── config.py       # Utility configuration
+├── index.html          # Portfolio home page
+└── manifest.json       # Progressive Web App manifest
