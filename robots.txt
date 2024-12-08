@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Allow: /photography/
 Allow: /photography/albums/
+Allow: /music/
 
 Sitemap: https://ignaciojimenezpi.github.io/sitemap.xml
