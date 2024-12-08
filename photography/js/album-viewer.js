@@ -537,20 +537,32 @@ class AlbumViewer {
 
     setupEventListeners() {
         if (this.modal) {
-            // Close button
+            const prevButton = this.modal.querySelector('.modal-prev');
+            const nextButton = this.modal.querySelector('.modal-next');
             const closeButton = this.modal.querySelector('.modal-close');
-            if (closeButton) {
-                closeButton.addEventListener('click', () => this.closeModal());
-            } else {
-                console.warn('Close button not found');
+
+            if (prevButton) {
+                prevButton.addEventListener('click', () => this.showPrevImage());
+                
+                // Add touch support for previous button
+                prevButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.showPrevImage();
+                }, { passive: false });
             }
 
-            // Navigation buttons
-            if (this.prevButton && this.nextButton) {
-                this.prevButton.addEventListener('click', () => this.showPrevImage());
-                this.nextButton.addEventListener('click', () => this.showNextImage());
-            } else {
-                console.warn('Navigation buttons not found during event setup');
+            if (nextButton) {
+                nextButton.addEventListener('click', () => this.showNextImage());
+                
+                // Add touch support for next button
+                nextButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.showNextImage();
+                }, { passive: false });
+            }
+
+            if (closeButton) {
+                closeButton.addEventListener('click', () => this.closeModal());
             }
 
             // Keyboard navigation
