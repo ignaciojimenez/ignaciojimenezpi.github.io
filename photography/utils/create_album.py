@@ -262,6 +262,80 @@ def delete_album(album_name: str) -> bool:
         logger.error(f"Failed to delete album: {e}")
         return False
 
+def change_album_cover(album_name: str, cover_image: Optional[str] = None) -> bool:
+    """Change the cover image of an existing album.
+    
+    Args:
+        album_name: Name of the album to modify
+        cover_image: Optional path to new cover image. If not provided, will show selection menu
+    """
+    try:
+        album_dir = ALBUMS_DIR / album_name
+        if not album_dir.exists():
+            raise ValidationError(f"Album not found: {album_name}")
+        
+        # Load current album data
+        with open(ALBUMS_JSON, 'r') as f:
+            data = json.load(f)
+        
+        target_album = None
+        for album in data['albums']:
+            if album['id'] == album_name:
+                target_album = album
+                break
+        
+        if not target_album:
+            raise ValidationError(f"Album {album_name} not found in albums.json")
+        
+        # If cover image provided, validate and use it
+        if cover_image:
+            if Path(cover_image).is_file():
+                # Add image to album if it's not already there
+                temp_result = add_images_to_album(album_name, cover_image)
+                if not temp_result:
+                    return False
+                cover_path = f"{album_name}/images/{Path(cover_image).name}"
+            else:
+                # Assume it's a path relative to the album
+                cover_path = cover_image
+                if not (album_dir / 'images' / Path(cover_image).name).exists():
+                    raise ValidationError(f"Cover image not found: {cover_image}")
+        else:
+            # Show selection menu
+            print("\nCurrent album images:")
+            images = target_album['images']
+            for i, img in enumerate(images, 1):
+                print(f"{i}. {Path(img).name}")
+            
+            while True:
+                try:
+                    choice = input("\nEnter the number of the image to use as cover (or 'q' to quit): ")
+                    if choice.lower() == 'q':
+                        return False
+                    
+                    idx = int(choice) - 1
+                    if 0 <= idx < len(images):
+                        cover_path = images[idx]
+                        break
+                    else:
+                        print("Invalid selection. Please try again.")
+                except ValueError:
+                    print("Please enter a valid number.")
+        
+        # Update album cover
+        target_album['coverImage'] = cover_path
+        
+        # Save changes
+        with open(ALBUMS_JSON, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        logger.info(f"Successfully updated cover image for album {album_name}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to change cover image: {e}")
+        return False
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Create, modify, or delete photo albums',
@@ -273,6 +347,12 @@ Examples:
 
     # Add images to existing album
     %(prog)s existing-album --add --images ./more-photos
+
+    # Change album cover image (interactive)
+    %(prog)s existing-album --change-cover
+
+    # Change album cover image (direct)
+    %(prog)s existing-album --change-cover --cover path/to/image.jpg
 
     # Delete an album
     %(prog)s existing-album --delete
@@ -287,6 +367,7 @@ Examples:
     parser.add_argument('--cover', help='Cover image filename (must be in images directory)')
     parser.add_argument('--add', action='store_true', help='Add images to existing album')
     parser.add_argument('--delete', action='store_true', help='Delete the specified album')
+    parser.add_argument('--change-cover', action='store_true', help='Change album cover image')
     
     args = parser.parse_args()
     
@@ -304,6 +385,12 @@ Examples:
             print(f"Successfully added images to album: {args.album_name}")
         else:
             print("Failed to add images to album")
+            sys.exit(1)
+    elif args.change_cover:
+        if change_album_cover(args.album_name, args.cover):
+            print(f"Successfully changed cover image for album: {args.album_name}")
+        else:
+            print("Failed to change cover image")
             sys.exit(1)
     else:
         if not all([args.title, args.date, args.images]):
