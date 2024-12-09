@@ -99,6 +99,39 @@
     transform: scale(1.01);
 }
 
+/* Mobile-specific styles */
+@media (hover: none) {
+    .album-metadata-mobile {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+        padding: 2rem 1rem 0.75rem;
+        color: white;
+        opacity: 1;
+        pointer-events: none;
+    }
+    
+    .album-metadata-mobile h3 {
+        font-size: 0.875rem;
+        font-weight: 300;
+        margin: 0;
+        line-height: 1.2;
+    }
+    
+    /* Hide hover overlay on touch devices */
+    @media (hover: none) {
+        .group-hover\:bg-opacity-60 {
+            background-opacity: 0 !important;
+        }
+        
+        .group-hover\:opacity-100 {
+            opacity: 0 !important;
+        }
+    }
+}
+
 .placeholder {
     position: absolute;
     top: 0;
