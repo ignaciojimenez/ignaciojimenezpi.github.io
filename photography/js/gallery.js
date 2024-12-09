@@ -159,6 +159,15 @@ function createAlbumCard(album, metadata) {
     overlay.appendChild(content);
     container.appendChild(picture || img);
     container.appendChild(overlay);
+    
+    // Add mobile-specific metadata
+    const mobileMetadata = document.createElement('div');
+    mobileMetadata.className = 'album-metadata-mobile';
+    mobileMetadata.innerHTML = `
+        <h3>${album.title}</h3>
+    `;
+    container.appendChild(mobileMetadata);
+    
     card.appendChild(container);
 
     // Add keyboard navigation
