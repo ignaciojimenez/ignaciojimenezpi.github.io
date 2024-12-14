@@ -187,7 +187,6 @@ function createAlbumCard(album, metadata) {
 }
 
 async function initGallery() {
-    console.log('initGallery');
     const albumGrid = document.getElementById('albumGrid');
     if (!albumGrid) {
         console.error('Album grid element not found');
