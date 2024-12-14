@@ -132,6 +132,25 @@
     }
 }
 
+/* Mobile Album Header */
+.album-header-mobile {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    /* Reset nav spacing */
+    nav {
+        height: 2rem !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Grid styles */
+    .gallery-grid {
+        margin-top: 0.25rem;
+    }
+}
+
 .placeholder {
     position: absolute;
     top: 0;
