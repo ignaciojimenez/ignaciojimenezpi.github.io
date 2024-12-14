@@ -216,9 +216,16 @@ async function initGallery() {
         // Clear loading state
         albumGrid.innerHTML = '';
         
+        // Sort albums by date (newest first)
+        const sortedAlbums = [...albumsData.albums].sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateB - dateA;
+        });
+        
         // Create album cards using the bundled metadata
-        for (const album of albumsData.albums) {
-            const card = createAlbumCard(album, album.metadata || { images: [] });
+        for (const album of sortedAlbums) {
+            const card = createAlbumCard(album, album.metadata || {});
             albumGrid.appendChild(card);
         }
         
