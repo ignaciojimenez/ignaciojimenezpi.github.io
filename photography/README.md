@@ -24,13 +24,19 @@ python3 create_album.py album-name --add --images path/to/more-images
 python3 create_album.py album-name --add --images path/to/single-image.jpg
 ```
 
-### Change Album Cover
+### Change Metadata
 ```bash
 # Interactive selection from album images
 python3 create_album.py album-name --change-cover
 
 # Directly specify cover image
 python3 create_album.py album-name --change-cover --cover path/to/image.jpg
+
+# Change title
+python3 create_album.py existing-album --new-title "Updated Title"
+
+# Change date
+python3 create_album.py existing-album --new-date 2023-12-31
 ```
 
 ### Delete Images from Album

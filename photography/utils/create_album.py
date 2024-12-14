@@ -336,6 +336,49 @@ def change_album_cover(album_name: str, cover_image: Optional[str] = None) -> bo
         logger.error(f"Failed to change cover image: {e}")
         return False
 
+def change_album_metadata(album_name: str, new_title: Optional[str] = None, new_date: Optional[str] = None) -> bool:
+    """Change the title and/or date of an existing album.
+    
+    Args:
+        album_name: Name of the album to modify
+        new_title: Optional new title for the album
+        new_date: Optional new date for the album (YYYY-MM-DD)
+    """
+    try:
+        # Load current albums data
+        with open(ALBUMS_JSON, 'r') as f:
+            data = json.load(f)
+        
+        # Find target album
+        target_album = next((a for a in data['albums'] if a['id'] == album_name), None)
+        if not target_album:
+            raise ValidationError(f"Album not found: {album_name}")
+        
+        # Update metadata
+        if new_title:
+            target_album['title'] = new_title
+            logger.info(f"Updated title to: {new_title}")
+            
+        if new_date:
+            # Validate date format
+            try:
+                datetime.strptime(new_date, '%Y-%m-%d')
+                target_album['date'] = new_date
+                logger.info(f"Updated date to: {new_date}")
+            except ValueError:
+                raise ValidationError("Date must be in YYYY-MM-DD format")
+        
+        # Save changes
+        with open(ALBUMS_JSON, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        logger.info(f"Successfully updated metadata for album {album_name}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to update album metadata: {e}")
+        return False
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Create, modify, or delete photo albums',
@@ -354,6 +397,15 @@ Examples:
     # Change album cover image (direct)
     %(prog)s existing-album --change-cover --cover path/to/image.jpg
 
+    # Change album title
+    %(prog)s existing-album --new-title "Updated Title"
+
+    # Change album date
+    %(prog)s existing-album --new-date 2023-12-31
+
+    # Change both title and date
+    %(prog)s existing-album --new-title "Updated Title" --new-date 2023-12-31
+
     # Delete an album
     %(prog)s existing-album --delete
     """
@@ -368,6 +420,8 @@ Examples:
     parser.add_argument('--add', action='store_true', help='Add images to existing album')
     parser.add_argument('--delete', action='store_true', help='Delete the specified album')
     parser.add_argument('--change-cover', action='store_true', help='Change album cover image')
+    parser.add_argument('--new-title', help='New title for the album')
+    parser.add_argument('--new-date', help='New date for the album in YYYY-MM-DD format')
     
     args = parser.parse_args()
     
@@ -385,6 +439,12 @@ Examples:
             print(f"Successfully added images to album: {args.album_name}")
         else:
             print("Failed to add images to album")
+            sys.exit(1)
+    elif args.new_title or args.new_date:
+        if change_album_metadata(args.album_name, args.new_title, args.new_date):
+            print(f"Successfully updated metadata for album: {args.album_name}")
+        else:
+            print("Failed to update album metadata")
             sys.exit(1)
     elif args.change_cover:
         if change_album_cover(args.album_name, args.cover):
