@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Album Grid - For Main Photography Page */
+@layer components {
+    .album-grid {
+        @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+    }
+
+    .album-item {
+        @apply relative opacity-0 transform translate-y-5 transition-all duration-300 cursor-pointer aspect-[3/2];
+    }
+
+    .album-item.visible {
+        @apply opacity-100 translate-y-0;
+    }
+
+    /* Gallery Grid - For Individual Album Pages */
+    .gallery-grid {
+        @apply w-full max-w-[1600px] mx-auto;
+    }
+
+    .gallery-row {
+        @apply flex gap-2.5 mb-2.5 w-full justify-center;
+    }
+
+    .gallery-item {
+        @apply relative opacity-0 transform translate-y-5 transition-all duration-300 cursor-pointer;
+    }
+
+    .gallery-item.loaded {
+        @apply opacity-100 translate-y-0;
+    }
+
+    .gallery-item.resizing {
+        @apply transition-[width,height] duration-300;
+    }
+
+    .gallery-item img {
+        @apply w-full h-full object-cover transition-transform duration-300;
+    }
+
+    @media (hover: hover) {
+        .gallery-item:hover img {
+            @apply scale-[1.02];
+        }
+
+        .image-container:hover img {
+            @apply scale-[1.01];
+        }
+
+        .modal-close:hover,
+        .modal-nav:hover {
+            @apply opacity-100;
+        }
+    }
+
+    .image-container {
+        @apply relative h-full overflow-hidden w-full bg-gray-100;
+    }
+
+    .image-container img {
+        @apply w-full h-full object-cover transition-transform duration-500;
+    }
+
+    /* Modal */
+    .modal {
+        @apply hidden fixed inset-0 bg-white/90 z-50 items-center justify-center;
+    }
+
+    .modal.active {
+        @apply flex;
+    }
+
+    .modal-content {
+        @apply relative w-full h-full flex items-center justify-center max-w-[90vw] max-h-[90vh] mx-auto;
+    }
+
+    .modal-image {
+        @apply max-w-full max-h-[90vh] object-contain;
+    }
+
+    .modal-close {
+        @apply fixed top-5 right-5 bg-transparent border-none text-black cursor-pointer p-2.5 opacity-60 z-[1001] transition-opacity;
+    }
+
+    .modal-nav {
+        @apply fixed top-1/2 -translate-y-1/2 bg-transparent border-none text-black cursor-pointer p-4 opacity-60 z-[1001] transition-opacity;
+    }
+
+    .modal-prev {
+        @apply left-5;
+    }
+
+    .modal-next {
+        @apply right-5;
+    }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 640px) {
+    nav {
+        @apply h-8 p-0 m-0;
+    }
+
+    .gallery-grid {
+        @apply mt-1;
+    }
+
+    .modal-close {
+        @apply top-2 right-2 p-2;
+    }
+
+    .modal-nav {
+        @apply p-2;
+    }
+
+    .modal-prev {
+        @apply left-2;
+    }
+
+    .modal-next {
+        @apply right-2;
+    }
+}
+
+/* Touch device styles */
+@media (hover: none) {
+    .album-metadata-mobile {
+        @apply absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent py-3 px-4 text-white opacity-100 pointer-events-none;
+    }
+    
+    .album-metadata-mobile h3 {
+        @apply text-sm font-light m-0 leading-tight;
+    }
+
+    .modal-close,
+    .modal-nav {
+        @apply opacity-100;
+    }
+
+    .group-hover\:bg-opacity-60,
+    .group-hover\:opacity-100 {
+        @apply opacity-0;
+    }
+}

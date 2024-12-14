@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+}
+
+@layer components {
+    .band-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+        max-width: 1600px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        .band-grid {
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+    }
+
+    header {
+        text-align: left;
+        max-width: 1600px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    @media (min-width: 640px) {
+        header {
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+    }
+
+    header h1 {
+        font-size: 2.25rem;
+        font-weight: 600;
+    }
+
+    header p {
+        color: #4b5563;
+    }
+
+    .band-card {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        cursor: pointer;
+        background-color: #f5f5f5;
+        aspect-ratio: 3/2;
+    }
+
+    .band-image {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .band-card:hover .band-image {
+        transform: scale(1.02);
+    }
+
+    .band-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+        transition: background-color 0.3s ease;
+    }
+
+    .band-name {
+        color: white;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        padding: 1rem;
+    }
+
+    .band-name h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .band-metadata-mobile {
+        display: none;
+    }
+
+    @media (hover: hover) {
+        .band-card:hover .band-overlay {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .band-card:hover .band-name {
+            opacity: 1;
+        }
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 640px) {
+        header p {
+            font-size: 0.9rem;
+        }
+
+        .band-grid {
+            gap: 0.5rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .band-overlay {
+            display: none;
+        }
+
+        .band-metadata-mobile {
+            display: block;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 0.75rem;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+            color: white;
+        }
+
+        .band-metadata-mobile h3 {
+            font-size: 0.875rem;
+            font-weight: normal;
+            margin: 0;
+        }
+    }
+}

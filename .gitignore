@@ -1,6 +1,14 @@
 .DS_Store
 *.log
 
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
 # Python virtual environment
 photography/venv/
 .env
@@ -20,13 +28,9 @@ build/
 *.egg-info/
 *.egg
 
-# IDE settings
+# IDE and editor files
 .idea/
 .vscode/
 *.swp
 *.swo
-
-# Test files
-photography/test-images/
-photography/images/test-album/
-photography/albums/test-album.html
+*~
