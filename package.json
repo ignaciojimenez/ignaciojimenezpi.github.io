@@ -9,11 +9,13 @@
     "build:css:all": "npm run build:css && npm run build:css:photography && npm run build:css:music",
     "watch:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --watch",
     "watch:css:photography": "tailwindcss -i ./photography/css/input.css -o ./photography/css/styles.css --watch",
-    "watch:css:music": "tailwindcss -i ./music/css/input.css -o ./music/css/styles.css --watch"
+    "watch:css:music": "tailwindcss -i ./music/css/input.css -o ./music/css/styles.css --watch",
+    "watch:css:all": "npx concurrently \"npm run watch:css\" \"npm run watch:css:photography\" \"npm run watch:css:music\""
   },
   "devDependencies": {
     "tailwindcss": "^3.4.0",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+    "postcss": "^8.4.32",
+    "concurrently": "^8.2.2"
   }
 }

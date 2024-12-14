@@ -1,0 +1,7 @@
+[
+    {
+        "key": "cmd+shift+w",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Watch CSS"
+    }
+]
