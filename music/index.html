@@ -8,38 +8,28 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png">
     <link rel="manifest" href="/images/favicon/site.webmanifest">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="bg-white text-gray-900 font-light">
     <!-- Navigation -->
-    <nav class="fixed w-full bg-white/90 backdrop-blur-sm z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
+    <nav class="w-full bg-white z-50 h-12 flex items-center" role="navigation">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-8 w-full">
+            <div class="flex justify-between">
                 <div class="flex items-center">
-                    <a href="../" class="text-xl font-light tracking-wide">IGNACIO JIMÉNEZ PI</a>
+                    <a href="/" class="text-xl font-light tracking-wide hover:text-gray-600 transition-colors" aria-label="Home">IGNACIO JIMÉNEZ PI</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Header -->
-    <header class="pt-24 pb-12 px-4 text-center">
-        <p class="text-gray-600 max-w-2xl mx-auto">A collection of bands and musical projects I am (or have been) involved with.</p>
+    <header>
+        <div class="max-w-[1600px]">
+            <p class="text-gray-600">A collection of bands and musical projects I am (or have been) involved with.</p>
+        </div>
     </header>
 
     <!-- Band Grid -->
@@ -67,7 +57,12 @@
                         onerror="this.classList.add('error')"
                     >
                     <div class="band-overlay">
-                        <h3 class="band-name">${band.name}</h3>
+                        <div class="band-name">
+                            <h3 class="text-xl font-semibold mb-2">${band.name}</h3>
+                        </div>
+                    </div>
+                    <div class="band-metadata-mobile">
+                        <h3>${band.name}</h3>
                     </div>
                 </a>
             `;

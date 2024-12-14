@@ -1,0 +1,19 @@
+{
+  "name": "ignaciojimenezpi-website",
+  "version": "1.0.0",
+  "description": "Personal website of Ignacio Jiménez Pi",
+  "scripts": {
+    "build:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --minify",
+    "build:css:photography": "tailwindcss -i ./photography/css/input.css -o ./photography/css/styles.css --minify",
+    "build:css:music": "tailwindcss -i ./music/css/input.css -o ./music/css/styles.css --minify",
+    "build:css:all": "npm run build:css && npm run build:css:photography && npm run build:css:music",
+    "watch:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --watch",
+    "watch:css:photography": "tailwindcss -i ./photography/css/input.css -o ./photography/css/styles.css --watch",
+    "watch:css:music": "tailwindcss -i ./music/css/input.css -o ./music/css/styles.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32"
+  }
+}
