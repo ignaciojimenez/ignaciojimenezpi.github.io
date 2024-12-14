@@ -199,8 +199,10 @@ async function initGallery() {
     albumGrid.innerHTML = '<div class="w-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div></div>';
     
     try {
-        // Fetch albums data
-        const albumsResponse = await fetch('/photography/albums/albums.json');
+        // Use the preloaded albums.json resource which now includes metadata
+        const albumsResponse = await fetch('/photography/albums/albums.json', {
+            cache: 'force-cache' // Use the preloaded resource from browser cache
+        });
         if (!albumsResponse.ok) {
             throw new Error(`HTTP error! status: ${albumsResponse.status}`);
         }
@@ -211,51 +213,28 @@ async function initGallery() {
             throw new Error('Invalid album data format');
         }
         
-        // Try to fetch metadata for each album
-        const metadataMap = new Map();
-        for (const album of albumsData.albums) {
-            try {
-                const metadataResponse = await fetch(`/photography/albums/${album.id}/metadata.json`);
-                if (metadataResponse.ok) {
-                    const metadata = await metadataResponse.json();
-                    metadataMap.set(album.id, metadata);
-                }
-            } catch (error) {
-                console.warn(`Could not load metadata for album ${album.id}:`, error);
-            }
-        }
-        
-        // Sort albums by date if available
-        if (albumsData.albums.some(album => album.date)) {
-            albumsData.albums.sort((a, b) => {
-                if (!a.date) return 1;
-                if (!b.date) return -1;
-                return new Date(b.date) - new Date(a.date);
-            });
-        }
-        
         // Clear loading state
         albumGrid.innerHTML = '';
         
-        // Render albums
-        albumsData.albums.forEach(album => {
-            const albumMetadata = metadataMap.get(album.id);
-            // If we have metadata for this album, get the cover image metadata
-            const coverImageMetadata = albumMetadata ? albumMetadata[album.coverImage.split('/').pop()] : null;
-            const card = createAlbumCard(album, coverImageMetadata);
+        // Create album cards using the bundled metadata
+        for (const album of albumsData.albums) {
+            const card = createAlbumCard(album, album.metadata || { images: [] });
             albumGrid.appendChild(card);
-        });
+        }
+        
+        // Wait for all images to load
+        const images = albumGrid.getElementsByTagName('img');
+        await Promise.all([...images].map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => {
+                img.addEventListener('load', resolve);
+                img.addEventListener('error', resolve);
+            });
+        }));
         
     } catch (error) {
         console.error('Error loading gallery:', error);
-        albumGrid.innerHTML = `
-            <div class="w-full text-center py-8 text-red-600">
-                <p>Error loading gallery: ${error.message}</p>
-                <button onclick="initGallery()" class="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-                    Retry
-                </button>
-            </div>
-        `;
+        albumGrid.innerHTML = '<p class="text-red-500">Error loading gallery</p>';
     }
 }
 

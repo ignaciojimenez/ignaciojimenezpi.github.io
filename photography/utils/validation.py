@@ -48,7 +48,8 @@ def validate_album_data(
     date: str,
     description: Optional[str] = "",
     cover_image: Optional[str] = None,
-    images: Optional[List[str]] = None
+    images: Optional[List[str]] = None,
+    metadata: Optional[Dict] = None
 ) -> Dict:
     """Validate and format album data."""
     try:
@@ -61,7 +62,8 @@ def validate_album_data(
             "description": description or "",
             "date": date,
             "coverImage": cover_image or "",
-            "images": images or []
+            "images": images or [],
+            "metadata": metadata or {}
         }
         
         jsonschema.validate(instance=album_data, schema=ALBUM_SCHEMA)
@@ -81,7 +83,7 @@ def validate_album_structure(album_dir: Path) -> None:
     if not images_dir.exists():
         raise ValidationError(f"Images directory does not exist: {images_dir}")
     
-    metadata_file = album_dir / 'metadata.json'
+    metadata_file = album_dir / 'albums.json'
     if not metadata_file.exists():
         raise ValidationError(f"Metadata file does not exist: {metadata_file}")
     

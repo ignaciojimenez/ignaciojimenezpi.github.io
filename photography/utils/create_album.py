@@ -53,35 +53,81 @@ def create_album_directory(album_id: str) -> Path:
         logger.error(f"Failed to create album directory: {e}")
         raise
 
-def update_albums_json(album_data: Dict) -> None:
-    """Update albums.json with new album data."""
+def update_albums_json(album_name: str, title: str, description: str, date: str, cover_image: Optional[str] = None) -> bool:
+    """Update the albums.json file with album information."""
     try:
-        if ALBUMS_JSON.exists():
-            with open(ALBUMS_JSON, 'r') as f:
-                data = json.load(f)
+        # Load current albums data
+        with open(ALBUMS_JSON, 'r') as f:
+            data = json.load(f)
+        
+        # Check if album already exists
+        existing_album = next((a for a in data['albums'] if a['id'] == album_name), None)
+        
+        if existing_album:
+            # Update existing album
+            existing_album.update({
+                'title': title,
+                'description': description,
+                'date': date,
+                'cover': cover_image or existing_album.get('cover', ''),
+                'metadata': existing_album.get('metadata', {})  # Keep existing metadata
+            })
         else:
-            data = {"albums": []}
-            
-        # Check for duplicate album ID
-        if any(album['id'] == album_data['id'] for album in data['albums']):
-            raise ValidationError(f"Album with ID {album_data['id']} already exists")
-            
-        data['albums'].append(album_data)
+            # Add new album
+            data['albums'].append({
+                'id': album_name,
+                'title': title,
+                'description': description,
+                'date': date,
+                'cover': cover_image or '',
+                'images': [],  # Initialize empty images list
+                'metadata': {}  # Initialize empty metadata dict
+            })
         
-        # Create backup
-        if ALBUMS_JSON.exists():
-            backup_path = ALBUMS_JSON.with_suffix('.json.bak')
-            shutil.copy2(ALBUMS_JSON, backup_path)
-            logger.info(f"Created backup of albums.json: {backup_path}")
+        # Sort albums by date (newest first)
+        data['albums'].sort(key=lambda x: x['date'], reverse=True)
         
-        # Write new data
+        # Save updated data
         with open(ALBUMS_JSON, 'w') as f:
             json.dump(data, f, indent=2)
-            
-        logger.info("Successfully updated albums.json")
+        
+        return True
     except Exception as e:
-        logger.error(f"Error updating albums.json: {e}")
-        raise
+        logger.error(f"Failed to update albums.json: {e}")
+        return False
+
+def update_album_metadata(album_name: str, image_path: str) -> bool:
+    """Update album metadata when adding new images."""
+    try:
+        # Load current albums data
+        with open(ALBUMS_JSON, 'r') as f:
+            data = json.load(f)
+        
+        # Find target album
+        album = next((a for a in data['albums'] if a['id'] == album_name), None)
+        if not album:
+            raise ValidationError(f"Album not found: {album_name}")
+        
+        # Initialize metadata if it doesn't exist
+        if 'metadata' not in album:
+            album['metadata'] = {'images': []}
+        
+        # Add new image metadata
+        image_name = os.path.basename(image_path)
+        if image_name not in [img['name'] for img in album['metadata']['images']]:
+            album['metadata']['images'].append({
+                'name': image_name,
+                'date': datetime.now().strftime('%Y-%m-%d')
+            })
+        
+        # Save updated data
+        with open(ALBUMS_JSON, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update metadata: {e}")
+        return False
 
 def process_images(source_dir: str, album_dir: Path) -> List[str]:
     """Process and optimize images."""
@@ -133,7 +179,8 @@ def create_album(
             album_id=album_name,
             title=title,
             date=date,
-            description=description
+            description=description,
+            metadata={}  # Initialize empty metadata
         )
         
         logger.info(f"Creating album: {title} ({album_name})")
@@ -141,34 +188,35 @@ def create_album(
         # Create album directory
         album_dir = create_album_directory(album_name)
         
-        # Process images
+        # Process images - this will also update albums.json with metadata
         image_files = process_images(image_dir, album_dir)
         
         if not image_files:
             raise ValidationError(f"No valid images found in directory: {image_dir}")
         
-        # Format image paths relative to album
-        album_data['images'] = [f"{album_name}/images/{img}" for img in image_files]
-        
-        # Set cover image
-        if cover_image:
-            if cover_image not in image_files:
-                raise ValidationError(f"Cover image not found in album: {cover_image}")
-            album_data['coverImage'] = f"{album_name}/images/{cover_image}"
+        # Update albums.json with album info
+        relative_image_paths = [f"{album_name}/images/{img}" for img in image_files]
+        if cover_image and cover_image in image_files:
+            cover_path = f"{album_name}/images/{cover_image}"
         else:
-            album_data['coverImage'] = f"{album_name}/images/{image_files[0]}"
+            cover_path = relative_image_paths[0] if relative_image_paths else ''
         
-        # Update albums.json
-        update_albums_json(album_data)
+        success = update_albums_json(
+            album_name=album_name,
+            title=title,
+            description=description,
+            date=date,
+            cover_image=cover_path
+        )
+        
+        if not success:
+            raise ValidationError("Failed to update albums.json")
         
         logger.info(f"Successfully created album: {album_name}")
         return True
         
-    except ValidationError as e:
-        logger.error(f"Validation error: {e}")
-        return False
     except Exception as e:
-        logger.error(f"Unexpected error while creating album: {e}")
+        logger.error(f"Failed to create album: {e}")
         return False
 
 def add_images_to_album(album_name: str, image_path: str) -> bool:
@@ -197,16 +245,7 @@ def add_images_to_album(album_name: str, image_path: str) -> bool:
             new_images = process_images(image_path, album_dir)
         
         # Update albums.json
-        with open(ALBUMS_JSON, 'r') as f:
-            data = json.load(f)
-        
-        for album in data['albums']:
-            if album['id'] == album_name:
-                album['images'].extend([f"{album_name}/images/{img}" for img in new_images])
-                break
-        
-        with open(ALBUMS_JSON, 'w') as f:
-            json.dump(data, f, indent=2)
+        update_album_metadata(album_name, os.path.join(image_path, new_images[0]))
         
         logger.info(f"Successfully added {len(new_images)} images to album {album_name}")
         return True
@@ -323,7 +362,7 @@ def change_album_cover(album_name: str, cover_image: Optional[str] = None) -> bo
                     print("Please enter a valid number.")
         
         # Update album cover
-        target_album['coverImage'] = cover_path
+        target_album['cover'] = cover_path
         
         # Save changes
         with open(ALBUMS_JSON, 'w') as f:

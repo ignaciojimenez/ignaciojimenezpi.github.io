@@ -24,6 +24,7 @@ class ImageProcessor:
         self.album_dir = Path(album_dir)
         self.images_dir = self.album_dir / 'images'
         self.responsive_dir = self.album_dir / 'responsive'
+        self.albums_json = self.album_dir.parent / 'albums.json'
         self.metadata: Dict = {}
     
     def process_single_image(self, img_path: Path) -> Dict:
@@ -53,8 +54,44 @@ class ImageProcessor:
                 }
         
         except Exception as e:
-            logger.error(f"Error processing image {img_path}: {e}")
-            return None
+            logger.error(f"Failed to process image {img_path}: {e}")
+            raise
+
+    def process_album(self) -> Dict:
+        """Process all images in the album."""
+        if not self.images_dir.exists():
+            raise FileNotFoundError(f"Images directory not found: {self.images_dir}")
+        
+        # Create output directories
+        self.responsive_dir.mkdir(exist_ok=True)
+        
+        # Get all images
+        image_files = [p for p in self.images_dir.glob('*') 
+                      if p.suffix.lower() in {'.jpg', '.jpeg', '.png'}]
+        
+        if not image_files:
+            logger.warning(f"No images found in {self.images_dir}")
+            return {}
+        
+        # Process images in parallel
+        with ThreadPoolExecutor() as executor:
+            future_to_path = {
+                executor.submit(self.process_single_image, path): path
+                for path in image_files
+            }
+            
+            for future in future_to_path:
+                path = future_to_path[future]
+                try:
+                    result = future.result()
+                    if result:
+                        self.metadata[path.name] = result
+                except Exception as e:
+                    logger.error(f"Failed to process {path}: {e}")
+        
+        # Save metadata
+        self._save_metadata()
+        return self.metadata
     
     def _create_responsive_versions(self, img: Image.Image, source_path: Path) -> Dict:
         """Create all responsive versions of an image."""
@@ -108,51 +145,42 @@ class ImageProcessor:
             logger.error(f"Error creating WebP version for {source_path}: {e}")
             return None
     
-    def process_album(self) -> Dict:
-        """Process all images in the album."""
-        if not self.images_dir.exists():
-            raise FileNotFoundError(f"Images directory not found: {self.images_dir}")
-        
-        # Create output directories
-        self.responsive_dir.mkdir(exist_ok=True)
-        
-        # Get all images
-        image_files = [p for p in self.images_dir.glob('*') 
-                      if p.suffix.lower() in {'.jpg', '.jpeg', '.png'}]
-        
-        if not image_files:
-            logger.warning(f"No images found in {self.images_dir}")
-            return {}
-        
-        # Process images in parallel
-        with ThreadPoolExecutor() as executor:
-            future_to_path = {
-                executor.submit(self.process_single_image, path): path
-                for path in image_files
-            }
-            
-            for future in future_to_path:
-                path = future_to_path[future]
-                try:
-                    result = future.result()
-                    if result:
-                        self.metadata[path.name] = result
-                except Exception as e:
-                    logger.error(f"Failed to process {path}: {e}")
-        
-        # Save metadata
-        self._save_metadata()
-        return self.metadata
-    
     def _save_metadata(self) -> None:
         """Save metadata to file."""
-        metadata_path = self.album_dir / 'metadata.json'
-        validate_metadata(self.metadata)
-        
         try:
-            with open(metadata_path, 'w') as f:
-                json.dump(self.metadata, f, indent=2)
-            logger.info(f"Saved metadata to {metadata_path}")
+            # Load current albums data
+            with open(self.albums_json) as f:
+                albums_data = json.load(f)
+            
+            # Find the current album
+            album_id = self.album_dir.name
+            album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
+            if not album:
+                raise ValueError(f"Album not found: {album_id}")
+            
+            # Initialize metadata if needed
+            if 'metadata' not in album:
+                album['metadata'] = {}
+            
+            # Update metadata
+            for img_name, metadata in self.metadata.items():
+                album['metadata'][img_name] = metadata
+                
+                # Add to images list if not already present
+                img_rel_path = f"{album_id}/images/{img_name}"
+                if img_rel_path not in album['images']:
+                    album['images'].append(img_rel_path)
+                
+                # Set as cover if none exists
+                if not album.get('cover'):
+                    album['cover'] = img_rel_path
+            
+            # Save updated albums data
+            with open(self.albums_json, 'w') as f:
+                json.dump(albums_data, f, indent=2)
+            
+            logger.info(f"Successfully saved metadata for {len(self.metadata)} images")
+        
         except Exception as e:
             logger.error(f"Error saving metadata: {e}")
             raise

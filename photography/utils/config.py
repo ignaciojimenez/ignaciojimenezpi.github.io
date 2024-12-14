@@ -29,8 +29,7 @@ ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png'}
 # Directory structure
 ALBUM_DIRS = {
     'images': 'images',           # Original images
-    'responsive': 'responsive',   # Responsive versions
-    'metadata': 'metadata.json'   # Album metadata
+    'responsive': 'responsive'    # Responsive versions
 }
 
 # Metadata schema
@@ -68,16 +67,22 @@ METADATA_SCHEMA = {
 # Album schema
 ALBUM_SCHEMA = {
     "type": "object",
-    "required": ["id", "title", "date", "coverImage", "images"],
+    "required": ["id", "title", "date", "cover", "images", "metadata"],
     "properties": {
         "id": {"type": "string"},
         "title": {"type": "string"},
         "description": {"type": "string", "default": ""},
         "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
-        "coverImage": {"type": "string"},
+        "cover": {"type": "string"},
         "images": {
             "type": "array",
             "items": {"type": "string"}
+        },
+        "metadata": {
+            "type": "object",
+            "patternProperties": {
+                ".*": METADATA_SCHEMA
+            }
         }
     }
 }
