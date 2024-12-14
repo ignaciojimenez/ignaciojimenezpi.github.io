@@ -163,8 +163,10 @@ function createAlbumCard(album, metadata) {
     // Add mobile-specific metadata
     const mobileMetadata = document.createElement('div');
     mobileMetadata.className = 'album-metadata-mobile';
+    
+    const year = album.date ? new Date(album.date).getFullYear() : '';
     mobileMetadata.innerHTML = `
-        <h3>${album.title}</h3>
+        <h3>${year} ${album.title}</h3>
     `;
     container.appendChild(mobileMetadata);
     
