@@ -49,84 +49,69 @@ def delete_image_files(album_path: str, image_name: str) -> None:
     if original_path.exists():
         original_path.unlink()
         logger.info(f"Deleted original image: {original_path}")
-
+    
     # Delete responsive versions
     responsive_dir = ALBUMS_DIR / album_path / 'responsive'
     if responsive_dir.exists():
-        # Get image name without extension
-        name_without_ext = Path(image_name).stem
-        # Delete all responsive versions of the image
-        for size_dir in ['thumbnail', 'small', 'medium', 'large']:
-            size_path = responsive_dir / size_dir
-            if size_path.exists():
-                # Delete both jpg and webp versions if they exist
-                for ext in ['.jpg', '.webp']:
-                    responsive_file = size_path / f"{name_without_ext}{ext}"
-                    if responsive_file.exists():
-                        responsive_file.unlink()
-                        logger.info(f"Deleted responsive image: {responsive_file}")
+        for size_dir in responsive_dir.iterdir():
+            if size_dir.is_dir():
+                img_path = size_dir / image_name
+                if img_path.exists():
+                    img_path.unlink()
+                webp_path = img_path.with_suffix('.webp')
+                if webp_path.exists():
+                    webp_path.unlink()
+        logger.info(f"Deleted responsive versions for: {image_name}")
 
-def update_metadata(album_id: str, image_name: str) -> None:
-    """Update the album's metadata.json file to remove the image entry."""
-    metadata_path = ALBUMS_DIR / album_id / 'metadata.json'
+def update_albums_json(album_id: str, image_name: str) -> None:
+    """Update albums.json to remove the image entry."""
     try:
-        # Load metadata
-        with open(metadata_path) as f:
-            metadata = json.load(f)
-        
-        # Remove the image entry if it exists
-        if image_name in metadata:
-            del metadata[image_name]
-            logger.info(f"Removed metadata entry for: {image_name}")
-            
-            # Save updated metadata
-            with open(metadata_path, 'w') as f:
-                json.dump(metadata, f, indent=2)
-    except Exception as e:
-        logger.error(f"Failed to update metadata.json: {e}")
-        raise
-
-def delete_image(album_id: str, image_path: str) -> bool:
-    """Delete a specific image from an album."""
-    try:
-        # Load albums data
+        # Load current data
         albums_data = load_albums()
         
-        # Find the album
+        # Find target album
         album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
         if not album:
             raise ValueError(f"Album not found: {album_id}")
         
-        # Check if image exists in album
-        if image_path not in album['images']:
-            raise ValueError(f"Image not found in album: {image_path}")
+        # Remove image from images list
+        image_path = f"{album_id}/images/{image_name}"
+        if image_path in album['images']:
+            album['images'].remove(image_path)
         
-        # Get just the image name from the path
+        # Remove metadata for this image
+        if 'metadata' in album and image_name in album['metadata']:
+            del album['metadata'][image_name]
+        
+        # Update cover image if needed
+        if album.get('cover') == image_path:
+            album['cover'] = album['images'][0] if album['images'] else ''
+        
+        # Save changes
+        save_albums(albums_data)
+        logger.info(f"Updated albums.json: removed {image_name}")
+        
+    except Exception as e:
+        logger.error(f"Failed to update albums.json: {e}")
+        raise
+
+def delete_image(album_id: str, image_path: str) -> None:
+    """Delete a specific image from an album."""
+    try:
+        # Extract image name from path
         image_name = Path(image_path).name
         
-        # Update metadata.json
-        update_metadata(album_id, image_name)
-        
-        # Remove image from the list
-        album['images'].remove(image_path)
-        
-        # If this was the cover image, set a new one
-        if album['coverImage'] == image_path and album['images']:
-            album['coverImage'] = album['images'][0]
-            logger.info(f"Updated cover image to: {album['coverImage']}")
-        
-        # Delete the actual image files
+        # Delete image files
         delete_image_files(album_id, image_name)
         
-        # Save updated albums data
-        save_albums(albums_data)
+        # Update albums.json
+        update_albums_json(album_id, image_name)
         
-        logger.info(f"Successfully deleted image: {image_path}")
-        return True
+        logger.info(f"Successfully deleted image: {image_name}")
         
     except Exception as e:
         logger.error(f"Failed to delete image: {e}")
-        return False
+        raise
 
 def select_album() -> Optional[str]:
     """Interactively select an album."""
@@ -175,7 +160,7 @@ def select_images(album_id: str) -> Optional[List[str]]:
         print("\nImages in album:")
         for i, img_path in enumerate(album['images'], 1):
             img_name = Path(img_path).name
-            cover_marker = " (cover)" if img_path == album['coverImage'] else ""
+            cover_marker = " (cover)" if img_path == album['cover'] else ""
             print(f"{i}. {img_name}{cover_marker}")
         
         selected_indices = set()
@@ -210,7 +195,10 @@ def delete_images(album_id: str, image_paths: List[str]) -> bool:
     """Delete multiple images from an album."""
     success = True
     for image_path in image_paths:
-        if not delete_image(album_id, image_path):
+        try:
+            delete_image(album_id, image_path)
+        except Exception as e:
+            logger.error(f"Failed to delete image: {e}")
             success = False
     return success
 
@@ -246,7 +234,10 @@ def main():
             parser.error("Both --album and --image are required in non-interactive mode")
         
         image_path = f"{args.album}/images/{args.image}"
-        if not delete_image(args.album, image_path):
+        try:
+            delete_image(args.album, image_path)
+        except Exception as e:
+            logger.error(f"Failed to delete image: {e}")
             sys.exit(1)
         print(f"Successfully deleted image: {args.image}")
 

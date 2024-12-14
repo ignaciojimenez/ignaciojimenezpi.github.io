@@ -7,7 +7,7 @@ class AlbumViewer {
         this.targetHeight = 315;
         this.isResizing = false;
         this.albumId = this.getAlbumIdFromUrl();
-        this.lastHeight = null; // Modified this line
+        this.lastHeight = null;
         
         // Create modal if it doesn't exist
         if (!this.modal) {
@@ -99,27 +99,21 @@ class AlbumViewer {
 
     async loadAlbumImages() {
         try {
-            const response = await fetch('/photography/albums/albums.json');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            if (!this.albumId) {
+                throw new Error('No album ID specified');
             }
-            const data = await response.json();
             
-            // Find the current album
-            const album = data.albums.find(a => a.id === this.albumId);
+            // Load albums.json
+            const albumsResponse = await fetch('/photography/albums/albums.json');
+            if (!albumsResponse.ok) {
+                throw new Error(`HTTP error! status: ${albumsResponse.status}`);
+            }
+            const albumsData = await albumsResponse.json();
+            
+            // Find current album
+            const album = albumsData.albums.find(a => a.id === this.albumId);
             if (!album) {
                 throw new Error('Album not found');
-            }
-
-            // Load album metadata
-            let metadata = null;
-            try {
-                const metadataResponse = await fetch(`/photography/albums/${this.albumId}/metadata.json`);
-                if (metadataResponse.ok) {
-                    metadata = await metadataResponse.json();
-                }
-            } catch (error) {
-                console.warn('Could not load metadata:', error);
             }
 
             // Update page title and metadata
@@ -131,73 +125,39 @@ class AlbumViewer {
                 }
             }
 
-            // Process images with metadata if available
+            // Process images with metadata
             window.imagesData = album.images.map(imagePath => {
                 const filename = imagePath.split('/').pop();
+                const imageMetadata = album.metadata[filename];
                 
-                // Get metadata for this image
-                const imageMetadata = metadata?.[filename];
-                
-                if (imageMetadata) {
-                    // Create a deep copy to avoid modifying the original metadata
-                    const processedMetadata = JSON.parse(JSON.stringify(imageMetadata));
-                    
-                    // If metadata doesn't have paths, generate them
-                    if (!processedMetadata.original.path) {
-                        processedMetadata.original = {
-                            ...processedMetadata.original,
-                            path: `images/${filename}`,
-                            webp: `images/${filename.replace('.jpg', '.webp')}`
-                        };
-                        
-                        const sizes = ['thumbnail', 'small', 'medium', 'large'];
-                        processedMetadata.responsive = {};
-                        sizes.forEach(size => {
-                            if (imageMetadata.responsive[size]) {
-                                processedMetadata.responsive[size] = {
-                                    ...imageMetadata.responsive[size],
-                                    path: `responsive/${size}/${filename}`,
-                                    webp: `responsive/${size}/${filename.replace('.jpg', '.webp')}`
-                                };
-                            }
-                        });
-                    } else {
-                        // Clean up paths to be relative to the album
-                        processedMetadata.original.path = processedMetadata.original.path
-                            .replace(`albums/${this.albumId}/`, '')
-                            .replace('albums/', '');
-                        processedMetadata.original.webp = processedMetadata.original.webp
-                            .replace(`albums/${this.albumId}/`, '')
-                            .replace('albums/', '');
-                        
-                        Object.values(processedMetadata.responsive).forEach(size => {
-                            size.path = size.path
-                                .replace(`albums/${this.albumId}/`, '')
-                                .replace('albums/', '');
-                            size.webp = size.webp
-                                .replace(`albums/${this.albumId}/`, '')
-                                .replace('albums/', '');
-                        });
-                    }
-                    
+                if (!imageMetadata) {
+                    console.warn(`No metadata found for image: ${filename}`);
                     return {
                         filename,
                         path: imagePath,
-                        metadata: processedMetadata
+                        metadata: null
                     };
                 }
-                
+
                 return {
                     filename,
                     path: imagePath,
-                    metadata: null
+                    metadata: {
+                        original: {
+                            path: imageMetadata.original.path,
+                            webp: imageMetadata.original.webp,
+                            width: imageMetadata.original.width,
+                            height: imageMetadata.original.height
+                        },
+                        responsive: imageMetadata.responsive
+                    }
                 };
             });
             
             this.processImages(window.imagesData);
         } catch (error) {
             console.error('Error loading album:', error);
-            this.gallery.innerHTML = '<p class="text-red-500">Error loading album</p>';
+            this.showError(error.message);
         }
     }
 
