@@ -2,24 +2,21 @@
 function createResponsivePicture(imagePath, title, metadata) {
     const picture = document.createElement('picture');
     
-    // Get album name and filename from the path (e.g., "urban/images/modern-architecture.jpg")
+    // Get album name and filename from the path (e.g., "paris-may-24/images/IMG_3320.JPG")
     const parts = imagePath.split('/');
-    const albumName = parts[0];  // e.g., "urban"
-    const filename = parts[parts.length - 1];  // e.g., "modern-architecture.jpg"
+    const albumName = parts[0];  // e.g., "paris-may-24"
+    const filename = parts[parts.length - 1].toUpperCase();  // e.g., "IMG_3320.JPG"
     
     // Base path for responsive images
-    const responsiveBasePath = `albums/${albumName}/responsive`;
+    const responsiveBasePath = `/photography/albums/${albumName}/responsive`;
     
     // Add WebP sources
-    ['xlarge', 'large', 'medium', 'small'].forEach(size => {
+    ['large', 'medium', 'small'].forEach(size => {
         const source = document.createElement('source');
         source.type = 'image/webp';
-        source.srcset = `${responsiveBasePath}/${size}/${filename.replace('.jpg', '.webp')}`;
+        source.srcset = `${responsiveBasePath}/${size}/${filename.replace(/\.[^.]+$/, '.webp').toUpperCase()}`;
         
         switch(size) {
-            case 'xlarge':
-                source.media = '(min-width: 1600px)';
-                break;
             case 'large':
                 source.media = '(min-width: 1200px)';
                 break;
@@ -33,14 +30,11 @@ function createResponsivePicture(imagePath, title, metadata) {
     });
     
     // Add JPEG sources
-    ['xlarge', 'large', 'medium', 'small'].forEach(size => {
+    ['large', 'medium', 'small'].forEach(size => {
         const source = document.createElement('source');
         source.srcset = `${responsiveBasePath}/${size}/${filename}`;
         
         switch(size) {
-            case 'xlarge':
-                source.media = '(min-width: 1600px)';
-                break;
             case 'large':
                 source.media = '(min-width: 1200px)';
                 break;
@@ -55,7 +49,7 @@ function createResponsivePicture(imagePath, title, metadata) {
     
     // Add fallback image
     const img = document.createElement('img');
-    img.src = `albums/${imagePath}`;
+    img.src = `/photography/albums/${imagePath}`;
     img.alt = title;
     img.loading = 'lazy';
     img.className = 'w-full h-full object-cover transition-opacity duration-300 opacity-0';
@@ -76,7 +70,7 @@ function createResponsivePicture(imagePath, title, metadata) {
 
 function createImage(imagePath, title) {
     const img = document.createElement('img');
-    img.src = `albums/${imagePath}`; // Add albums prefix
+    img.src = `/photography/albums/${imagePath}`; // Add albums prefix
     img.alt = title;
     img.loading = 'lazy';
     img.className = 'w-full h-full object-cover transition-opacity duration-300 opacity-0';

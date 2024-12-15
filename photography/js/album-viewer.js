@@ -135,18 +135,18 @@ class AlbumViewer {
                     console.warn(`No metadata found for image: ${filename}`);
                     return {
                         filename,
-                        path: imagePath,
+                        path: `/photography/albums/${imagePath}`,
                         metadata: null
                     };
                 }
 
                 return {
                     filename,
-                    path: imagePath,
+                    path: `/photography/albums/${imagePath}`,
                     metadata: {
                         original: {
-                            path: imageMetadata.original.path,
-                            webp: imageMetadata.original.webp,
+                            path: `/photography/albums/${this.albumId}/${imageMetadata.original.path}`,
+                            webp: imageMetadata.original.webp ? `/photography/albums/${this.albumId}/${imageMetadata.original.webp}` : null,
                             width: imageMetadata.original.width,
                             height: imageMetadata.original.height
                         },
