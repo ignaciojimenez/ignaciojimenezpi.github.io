@@ -5,7 +5,7 @@ function createResponsivePicture(imagePath, title, metadata) {
     // Get album name and filename from the path (e.g., "paris-may-24/images/IMG_3320.JPG")
     const parts = imagePath.split('/');
     const albumName = parts[0];  // e.g., "paris-may-24"
-    const filename = parts[parts.length - 1].toUpperCase();  // e.g., "IMG_3320.JPG"
+    const filename = parts[parts.length - 1];  // e.g., "IMG_3320.JPG"
     
     // Base path for responsive images
     const responsiveBasePath = `/photography/albums/${albumName}/responsive`;
@@ -14,7 +14,7 @@ function createResponsivePicture(imagePath, title, metadata) {
     ['large', 'medium', 'small'].forEach(size => {
         const source = document.createElement('source');
         source.type = 'image/webp';
-        source.srcset = `${responsiveBasePath}/${size}/${filename.replace(/\.[^.]+$/, '.webp').toUpperCase()}`;
+        source.srcset = `${responsiveBasePath}/${size}/${filename.replace(/\.[^.]+$/, '.webp')}`;
         
         switch(size) {
             case 'large':
