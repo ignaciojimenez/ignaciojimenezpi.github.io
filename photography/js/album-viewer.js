@@ -8,6 +8,7 @@ class AlbumViewer {
         this.isResizing = false;
         this.albumId = this.getAlbumIdFromUrl();
         this.lastHeight = null;
+        this.preloadedImages = new Map(); // Track preloaded images
         
         // Create modal if it doesn't exist
         if (!this.modal) {
@@ -381,8 +382,19 @@ class AlbumViewer {
                 #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; }
                 #imageModal.active { display: flex !important; }
                 #imageModal .modal-content { position: relative; margin: auto; max-width: 90%; max-height: 90%; }
-                #imageModal .modal-content img { max-width: 100%; max-height: 90vh; display: block; margin: 0 auto; }
-                #imageModal .modal-prev,
+                #imageModal .modal-content img { 
+                    max-width: 100%; 
+                    max-height: 90vh; 
+                    display: block; 
+                    margin: 0 auto; 
+                    transition: opacity 0.2s ease-out, filter 0.2s ease-out; 
+                    opacity: 1;
+                }
+                #imageModal .modal-content img.loading { 
+                    filter: blur(10px);
+                    opacity: 0.6;
+                }
+                #imageModal .modal-prev, 
                 #imageModal .modal-next { 
                     position: absolute !important; 
                     top: 50% !important; 
@@ -466,7 +478,31 @@ class AlbumViewer {
         this.modal.classList.add('active');
         document.body.style.overflow = 'hidden';
         this.showImage(index);
+        this.preloadAdjacentImages(index); // Preload adjacent images
         this.modal.focus(); // Set focus to the modal
+    }
+
+    preloadAdjacentImages(currentIndex) {
+        // Preload next image
+        if (currentIndex + 1 < window.imagesData.length) {
+            this.preloadImage(currentIndex + 1);
+        }
+        // Preload previous image
+        if (currentIndex - 1 >= 0) {
+            this.preloadImage(currentIndex - 1);
+        }
+    }
+
+    preloadImage(index) {
+        const imageData = window.imagesData[index];
+        if (!imageData || this.preloadedImages.has(index)) return;
+
+        if (imageData.metadata?.responsive) {
+            const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
+            const img = new Image();
+            img.src = largePath;
+            this.preloadedImages.set(index, img);
+        }
     }
 
     closeModal() {
@@ -478,19 +514,48 @@ class AlbumViewer {
         const modalImage = document.getElementById('modalImage');
         const imageData = window.imagesData[index];
         
+        // Immediately add loading class for transition
+        modalImage.classList.add('loading');
+        
         if (imageData.metadata?.responsive) {
             const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
             const largeWidth = imageData.metadata.responsive.large?.width || imageData.metadata.original.width;
             const srcset = `${largePath} ${largeWidth}w, ${imageData.metadata.original.path} ${imageData.metadata.original.width}w`;
-            modalImage.srcset = srcset;
-            modalImage.sizes = '100vw';
-            modalImage.src = largePath || imageData.path;
+            
+            const loadHighRes = () => {
+                modalImage.srcset = srcset;
+                modalImage.sizes = '100vw';
+                modalImage.src = largePath;
+                modalImage.classList.remove('loading');
+            };
+
+            // If image is preloaded, show it immediately
+            if (this.preloadedImages.has(index)) {
+                loadHighRes();
+            } else {
+                // Otherwise load it first
+                const tempImage = new Image();
+                tempImage.onload = () => {
+                    this.preloadedImages.set(index, tempImage);
+                    loadHighRes();
+                };
+                tempImage.src = largePath;
+            }
         } else {
-            modalImage.src = imageData.path;
+            // For non-responsive images
+            const directImage = new Image();
+            directImage.onload = () => {
+                modalImage.src = imageData.path;
+                modalImage.srcset = '';
+                modalImage.sizes = '';
+                modalImage.classList.remove('loading');
+            };
+            directImage.src = imageData.path;
         }
         
         this.currentImageIndex = index;
-        // Force button update after setting new index
+        this.preloadAdjacentImages(index);
+        
         requestAnimationFrame(() => {
             this.updateNavigationButtons();
         });
