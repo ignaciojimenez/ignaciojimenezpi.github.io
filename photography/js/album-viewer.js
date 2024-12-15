@@ -203,7 +203,49 @@ class AlbumViewer {
 
         Promise.all(loadPromises).then(() => {
             this.reflow(true);
+            this.preloadAllHighResImages();
         });
+    }
+
+    preloadAllHighResImages() {
+        if (!window.imagesData) return;
+
+        // Create a queue of images to preload
+        const preloadQueue = window.imagesData.map((_, index) => index);
+        let currentPreloadIndex = 0;
+
+        const preloadNext = () => {
+            if (currentPreloadIndex >= preloadQueue.length) return;
+
+            const index = preloadQueue[currentPreloadIndex];
+            const imageData = window.imagesData[index];
+
+            if (imageData.metadata?.responsive && !this.preloadedImages.has(index)) {
+                const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
+                const img = new Image();
+                
+                img.onload = () => {
+                    this.preloadedImages.set(index, img);
+                    currentPreloadIndex++;
+                    // Continue preloading with a small delay to prevent overwhelming the browser
+                    setTimeout(preloadNext, 100);
+                };
+
+                img.onerror = () => {
+                    console.error('Failed to preload image:', largePath);
+                    currentPreloadIndex++;
+                    setTimeout(preloadNext, 100);
+                };
+
+                img.src = largePath;
+            } else {
+                currentPreloadIndex++;
+                preloadNext();
+            }
+        };
+
+        // Start the preloading process
+        preloadNext();
     }
 
     reflow(isInitial = false) {
