@@ -1,0 +1,36 @@
+name: Album Processor
+
+on:
+  pull_request:
+    branches:
+      - 'album/temp/*'
+    paths:
+      - 'photography/temp-albums/**'
+
+jobs:
+  validate-album-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          cd photography/utils
+          pip install -r requirements.txt
+      
+      - name: Validate album configuration
+        run: |
+          # For now, just check if the config file exists
+          CONFIG_FILE=$(find photography/temp-albums -name "album-config.json" -type f)
+          if [ -z "$CONFIG_FILE" ]; then
+            echo "Error: No album-config.json found"
+            exit 1
+          fi
+          echo "Found config file: $CONFIG_FILE"
+          cat "$CONFIG_FILE"
