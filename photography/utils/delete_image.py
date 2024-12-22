@@ -84,8 +84,8 @@ def update_albums_json(album_id: str, image_name: str) -> None:
             del album['metadata'][image_name]
         
         # Update cover image if needed
-        if album.get('cover') == image_path:
-            album['cover'] = album['images'][0] if album['images'] else ''
+        if album.get('coverImage') == image_path or album.get('cover') == image_path:
+            album['coverImage'] = album['images'][0] if album['images'] else ''
         
         # Save changes
         save_albums(albums_data)
@@ -160,7 +160,7 @@ def select_images(album_id: str) -> Optional[List[str]]:
         print("\nImages in album:")
         for i, img_path in enumerate(album['images'], 1):
             img_name = Path(img_path).name
-            cover_marker = " (cover)" if img_path == album['cover'] else ""
+            cover_marker = " (cover)" if img_path == album.get('coverImage', album.get('cover')) else ""
             print(f"{i}. {img_name}{cover_marker}")
         
         selected_indices = set()
