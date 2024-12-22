@@ -24,14 +24,22 @@ on:
 permissions:
   contents: write
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test_workflow:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/feat/ios-album-automation'
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: feat/ios-album-automation
       
       - name: Echo inputs
         run: |
+          echo "Current branch: ${{ github.ref }}"
           echo "Album Name: ${{ github.event.inputs.album_name }}"
           echo "Album Title: ${{ github.event.inputs.album_title }}"
           echo "Album Date: ${{ github.event.inputs.album_date }}"
