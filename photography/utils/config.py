@@ -67,13 +67,13 @@ METADATA_SCHEMA = {
 # Album schema
 ALBUM_SCHEMA = {
     "type": "object",
-    "required": ["id", "title", "date", "cover", "images", "metadata"],
+    "required": ["id", "title", "date", "coverImage", "images", "metadata"],
     "properties": {
         "id": {"type": "string"},
         "title": {"type": "string"},
         "description": {"type": "string", "default": ""},
         "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
-        "cover": {"type": "string"},
+        "coverImage": {"type": "string"},
         "images": {
             "type": "array",
             "items": {"type": "string"}

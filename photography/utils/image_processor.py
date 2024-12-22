@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 class ImageProcessor:
     """Handles all image processing operations."""
     
-    def __init__(self, album_dir: Path):
+    def __init__(self, album_dir: Path, albums_json: Optional[Path] = None):
         self.album_dir = Path(album_dir)
         self.images_dir = self.album_dir / 'images'
         self.responsive_dir = self.album_dir / 'responsive'
-        self.albums_json = self.album_dir.parent / 'albums.json'
+        self.albums_json = albums_json or self.album_dir.parent / 'albums.json'
         self.metadata: Dict = {}
     
     def process_single_image(self, img_path: Path) -> Dict:
@@ -57,13 +57,15 @@ class ImageProcessor:
             logger.error(f"Failed to process image {img_path}: {e}")
             raise
 
-    def process_album(self) -> Dict:
+    def process_album(self, save_metadata: bool = False) -> Dict:
         """Process all images in the album."""
         if not self.images_dir.exists():
             raise FileNotFoundError(f"Images directory not found: {self.images_dir}")
         
         # Create output directories
         self.responsive_dir.mkdir(exist_ok=True)
+        for size_name in RESPONSIVE_SIZES:
+            (self.responsive_dir / size_name).mkdir(exist_ok=True)
         
         # Get all images
         image_files = [p for p in self.images_dir.glob('*') 
@@ -89,8 +91,10 @@ class ImageProcessor:
                 except Exception as e:
                     logger.error(f"Failed to process {path}: {e}")
         
-        # Save metadata
-        self._save_metadata()
+        # Save metadata only if requested
+        if save_metadata:
+            self._save_metadata()
+            
         return self.metadata
     
     def _create_responsive_versions(self, img: Image.Image, source_path: Path) -> Dict:
