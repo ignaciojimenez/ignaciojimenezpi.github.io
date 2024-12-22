@@ -19,6 +19,9 @@ on:
         description: 'iCloud Shared Album URL'
         required: true
         type: string
+  push:
+    branches:
+      - feat/ios-album-automation
 
 permissions:
   contents: write
@@ -33,7 +36,7 @@ jobs:
       
       - name: Echo inputs
         run: |
-          echo "Album Name: ${{ github.event.inputs.album_name }}"
-          echo "Album Title: ${{ github.event.inputs.album_title }}"
-          echo "Album Date: ${{ github.event.inputs.album_date }}"
-          echo "iCloud URL: ${{ github.event.inputs.icloud_share_url }}"
+          echo "Album Name: ${{ github.event.inputs.album_name || 'No album name (push trigger)' }}"
+          echo "Album Title: ${{ github.event.inputs.album_title || 'No title (push trigger)' }}"
+          echo "Album Date: ${{ github.event.inputs.album_date || 'No date (push trigger)' }}"
+          echo "iCloud URL: ${{ github.event.inputs.icloud_share_url || 'No URL (push trigger)' }}"
