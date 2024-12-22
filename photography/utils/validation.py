@@ -7,7 +7,7 @@ from datetime import datetime
 import jsonschema
 from PIL import Image
 import logging
-from config import METADATA_SCHEMA, ALBUM_SCHEMA, ALLOWED_EXTENSIONS
+from config import METADATA_SCHEMA, ALBUM_SCHEMA, ALLOWED_EXTENSIONS, ALBUMS_JSON
 
 # Configure logging
 logging.basicConfig(
@@ -83,14 +83,19 @@ def validate_album_structure(album_dir: Path) -> None:
     if not images_dir.exists():
         raise ValidationError(f"Images directory does not exist: {images_dir}")
     
-    metadata_file = album_dir / 'albums.json'
+    # Check root albums.json instead of per-album metadata
+    metadata_file = ALBUMS_JSON
     if not metadata_file.exists():
-        raise ValidationError(f"Metadata file does not exist: {metadata_file}")
+        raise ValidationError(f"Root metadata file does not exist: {metadata_file}")
     
     try:
         with open(metadata_file) as f:
-            metadata = json.load(f)
-        validate_metadata(metadata)
+            data = json.load(f)
+            # Find the album in the metadata
+            album_id = album_dir.name
+            album = next((a for a in data['albums'] if a['id'] == album_id), None)
+            if not album:
+                raise ValidationError(f"Album {album_id} not found in metadata")
     except json.JSONDecodeError as e:
         raise ValidationError(f"Invalid metadata JSON: {e}")
 
