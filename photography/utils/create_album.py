@@ -373,10 +373,30 @@ def add_images_to_album(album_name: str, image_path: str) -> bool:
         if not success:
             raise ValidationError("Failed to update albums.json")
         
-        # If everything is successful, replace the album directory
+        # Save existing index.html if it exists
+        index_html = album_dir / 'index.html'
+        has_index = index_html.exists()
+        index_content = None
+        if has_index:
+            with open(index_html, 'r') as f:
+                index_content = f.read()
+        
+        # Replace the album directory while preserving index.html
         if album_dir.exists():
             shutil.rmtree(album_dir)
         shutil.copytree(temp_album_dir, album_dir)
+        
+        # Restore or create index.html
+        if index_content:
+            # Restore existing index.html
+            with open(index_html, 'w') as f:
+                f.write(index_content)
+        else:
+            # Create new index.html from template if it doesn't exist
+            template_path = ALBUMS_DIR / "template.html"
+            if template_path.exists():
+                shutil.copy2(template_path, index_html)
+                logger.info(f"Created new index.html for album {album_name}")
         
         logger.info(f"Successfully added images to album {album_name}")
         return True
