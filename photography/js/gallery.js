@@ -1,16 +1,102 @@
+// Grid-aware image loader for optimized loading
+class GridAwareImageLoader {
+    constructor() {
+        this.queue = [];
+        this.loading = new Set();
+        this.loaded = new Set();
+        this.gridConfig = this.determineGridConfig();
+        this.visibleRows = Math.ceil(window.innerHeight / 300); // Assuming average row height
+    }
+
+    determineGridConfig() {
+        const width = window.innerWidth;
+        if (width >= 1280) return 4;      // xl breakpoint
+        if (width >= 1024) return 3;      // lg breakpoint
+        if (width >= 640) return 2;       // sm breakpoint
+        return 1;                         // mobile
+    }
+
+    prioritizeImages(albums) {
+        const columnsInView = this.gridConfig;
+        const itemsInView = columnsInView * this.visibleRows;
+        
+        return {
+            critical: albums.slice(0, itemsInView),          // Visible in viewport
+            high: albums.slice(itemsInView, itemsInView * 2),// Just below viewport
+            normal: albums.slice(itemsInView * 2)            // Rest of the images
+        };
+    }
+
+    async loadImage(album, { priority }) {
+        if (this.loading.has(album.id) || this.loaded.has(album.id)) {
+            return;
+        }
+
+        this.loading.add(album.id);
+        
+        // Find the existing card for this album
+        const existingCard = document.querySelector(`[data-album-id="${album.id}"]`);
+        if (!existingCard) {
+            console.warn(`Card not found for album ${album.id}`);
+            this.loading.delete(album.id);
+            return;
+        }
+
+        // Update existing card's image with proper priority
+        const container = existingCard.querySelector('.image-container');
+        if (!container) return;
+
+        const existingPicture = container.querySelector('picture');
+        if (existingPicture) {
+            const img = existingPicture.querySelector('img');
+            if (img) {
+                img.fetchPriority = priority;
+                img.loading = priority === 'high' ? 'eager' : 'lazy';
+                
+                // Force reload the image with new priority
+                const currentSrc = img.src;
+                img.src = '';
+                img.src = currentSrc;
+            }
+        }
+
+        this.loading.delete(album.id);
+        this.loaded.add(album.id);
+    }
+
+    async queueImagesWithPriority(priorities) {
+        // Load critical items immediately (first viewport)
+        await Promise.all(priorities.critical.map(item => 
+            this.loadImage(item, { priority: 'high' })));
+
+        // Queue high priority items (just below viewport)
+        setTimeout(() => {
+            priorities.high.forEach(item => 
+                this.loadImage(item, { priority: 'medium' }));
+        }, 100);
+
+        // Queue normal priority items with delays
+        priorities.normal.forEach((item, index) => {
+            setTimeout(() => {
+                this.loadImage(item, { priority: 'low' });
+            }, 200 + (index * 100)); // Progressive delay
+        });
+    }
+}
+
 // Gallery loading and rendering functions
-function createResponsivePicture(imagePath, title, metadata) {
+function createResponsivePicture(imagePath, title, metadata, priority = 'auto') {
     const picture = document.createElement('picture');
     
-    // Get album name and filename from the path (e.g., "paris-may-24/images/IMG_3320.JPG")
+    // Get album name and filename from the path
     const parts = imagePath.split('/');
-    const albumName = parts[0];  // e.g., "paris-may-24"
-    const filename = parts[parts.length - 1];  // e.g., "IMG_3320.JPG"
+    const albumName = parts[0];
+    const filename = parts[parts.length - 1];
     
     // Base path for responsive images
     const responsiveBasePath = `/photography/albums/${albumName}/responsive`;
     
-    // Add WebP sources
+    // Add WebP sources with priority
     ['large', 'medium', 'small'].forEach(size => {
         const source = document.createElement('source');
         source.type = 'image/webp';
@@ -29,7 +115,7 @@ function createResponsivePicture(imagePath, title, metadata) {
         picture.appendChild(source);
     });
     
-    // Add JPEG sources
+    // Add JPEG sources as fallback
     ['large', 'medium', 'small'].forEach(size => {
         const source = document.createElement('source');
         source.srcset = `${responsiveBasePath}/${size}/${filename}`;
@@ -47,19 +133,18 @@ function createResponsivePicture(imagePath, title, metadata) {
         picture.appendChild(source);
     });
     
-    // Add fallback image
+    // Add fallback image with loading priority
     const img = document.createElement('img');
     img.src = `/photography/albums/${imagePath}`;
     img.alt = title;
-    img.loading = 'lazy';
+    img.loading = priority === 'high' ? 'eager' : 'lazy';
+    img.fetchPriority = priority;
     img.className = 'w-full h-full object-cover transition-opacity duration-300 opacity-0';
     
-    // Use medium size dimensions from metadata if available
     if (metadata && metadata.responsive && metadata.responsive.medium) {
         img.width = metadata.responsive.medium.width;
         img.height = metadata.responsive.medium.height;
     } else if (metadata && metadata.original) {
-        // Fallback to original dimensions
         img.width = metadata.original.width;
         img.height = metadata.original.height;
     }
@@ -68,18 +153,10 @@ function createResponsivePicture(imagePath, title, metadata) {
     return picture;
 }
 
-function createImage(imagePath, title) {
-    const img = document.createElement('img');
-    img.src = `/photography/albums/${imagePath}`; // Add albums prefix
-    img.alt = title;
-    img.loading = 'lazy';
-    img.className = 'w-full h-full object-cover transition-opacity duration-300 opacity-0';
-    return img;
-}
-
-function createAlbumCard(album, metadata) {
+function createAlbumCard(album, metadata, priority = 'auto') {
     const card = document.createElement('div');
     card.className = 'album-item';
+    card.setAttribute('data-album-id', album.id); // Add album ID for loader reference
     
     const container = document.createElement('div');
     container.className = 'image-container relative group cursor-pointer';
@@ -89,18 +166,16 @@ function createAlbumCard(album, metadata) {
     skeleton.className = 'absolute inset-0 bg-gray-200 animate-pulse';
     container.appendChild(skeleton);
     
-    // Create responsive picture element
+    // Create responsive picture element with priority
     const picture = createResponsivePicture(
         album.coverImage,
         album.title,
-        metadata
+        metadata,
+        priority
     );
     
-    // Create fallback image
-    const img = createImage(album.coverImage, album.title);
-    
     // Handle image load and error
-    const imageElement = picture.querySelector('img') || img;
+    const imageElement = picture.querySelector('img');
     imageElement.onerror = () => {
         console.error('Image failed to load:', imageElement.src);
         skeleton.classList.remove('animate-pulse');
@@ -113,24 +188,9 @@ function createAlbumCard(album, metadata) {
     
     imageElement.onload = () => {
         skeleton.remove();
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target.querySelector('img');
-                    if (img) {
-                        img.classList.add('opacity-100');
-                        img.classList.remove('opacity-0');
-                    }
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, {
-            root: null,
-            rootMargin: '50px',
-            threshold: [0, 0.1, 0.5, 1]
-        });
-        observer.observe(card);
+        imageElement.classList.add('opacity-100');
+        imageElement.classList.remove('opacity-0');
+        card.classList.add('visible');
     };
     
     const overlay = document.createElement('div');
@@ -151,7 +211,7 @@ function createAlbumCard(album, metadata) {
     `;
     
     overlay.appendChild(content);
-    container.appendChild(picture || img);
+    container.appendChild(picture);
     container.appendChild(overlay);
     
     // Add mobile-specific metadata
@@ -193,49 +253,46 @@ async function initGallery() {
     albumGrid.innerHTML = '<div class="w-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div></div>';
     
     try {
-        // Use the preloaded albums.json resource which now includes metadata
         const albumsResponse = await fetch('/photography/albums/albums.json', {
-            cache: 'force-cache' // Use the preloaded resource from browser cache
+            cache: 'force-cache'
         });
         if (!albumsResponse.ok) {
             throw new Error(`HTTP error! status: ${albumsResponse.status}`);
         }
+        
         const albumsData = await albumsResponse.json();
         
-        // Validate albums data
+        // Validate and extract albums array
         if (!albumsData.albums || !Array.isArray(albumsData.albums)) {
             throw new Error('Invalid album data format');
         }
         
-        // Clear loading state
-        albumGrid.innerHTML = '';
+        const albums = albumsData.albums;
+        albumGrid.innerHTML = ''; // Clear loading spinner
         
         // Sort albums by date (newest first)
-        const sortedAlbums = [...albumsData.albums].sort((a, b) => {
+        const sortedAlbums = [...albums].sort((a, b) => {
             const dateA = new Date(a.date);
             const dateB = new Date(b.date);
             return dateB - dateA;
         });
         
-        // Create album cards using the bundled metadata
-        for (const album of sortedAlbums) {
-            const card = createAlbumCard(album, album.metadata || {});
-            albumGrid.appendChild(card);
-        }
+        // Initialize grid-aware loader
+        const loader = new GridAwareImageLoader();
+        const priorities = loader.prioritizeImages(sortedAlbums);
         
-        // Wait for all images to load
-        const images = albumGrid.getElementsByTagName('img');
-        await Promise.all([...images].map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
-                img.addEventListener('load', resolve);
-                img.addEventListener('error', resolve);
-            });
-        }));
+        // Create all album cards with placeholders
+        sortedAlbums.forEach(album => {
+            const card = createAlbumCard(album, album.metadata);
+            albumGrid.appendChild(card);
+        });
+        
+        // Start loading images with priority
+        await loader.queueImagesWithPriority(priorities);
         
     } catch (error) {
-        console.error('Error loading gallery:', error);
-        albumGrid.innerHTML = '<p class="text-red-500">Error loading gallery</p>';
+        console.error('Error loading albums:', error);
+        albumGrid.innerHTML = '<div class="text-center text-red-600 py-8">Error loading albums</div>';
     }
 }
 
