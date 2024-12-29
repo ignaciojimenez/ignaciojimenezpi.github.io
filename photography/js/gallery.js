@@ -253,9 +253,12 @@ async function initGallery() {
     albumGrid.innerHTML = '<div class="w-full text-center py-8"><div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div></div>';
     
     try {
-        const albumsResponse = await fetch('/photography/albums/albums.json', {
+        // Use the preloaded resource instead of making a new fetch
+        const preloadLink = document.querySelector('link[rel="preload"][href$="albums.json"]');
+        const albumsResponse = await fetch(preloadLink?.href || '/photography/albums/albums.json', {
             cache: 'force-cache'
         });
+        
         if (!albumsResponse.ok) {
             throw new Error(`HTTP error! status: ${albumsResponse.status}`);
         }
