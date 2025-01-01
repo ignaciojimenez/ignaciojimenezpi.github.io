@@ -1,7 +1,7 @@
 {
     "python.defaultInterpreterPath": "${workspaceFolder}/photography/utils/venv/bin/python",
     "python.terminal.activateEnvironment": true,
-    "terminal.integrated.defaultProfile.osx": "bash",
+    "terminal.integrated.defaultProfile.osx": "zsh",
     "terminal.integrated.env.osx": {
         "PYTHONPATH": "${workspaceFolder}/photography/utils"
     }
