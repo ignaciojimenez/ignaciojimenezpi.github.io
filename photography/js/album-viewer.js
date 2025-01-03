@@ -8,21 +8,16 @@ class AlbumViewer {
         this.isResizing = false;
         this.albumId = this.getAlbumIdFromUrl();
         this.lastHeight = null;
-        this.preloadedImages = new Map(); // Track preloaded images
+        this.preloadedImages = new Map();
         
-        // Create modal if it doesn't exist
         if (!this.modal) {
             this.createModal();
             this.modal = document.getElementById('imageModal');
         }
         
-        // Initialize button references
         this.initializeButtonReferences();
-        
-        // Setup event listeners
         this.setupEventListeners();
         
-        // Create intersection observer for lazy loading
         this.observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -35,10 +30,7 @@ class AlbumViewer {
             threshold: 0.1
         });
 
-        // Track initial width
         let initialWidth = window.innerWidth;
-
-        // Debounce resize handler
         this.debouncedResize = this.debounce(() => {
             if (window.imagesData) {
                 this.isResizing = false;
@@ -46,11 +38,8 @@ class AlbumViewer {
             }
         }, 150);
 
-        // Setup resize handling
         window.addEventListener('resize', () => {
             const currentWidth = window.innerWidth;
-
-            // Only trigger reflow if width has changed
             if (currentWidth !== initialWidth) {
                 if (!this.isResizing) {
                     this.isResizing = true;
@@ -59,8 +48,6 @@ class AlbumViewer {
                     });
                 }
                 this.debouncedResize();
-
-                // Update initial width
                 initialWidth = currentWidth;
             }
         });
@@ -68,11 +55,9 @@ class AlbumViewer {
 
     getAlbumIdFromUrl() {
         const path = window.location.pathname;
-        // Remove trailing slash if present
         const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
         const parts = cleanPath.split('/');
-        const albumId = parts[parts.length - 1];
-        return albumId;
+        return parts[parts.length - 1];
     }
 
     debounce(func, wait) {
@@ -104,20 +89,17 @@ class AlbumViewer {
                 throw new Error('No album ID specified');
             }
             
-            // Load albums.json
             const albumsResponse = await fetch('/photography/albums/albums.json');
             if (!albumsResponse.ok) {
                 throw new Error(`HTTP error! status: ${albumsResponse.status}`);
             }
             const albumsData = await albumsResponse.json();
             
-            // Find current album
             const album = albumsData.albums.find(a => a.id === this.albumId);
             if (!album) {
                 throw new Error('Album not found');
             }
 
-            // Update page title and metadata
             document.title = `${album.title} - Ignacio Jiménez Pi`;
             if (album.description) {
                 const metaDesc = document.querySelector('meta[name="description"]');
@@ -126,35 +108,7 @@ class AlbumViewer {
                 }
             }
 
-            // Process images with metadata
-            window.imagesData = album.images.map(imagePath => {
-                const filename = imagePath.split('/').pop();
-                const imageMetadata = album.metadata[filename];
-                
-                if (!imageMetadata) {
-                    console.warn(`No metadata found for image: ${filename}`);
-                    return {
-                        filename,
-                        path: `/photography/albums/${imagePath}`,
-                        metadata: null
-                    };
-                }
-
-                return {
-                    filename,
-                    path: `/photography/albums/${imagePath}`,
-                    metadata: {
-                        original: {
-                            path: `/photography/albums/${this.albumId}/${imageMetadata.original.path}`,
-                            webp: imageMetadata.original.webp ? `/photography/albums/${this.albumId}/${imageMetadata.original.webp}` : null,
-                            width: imageMetadata.original.width,
-                            height: imageMetadata.original.height
-                        },
-                        responsive: imageMetadata.responsive
-                    }
-                };
-            });
-            
+            window.imagesData = album.images;
             this.processImages(window.imagesData);
         } catch (error) {
             console.error('Error loading album:', error);
@@ -167,37 +121,22 @@ class AlbumViewer {
         
         const loadPromises = images.map((image, index) => {
             return new Promise((resolve) => {
-                if (this.imageBuffer.has(image.filename)) {
+                if (this.imageBuffer.has(image.id)) {
                     resolve();
                     return;
                 }
 
-                // If we have metadata, use it instead of loading the image
-                if (image.metadata) {
-                    this.imageBuffer.set(image.filename, {
-                        aspectRatio: image.metadata.original.width / image.metadata.original.height,
-                        filename: image.filename
+                const sizes = image.sizes;
+                if (sizes && sizes.large) {
+                    this.imageBuffer.set(image.id, {
+                        aspectRatio: sizes.large.width / sizes.large.height,
+                        id: image.id
                     });
                     resolve();
                     return;
                 }
 
-                // Fallback to loading image if no metadata
-                const img = new Image();
-                img.src = image.path;
-                
-                img.onload = () => {
-                    this.imageBuffer.set(image.filename, {
-                        aspectRatio: img.width / img.height,
-                        filename: image.filename
-                    });
-                    resolve();
-                };
-                
-                img.onerror = () => {
-                    console.error('Failed to load image:', image.path);
-                    resolve();
-                };
+                resolve();
             });
         });
 
@@ -209,43 +148,10 @@ class AlbumViewer {
 
     preloadAllHighResImages() {
         if (!window.imagesData) return;
-
-        // Create a queue of images to preload
-        const preloadQueue = window.imagesData.map((_, index) => index);
-        let currentPreloadIndex = 0;
-
-        const preloadNext = () => {
-            if (currentPreloadIndex >= preloadQueue.length) return;
-
-            const index = preloadQueue[currentPreloadIndex];
-            const imageData = window.imagesData[index];
-
-            if (imageData.metadata?.responsive && !this.preloadedImages.has(index)) {
-                const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
-                const img = new Image();
-                
-                img.onload = () => {
-                    this.preloadedImages.set(index, img);
-                    currentPreloadIndex++;
-                    // Continue preloading with a small delay to prevent overwhelming the browser
-                    setTimeout(preloadNext, 100);
-                };
-
-                img.onerror = () => {
-                    console.error('Failed to preload image:', largePath);
-                    currentPreloadIndex++;
-                    setTimeout(preloadNext, 100);
-                };
-
-                img.src = largePath;
-            } else {
-                currentPreloadIndex++;
-                preloadNext();
-            }
-        };
-
-        // Start the preloading process
-        preloadNext();
+        
+        window.imagesData.forEach((_, index) => {
+            this.preloadImage(index);
+        });
     }
 
     reflow(isInitial = false) {
@@ -269,18 +175,18 @@ class AlbumViewer {
         const gap = 10;
 
         window.imagesData.forEach((image, index) => {
-            const imageData = this.imageBuffer.get(image.filename);
+            const imageData = this.imageBuffer.get(image.id);
             if (!imageData) return;
 
             currentRowAspectRatios.push(imageData.aspectRatio);
             
             let imageCard;
-            if (existingItems.has(image.filename)) {
-                imageCard = existingItems.get(image.filename);
+            if (existingItems.has(image.id)) {
+                imageCard = existingItems.get(image.id);
                 imageCard.style.removeProperty('width');
                 imageCard.style.removeProperty('height');
             } else {
-                imageCard = this.createImageCard(image.filename, index);
+                imageCard = this.createImageCard(image, index);
             }
             
             currentRow.push(imageCard);
@@ -292,7 +198,6 @@ class AlbumViewer {
             }
         });
 
-        // Remove resizing class after layout is complete
         requestAnimationFrame(() => {
             document.querySelectorAll('.gallery-item').forEach(item => {
                 item.classList.remove('resizing');
@@ -328,61 +233,48 @@ class AlbumViewer {
         this.gallery.appendChild(row);
     }
 
-    createImageCard(filename, index) {
+    createImageCard(imageData, index) {
         const imageCard = document.createElement('div');
         imageCard.className = 'gallery-item';
         
+        const picture = document.createElement('picture');
+        const sizes = imageData.sizes;
+        
+        const breakpoints = {
+            'grid': '(max-width: 640px)',
+            'small': '(max-width: 1024px)',
+            'medium': '(min-width: 1025px)'
+        };
+
+        Object.entries(breakpoints).forEach(([size, media]) => {
+            if (sizes[size] && sizes[size].webp) {
+                const source = document.createElement('source');
+                source.srcset = `/photography/albums/${this.albumId}/${sizes[size].webp}`;
+                source.media = media;
+                source.type = 'image/webp';
+                picture.appendChild(source);
+            }
+        });
+        
         const img = document.createElement('img');
-        const imageData = window.imagesData[index];
-        
-        if (imageData.metadata?.responsive) {
-            // Create srcset for responsive images including the original
-            const srcsetEntries = [];
-            
-            // Add responsive sizes
-            const sizes = ['thumbnail', 'small', 'medium', 'large'];
-            sizes.forEach(size => {
-                const sizeData = imageData.metadata.responsive[size];
-                if (sizeData?.path) {
-                    srcsetEntries.push(`${sizeData.path} ${sizeData.width}w`);
-                }
-            });
-            
-            // Add original
-            if (imageData.metadata.original?.path) {
-                srcsetEntries.push(`${imageData.metadata.original.path} ${imageData.metadata.original.width}w`);
-            }
-            
-            if (srcsetEntries.length > 0) {
-                img.srcset = srcsetEntries.join(', ');
-                img.sizes = '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw';
-                // Use medium size as fallback, or the first available size
-                const mediumPath = imageData.metadata.responsive.medium?.path || imageData.metadata.original.path;
-                img.src = mediumPath || imageData.path;
-            } else {
-                img.src = imageData.path;
-            }
-        } else {
-            img.src = imageData.path;
-        }
-        
+        const gridSize = sizes.grid;
+        img.src = `/photography/albums/${this.albumId}/${gridSize.webp}`;
         img.alt = `Image ${index + 1}`;
         img.loading = 'lazy';
+        picture.appendChild(img);
         
-        imageCard.appendChild(img);
+        imageCard.appendChild(picture);
         imageCard.addEventListener('click', () => this.showModal(index));
         
         return imageCard;
     }
 
     createModal() {
-        // Remove existing modal if it exists
         const existingModal = document.getElementById('imageModal');
         if (existingModal) {
             existingModal.remove();
         }
 
-        // Create the modal structure
         const modal = document.createElement('div');
         modal.id = 'imageModal';
         modal.className = 'modal';
@@ -390,10 +282,8 @@ class AlbumViewer {
         const modalContent = document.createElement('div');
         modalContent.className = 'modal-content';
         
-        const img = document.createElement('img');
-        img.id = 'modalImage';
-        img.alt = '';
-        modalContent.appendChild(img);
+        const picture = document.createElement('picture');
+        modalContent.appendChild(picture);
         
         const prevButton = document.createElement('button');
         prevButton.className = 'modal-prev';
@@ -416,7 +306,6 @@ class AlbumViewer {
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
         
-        // Add styles if not already present
         if (!document.getElementById('modalStyles')) {
             const style = document.createElement('style');
             style.id = 'modalStyles';
@@ -424,7 +313,7 @@ class AlbumViewer {
                 #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; }
                 #imageModal.active { display: flex !important; }
                 #imageModal .modal-content { position: relative; margin: auto; max-width: 90%; max-height: 90%; }
-                #imageModal .modal-content img { 
+                #imageModal .modal-content picture { 
                     max-width: 100%; 
                     max-height: 90vh; 
                     display: block; 
@@ -432,7 +321,7 @@ class AlbumViewer {
                     transition: opacity 0.2s ease-out, filter 0.2s ease-out; 
                     opacity: 1;
                 }
-                #imageModal .modal-content img.loading { 
+                #imageModal .modal-content picture img.loading { 
                     filter: blur(10px);
                     opacity: 0.6;
                 }
@@ -495,7 +384,6 @@ class AlbumViewer {
         const nextButton = this.modal.querySelector('.modal-next');
         
         if (prevButton && nextButton) {
-            // At first image
             if (this.currentImageIndex === 0) {
                 prevButton.style.display = 'none';
                 prevButton.classList.add('hidden');
@@ -504,7 +392,6 @@ class AlbumViewer {
                 prevButton.classList.remove('hidden');
             }
             
-            // At last image
             if (this.currentImageIndex === window.imagesData.length - 1) {
                 nextButton.style.display = 'none';
                 nextButton.classList.add('hidden');
@@ -517,33 +404,53 @@ class AlbumViewer {
 
     showModal(index) {
         this.currentImageIndex = index;
+        const imageData = window.imagesData[index];
+        const sizes = imageData.sizes;
+        
+        const picture = document.createElement('picture');
+        
+        if (sizes.large.webp) {
+            const webpSource = document.createElement('source');
+            webpSource.srcset = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
+            webpSource.type = 'image/webp';
+            picture.appendChild(webpSource);
+        }
+        
+        const img = document.createElement('img');
+        img.src = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
+        img.alt = `Image ${index + 1}`;
+        img.className = 'max-w-full max-h-[90vh] object-contain mx-auto';
+        picture.appendChild(img);
+        
+        const modalContent = document.querySelector('.modal-content');
+        modalContent.innerHTML = '';
+        modalContent.appendChild(picture);
+        
         this.modal.classList.add('active');
+        this.updateNavigationButtons();
+        this.preloadAdjacentImages(index);
+        
         document.body.style.overflow = 'hidden';
-        this.showImage(index);
-        this.preloadAdjacentImages(index); // Preload adjacent images
-        this.modal.focus(); // Set focus to the modal
     }
 
     preloadAdjacentImages(currentIndex) {
-        // Preload next image
         if (currentIndex + 1 < window.imagesData.length) {
             this.preloadImage(currentIndex + 1);
         }
-        // Preload previous image
         if (currentIndex - 1 >= 0) {
             this.preloadImage(currentIndex - 1);
         }
     }
 
     preloadImage(index) {
-        const imageData = window.imagesData[index];
-        if (!imageData || this.preloadedImages.has(index)) return;
+        if (this.preloadedImages.has(index)) return;
 
-        if (imageData.metadata?.responsive) {
-            const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
-            const img = new Image();
-            img.src = largePath;
-            this.preloadedImages.set(index, img);
+        const imageData = window.imagesData[index];
+        const sizes = imageData.sizes;
+        if (sizes && sizes.large && sizes.large.webp) {
+            const webpImg = new Image();
+            webpImg.src = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
+            this.preloadedImages.set(index, webpImg);
         }
     }
 
@@ -552,95 +459,39 @@ class AlbumViewer {
         document.body.style.overflow = '';
     }
 
-    showImage(index) {
-        const modalImage = document.getElementById('modalImage');
-        const imageData = window.imagesData[index];
-        
-        // Immediately add loading class for transition
-        modalImage.classList.add('loading');
-        
-        if (imageData.metadata?.responsive) {
-            const largePath = imageData.metadata.responsive.large?.path || imageData.metadata.original.path;
-            const largeWidth = imageData.metadata.responsive.large?.width || imageData.metadata.original.width;
-            const srcset = `${largePath} ${largeWidth}w, ${imageData.metadata.original.path} ${imageData.metadata.original.width}w`;
-            
-            const loadHighRes = () => {
-                modalImage.srcset = srcset;
-                modalImage.sizes = '100vw';
-                modalImage.src = largePath;
-                modalImage.classList.remove('loading');
-            };
-
-            // If image is preloaded, show it immediately
-            if (this.preloadedImages.has(index)) {
-                loadHighRes();
-            } else {
-                // Otherwise load it first
-                const tempImage = new Image();
-                tempImage.onload = () => {
-                    this.preloadedImages.set(index, tempImage);
-                    loadHighRes();
-                };
-                tempImage.src = largePath;
-            }
-        } else {
-            // For non-responsive images
-            const directImage = new Image();
-            directImage.onload = () => {
-                modalImage.src = imageData.path;
-                modalImage.srcset = '';
-                modalImage.sizes = '';
-                modalImage.classList.remove('loading');
-            };
-            directImage.src = imageData.path;
-        }
-        
-        this.currentImageIndex = index;
-        this.preloadAdjacentImages(index);
-        
-        requestAnimationFrame(() => {
-            this.updateNavigationButtons();
-        });
-    }
-
     showNextImage() {
         const nextIndex = this.currentImageIndex + 1;
         if (nextIndex < window.imagesData.length) {
-            this.showImage(nextIndex);
+            this.showModal(nextIndex);
         }
     }
 
     showPrevImage() {
         const prevIndex = this.currentImageIndex - 1;
         if (prevIndex >= 0) {
-            this.showImage(prevIndex);
+            this.showModal(prevIndex);
         }
     }
 
     setupEventListeners() {
-        // Existing keyboard event listener
         document.addEventListener('keydown', (e) => {
             if (this.modal.classList.contains('active')) {
                 this.handleKeyPress(e);
             }
         });
 
-        // Swipe gesture support for modal
         let touchStartX = 0;
         let touchEndX = 0;
 
-        // Touch start event
         this.modal.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
         }, { passive: true });
 
-        // Touch end event
         this.modal.addEventListener('touchend', (e) => {
             touchEndX = e.changedTouches[0].screenX;
             this.handleSwipe(touchStartX, touchEndX);
         }, { passive: true });
 
-        // Optional: Mouse swipe support for desktop
         let mouseStartX = 0;
         let isMouseDown = false;
 
@@ -667,7 +518,6 @@ class AlbumViewer {
             if (prevButton) {
                 prevButton.addEventListener('click', () => this.showPrevImage());
                 
-                // Add touch support for previous button
                 prevButton.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     this.showPrevImage();
@@ -677,7 +527,6 @@ class AlbumViewer {
             if (nextButton) {
                 nextButton.addEventListener('click', () => this.showNextImage());
                 
-                // Add touch support for next button
                 nextButton.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     this.showNextImage();
@@ -709,15 +558,13 @@ class AlbumViewer {
     }
 
     handleSwipe(startX, endX) {
-        const threshold = 50; // Minimum distance for a swipe
+        const threshold = 50;
         const swipeDistance = endX - startX;
 
         if (Math.abs(swipeDistance) > threshold) {
             if (swipeDistance > 0) {
-                // Swipe right (previous image)
                 this.showPrevImage();
             } else {
-                // Swipe left (next image)
                 this.showNextImage();
             }
         }

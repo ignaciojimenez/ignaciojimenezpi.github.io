@@ -37,11 +37,13 @@
         @apply transition-[width,height] duration-300;
     }
 
+    .gallery-item picture,
     .gallery-item img {
         @apply w-full h-full object-cover transition-transform duration-300;
     }
 
     @media (hover: hover) {
+        .gallery-item:hover picture img,
         .gallery-item:hover img {
             @apply scale-[1.02];
         }
@@ -60,6 +62,7 @@
         @apply relative h-full overflow-hidden w-full bg-gray-100;
     }
 
+    .image-container picture,
     .image-container img {
         @apply w-full h-full object-cover transition-transform duration-500;
     }
@@ -77,7 +80,8 @@
         @apply relative w-full h-full flex items-center justify-center max-w-[90vw] max-h-[90vh] mx-auto;
     }
 
-    .modal-image {
+    .modal-content picture,
+    .modal-content img {
         @apply max-w-full max-h-[90vh] object-contain;
     }
 

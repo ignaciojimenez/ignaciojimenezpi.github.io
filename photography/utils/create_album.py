@@ -5,19 +5,14 @@ import sys
 import json
 import shutil
 import logging
+import tempfile
 import argparse
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-from datetime import datetime
-import tempfile
-
-from config import BASE_DIR, ALBUMS_DIR, ALBUMS_JSON
-from validation import (
-    validate_album_data,
-    validate_album_structure,
-    validate_image_paths,
-    ValidationError
-)
+from config import ALBUMS_JSON, METADATA_SCHEMA, ALBUM_SCHEMA
+from validation import validate_album_data, validate_image_file, validate_album_structure
 from image_processor import ImageProcessor
 
 # Configure logging
@@ -28,39 +23,42 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def create_album_directory(album_id: str) -> Path:
-    """Create album directory and copy template."""
-    album_dir = ALBUMS_DIR / album_id
-    try:
-        # Create album directory
-        album_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Create images directory
-        (album_dir / 'images').mkdir(exist_ok=True)
-        
-        # Copy and customize template.html
-        template_path = ALBUMS_DIR / "template.html"
-        index_path = album_dir / "index.html"
-        
-        if not template_path.exists():
-            raise FileNotFoundError(f"Template file not found: {template_path}")
-            
-        shutil.copy2(template_path, index_path)
+# Base paths
+BASE_DIR = Path(__file__).parent.parent
+ALBUMS_DIR = BASE_DIR / 'albums'
+
+def create_album_directory(album_name: str, temp_dir: Optional[Path] = None) -> Path:
+    """Create album directory structure."""
+    base_dir = temp_dir if temp_dir else ALBUMS_DIR
+    album_dir = base_dir / album_name
+    
+    # Create main directories
+    album_dir.mkdir(parents=True, exist_ok=True)
+    images_dir = album_dir / 'images'
+    images_dir.mkdir(exist_ok=True)
+    
+    # Create size-specific directories
+    (images_dir / 'grid').mkdir(exist_ok=True)
+    (images_dir / 'small').mkdir(exist_ok=True)
+    (images_dir / 'medium').mkdir(exist_ok=True)
+    (images_dir / 'large').mkdir(exist_ok=True)
+    
+    # Copy template.html if it exists
+    template_path = ALBUMS_DIR / 'template.html'
+    if template_path.exists():
+        shutil.copy2(template_path, album_dir / 'index.html')
         logger.info(f"Created album directory and index.html: {album_dir}")
-        
-        return album_dir
-    except Exception as e:
-        logger.error(f"Failed to create album directory: {e}")
-        raise
+    
+    return album_dir
 
 def update_albums_json(
     album_name: str,
     title: str,
     description: str,
     date: str,
-    cover_image: Optional[str] = None,
-    images: Optional[List[str]] = None,
-    metadata: Optional[Dict] = None
+    cover_image: Optional[Dict] = None,
+    images: Optional[List[Dict]] = None,
+    temp_operation: bool = False
 ) -> bool:
     """Update the albums.json file with album information."""
     try:
@@ -71,103 +69,75 @@ def update_albums_json(
         # Check if album already exists
         existing_album = next((a for a in data['albums'] if a['id'] == album_name), None)
         
+        album_data = {
+            'id': album_name,
+            'title': title,
+            'description': description,
+            'date': date,
+            'coverImage': cover_image or {},
+            'images': images or []
+        }
+        
         if existing_album:
             # Update existing album
-            existing_album.update({
-                'title': title,
-                'description': description,
-                'date': date,
-                'coverImage': cover_image or existing_album.get('coverImage', ''),
-                'images': images if images is not None else existing_album.get('images', []),
-                'metadata': metadata if metadata is not None else existing_album.get('metadata', {})
-            })
+            existing_album.update(album_data)
         else:
             # Add new album
-            data['albums'].append({
-                'id': album_name,
-                'title': title,
-                'description': description,
-                'date': date,
-                'coverImage': cover_image or '',
-                'images': images or [],
-                'metadata': metadata or {}
-            })
+            data['albums'].append(album_data)
         
         # Sort albums by date (newest first)
         data['albums'].sort(key=lambda x: x['date'], reverse=True)
         
-        # Save updated data
-        with open(ALBUMS_JSON, 'w') as f:
-            json.dump(data, f, indent=2)
+        # If this is a temporary operation, don't save to disk
+        if not temp_operation:
+            # Backup current file
+            backup_path = Path(str(ALBUMS_JSON) + '.bak')
+            shutil.copy2(ALBUMS_JSON, backup_path)
+            
+            # Save updated data
+            with open(ALBUMS_JSON, 'w') as f:
+                json.dump(data, f, indent=2)
         
         return True
+        
     except Exception as e:
         logger.error(f"Failed to update albums.json: {e}")
         return False
 
-def update_album_metadata(album_name: str, image_path: str) -> bool:
-    """Update album metadata when adding new images."""
-    try:
-        # Load current albums data
-        with open(ALBUMS_JSON, 'r') as f:
-            data = json.load(f)
-        
-        # Find target album
-        album = next((a for a in data['albums'] if a['id'] == album_name), None)
-        if not album:
-            raise ValidationError(f"Album not found: {album_name}")
-        
-        # Initialize metadata if it doesn't exist
-        if 'metadata' not in album:
-            album['metadata'] = {'images': []}
-        
-        # Add new image metadata
-        image_name = os.path.basename(image_path)
-        if image_name not in [img['name'] for img in album['metadata']['images']]:
-            album['metadata']['images'].append({
-                'name': image_name,
-                'date': datetime.now().strftime('%Y-%m-%d')
-            })
-        
-        # Save updated data
-        with open(ALBUMS_JSON, 'w') as f:
-            json.dump(data, f, indent=2)
-        
-        return True
-    except Exception as e:
-        logger.error(f"Failed to update metadata: {e}")
-        return False
-
-def process_images(source_dir: str, album_dir: Path) -> List[str]:
+def process_images(source_dir: str, album_dir: Path) -> List[Dict]:
     """Process and optimize images."""
     source_path = Path(source_dir)
     if not source_path.exists():
         raise FileNotFoundError(f"Source directory does not exist: {source_path}")
     
-    # Copy original images
-    images_dir = album_dir / 'images'
+    # Get list of image files without copying them
     image_files = []
-    
-    for img_path in source_path.glob('*'):
-        if img_path.suffix.lower() in {'.jpg', '.jpeg', '.png'}:
-            dest_path = images_dir / img_path.name
-            shutil.copy2(img_path, dest_path)
-            image_files.append(img_path.name)
-            logger.info(f"Copied original image: {img_path.name}")
+    if source_path.is_file():
+        if source_path.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp'}:
+            image_files.append(source_path)
+    else:
+        image_files.extend([
+            p for p in source_path.glob('*')
+            if p.suffix.lower() in {'.jpg', '.jpeg', '.png', '.webp'}
+        ])
     
     if not image_files:
-        raise ValidationError("No valid images found in source directory")
+        raise ValueError("No valid images found in source directory")
     
-    # Process images and create responsive versions
+    # Process images
     processor = ImageProcessor(album_dir)
-    try:
-        metadata = processor.process_album()
-        logger.info("Successfully processed images and created responsive versions")
-    except Exception as e:
-        logger.error(f"Error processing images: {e}")
-        raise
+    metadata = processor.process_album(image_files)
     
-    return image_files
+    # Convert metadata to list format and ensure no extensions in IDs
+    images = [
+        {
+            'id': Path(img_id).stem.split('.')[0],  # Remove all extensions
+            'sizes': img_data['sizes']
+        }
+        for img_id, img_data in metadata.items()
+    ]
+    
+    return images
 
 def create_album(
     album_name: str,
@@ -180,84 +150,55 @@ def create_album(
     """Create a new album with optimized images."""
     temp_dir = None
     try:
-        # Validate input directory exists
-        if not os.path.isdir(image_dir):
-            raise ValidationError(f"Image directory does not exist: {image_dir}")
-            
         # Create temporary directory for processing
         temp_dir = Path(tempfile.mkdtemp())
-        temp_album_dir = temp_dir / album_name
-        temp_album_dir.mkdir(parents=True)
-        (temp_album_dir / 'images').mkdir()  # Create images directory
-        (temp_album_dir / 'responsive').mkdir()  # Create responsive directory
+        temp_album_dir = create_album_directory(album_name, temp_dir)
         
-        # Copy images from source directory to temp directory
-        source_dir = Path(image_dir)
-        temp_images_dir = temp_album_dir / 'images'
-        for img_path in source_dir.glob('*'):
-            if img_path.suffix.lower() in {'.jpg', '.jpeg', '.png'}:
-                shutil.copy2(img_path, temp_images_dir / img_path.name)
-                logger.info(f"Copied original image: {img_path.name}")
+        # Process images in temporary directory
+        images = process_images(image_dir, temp_album_dir)
         
-        # Validate and create album data
+        if not images:
+            raise ValueError(f"No valid images found in directory: {image_dir}")
+        
+        # Handle cover image
+        if cover_image:
+            cover_path = Path(cover_image)
+            if cover_path.is_file():
+                cover_id = cover_path.stem.split('.')[0]  # Remove all extensions
+                # Find the processed cover image in the metadata
+                cover_img = next((img for img in images if img['id'] == cover_id), None)
+                if cover_img:
+                    cover_data = cover_img['sizes']['grid']
+                else:
+                    logger.warning(f"Specified cover image {cover_id} not found in processed images, using first image")
+                    cover_data = images[0]['sizes']['grid']
+            else:
+                logger.warning("Cover image file not found, using first image")
+                cover_data = images[0]['sizes']['grid']
+        else:
+            cover_data = images[0]['sizes']['grid']
+        
+        # Validate album data
         album_data = validate_album_data(
             album_id=album_name,
             title=title,
             date=date,
             description=description,
-            metadata={}  # Initialize empty metadata
+            cover_image=cover_data,
+            images=images
         )
         
-        logger.info(f"Creating album: {title} ({album_name})")
-        
-        # First update albums.json with initial data
-        success = update_albums_json(
+        # First update albums.json with initial data (temporary)
+        if not update_albums_json(
             album_name=album_name,
             title=title,
             description=description,
             date=date,
-            cover_image=""  # Will update this after processing images
-        )
-        
-        if not success:
-            raise ValidationError("Failed to update albums.json")
-        
-        # Process images in temporary directory
-        processor = ImageProcessor(temp_album_dir, albums_json=ALBUMS_JSON)
-        metadata = processor.process_album(save_metadata=False)  # Don't save metadata directly
-        
-        if not metadata:
-            raise ValidationError(f"No valid images found in directory: {image_dir}")
-        
-        # Get list of processed images
-        image_files = list(metadata.keys())
-        
-        if not image_files:
-            raise ValidationError(f"No valid images found in directory: {image_dir}")
-        
-        # Update albums.json with cover image and metadata
-        relative_image_paths = [f"{album_name}/images/{img}" for img in image_files]
-        if cover_image:
-            cover_basename = os.path.basename(cover_image)
-            if cover_basename in image_files:
-                cover_path = f"{album_name}/images/{cover_basename}"
-            else:
-                cover_path = relative_image_paths[0]
-        else:
-            cover_path = relative_image_paths[0]
-        
-        success = update_albums_json(
-            album_name=album_name,
-            title=title,
-            description=description,
-            date=date,
-            cover_image=cover_path,
-            images=relative_image_paths,
-            metadata=metadata
-        )
-        
-        if not success:
-            raise ValidationError("Failed to update albums.json with cover image")
+            cover_image=cover_data,
+            images=images,
+            temp_operation=True
+        ):
+            raise ValueError("Failed to validate album data")
         
         # If everything is successful, move the temporary directory to final location
         final_album_dir = ALBUMS_DIR / album_name
@@ -265,17 +206,23 @@ def create_album(
             shutil.rmtree(final_album_dir)
         shutil.copytree(temp_album_dir, final_album_dir)
         
-        # Create index.html from template
-        template_path = ALBUMS_DIR / "template.html"
-        index_path = final_album_dir / "index.html"
-        if template_path.exists():
-            shutil.copy2(template_path, index_path)
+        # Finally, update albums.json
+        if not update_albums_json(
+            album_name=album_name,
+            title=title,
+            description=description,
+            date=date,
+            cover_image=cover_data,
+            images=images
+        ):
+            raise ValueError("Failed to update albums.json")
         
         logger.info(f"Successfully created album: {album_name}")
         return True
         
     except Exception as e:
         logger.error(f"Failed to create album: {e}")
+        
         # Clean up the album entry from albums.json if it was created
         try:
             with open(ALBUMS_JSON, 'r') as f:
@@ -293,7 +240,7 @@ def create_album(
                 shutil.rmtree(album_dir)
         except Exception as cleanup_error:
             logger.error(f"Error cleaning up album directory: {cleanup_error}")
-            
+        
         return False
         
     finally:
@@ -305,100 +252,63 @@ def create_album(
                 logger.error(f"Error cleaning up temporary directory: {cleanup_error}")
 
 def add_images_to_album(album_name: str, image_path: str) -> bool:
-    """Add images to an existing album.
-    
-    Args:
-        album_name: Name of the album to add images to
-        image_path: Path to an image file or directory containing images
-    """
+    """Add images to an existing album."""
     temp_dir = None
     try:
         album_dir = ALBUMS_DIR / album_name
         if not album_dir.exists():
-            raise ValidationError(f"Album not found: {album_name}")
-        
-        # Validate album structure
-        validate_album_structure(album_dir)
+            raise FileNotFoundError(f"Album not found: {album_name}")
         
         # Create temporary directory for processing
         temp_dir = Path(tempfile.mkdtemp())
         temp_album_dir = temp_dir / album_name
-        temp_album_dir.mkdir(parents=True)
-        (temp_album_dir / 'images').mkdir()
-        (temp_album_dir / 'responsive').mkdir()
         
-        # Copy existing images to temp directory
-        for img_path in (album_dir / 'images').glob('*'):
-            if img_path.suffix.lower() in {'.jpg', '.jpeg', '.png'}:
-                shutil.copy2(img_path, temp_album_dir / 'images' / img_path.name)
+        # Copy existing album to temp directory
+        shutil.copytree(album_dir, temp_album_dir)
         
-        # Add new images to temp directory
-        source_path = Path(image_path)
-        if source_path.is_file():
-            if source_path.suffix.lower() in {'.jpg', '.jpeg', '.png'}:
-                shutil.copy2(source_path, temp_album_dir / 'images' / source_path.name)
-                logger.info(f"Copied new image: {source_path.name}")
-        else:
-            for img_path in source_path.glob('*'):
-                if img_path.suffix.lower() in {'.jpg', '.jpeg', '.png'}:
-                    shutil.copy2(img_path, temp_album_dir / 'images' / img_path.name)
-                    logger.info(f"Copied new image: {img_path.name}")
+        # Process new images
+        new_images = process_images(image_path, temp_album_dir)
         
-        # Process all images
-        processor = ImageProcessor(temp_album_dir, albums_json=ALBUMS_JSON)
-        metadata = processor.process_album(save_metadata=False)
-        
-        if not metadata:
-            raise ValidationError("No valid images found")
-        
-        # Get current album data
-        with open(ALBUMS_JSON, 'r') as f:
+        # Load current album data
+        with open(ALBUMS_JSON) as f:
             data = json.load(f)
-        album_data = next((a for a in data['albums'] if a['id'] == album_name), None)
-        if not album_data:
-            raise ValidationError(f"Album not found in albums.json: {album_name}")
         
-        # Update album data with new images and metadata
-        relative_image_paths = [f"{album_name}/images/{img}" for img in metadata.keys()]
-        success = update_albums_json(
+        album = next((a for a in data['albums'] if a['id'] == album_name), None)
+        if not album:
+            raise ValueError(f"Album not found in metadata: {album_name}")
+        
+        # Add new images to existing ones
+        existing_ids = {img['id'] for img in album['images']}
+        album['images'].extend([img for img in new_images if img['id'] not in existing_ids])
+        
+        # Validate the updated album
+        if not update_albums_json(
             album_name=album_name,
-            title=album_data['title'],
-            description=album_data.get('description', ''),
-            date=album_data['date'],
-            cover_image=album_data.get('coverImage', relative_image_paths[0]),
-            images=relative_image_paths,
-            metadata=metadata
-        )
+            title=album['title'],
+            description=album.get('description', ''),
+            date=album['date'],
+            cover_image=album['coverImage'],
+            images=album['images'],
+            temp_operation=True
+        ):
+            raise ValueError("Failed to validate updated album data")
         
-        if not success:
-            raise ValidationError("Failed to update albums.json")
-        
-        # Save existing index.html if it exists
-        index_html = album_dir / 'index.html'
-        has_index = index_html.exists()
-        index_content = None
-        if has_index:
-            with open(index_html, 'r') as f:
-                index_content = f.read()
-        
-        # Replace the album directory while preserving index.html
-        if album_dir.exists():
-            shutil.rmtree(album_dir)
+        # If everything is successful, replace the existing album
+        shutil.rmtree(album_dir)
         shutil.copytree(temp_album_dir, album_dir)
         
-        # Restore or create index.html
-        if index_content:
-            # Restore existing index.html
-            with open(index_html, 'w') as f:
-                f.write(index_content)
-        else:
-            # Create new index.html from template if it doesn't exist
-            template_path = ALBUMS_DIR / "template.html"
-            if template_path.exists():
-                shutil.copy2(template_path, index_html)
-                logger.info(f"Created new index.html for album {album_name}")
+        # Finally, update albums.json
+        if not update_albums_json(
+            album_name=album_name,
+            title=album['title'],
+            description=album.get('description', ''),
+            date=album['date'],
+            cover_image=album['coverImage'],
+            images=album['images']
+        ):
+            raise ValueError("Failed to update albums.json")
         
-        logger.info(f"Successfully added images to album {album_name}")
+        logger.info(f"Successfully added images to album: {album_name}")
         return True
         
     except Exception as e:
@@ -414,256 +324,166 @@ def add_images_to_album(album_name: str, image_path: str) -> bool:
                 logger.error(f"Error cleaning up temporary directory: {cleanup_error}")
 
 def delete_album(album_name: str) -> bool:
-    """Delete an album and all its associated files and metadata."""
-    success = False
+    """Delete an album and all its contents."""
     try:
-        # Remove from albums.json first
-        if ALBUMS_JSON.exists():
-            try:
-                with open(ALBUMS_JSON, 'r') as f:
-                    data = json.load(f)
-                
-                # Find and remove the album from the albums array
-                if 'albums' in data:
-                    original_length = len(data['albums'])
-                    data['albums'] = [album for album in data['albums'] if album.get('id') != album_name]
-                    
-                    if len(data['albums']) < original_length:
-                        with open(ALBUMS_JSON, 'w') as f:
-                            json.dump(data, f, indent=2)
-                        logger.info(f"Removed '{album_name}' from albums.json")
-                        success = True
-            except Exception as e:
-                logger.error(f"Failed to update albums.json: {e}")
-                return False
-
-        # Try to delete album directory if it exists
+        # Load albums data
+        albums_data = load_albums_json()
+        
+        # Check if album exists
+        if not any(a['id'] == album_name for a in albums_data['albums']):
+            logger.error(f"Album not found: {album_name}")
+            return False
+        
+        # Remove album directory
         album_dir = ALBUMS_DIR / album_name
         if album_dir.exists():
             shutil.rmtree(album_dir)
             logger.info(f"Deleted album directory: {album_dir}")
-            success = True
-
-        # Try to delete album HTML file if it exists
-        album_html = ALBUMS_DIR / f"{album_name}.html"
-        if album_html.exists():
-            album_html.unlink()
-            logger.info(f"Deleted album HTML file: {album_html}")
-            success = True
-
-        if not success:
-            logger.warning(f"Album '{album_name}' not found in filesystem or metadata")
-            
-        return success
-
+        
+        # Update albums.json
+        albums_data['albums'] = [a for a in albums_data['albums'] if a['id'] != album_name]
+        if save_albums_json(albums_data):
+            logger.info(f"Successfully deleted album: {album_name}")
+            return True
+        return False
+        
     except Exception as e:
         logger.error(f"Failed to delete album: {e}")
         return False
 
-def change_album_cover(album_name: str, cover_image: Optional[str] = None) -> bool:
-    """Change the cover image of an existing album.
-    
-    Args:
-        album_name: Name of the album to modify
-        cover_image: Optional path to new cover image. If not provided, will show selection menu
-    """
+def load_albums_json() -> Dict:
+    """Load albums.json data."""
     try:
-        album_dir = ALBUMS_DIR / album_name
-        if not album_dir.exists():
-            raise ValidationError(f"Album not found: {album_name}")
-        
-        # Load current album data
         with open(ALBUMS_JSON, 'r') as f:
-            data = json.load(f)
-        
-        target_album = None
-        for album in data['albums']:
-            if album['id'] == album_name:
-                target_album = album
-                break
-        
-        if not target_album:
-            raise ValidationError(f"Album {album_name} not found in albums.json")
-        
-        # If cover image provided, validate and use it
-        if cover_image:
-            if Path(cover_image).is_file():
-                # Add image to album if it's not already there
-                temp_result = add_images_to_album(album_name, cover_image)
-                if not temp_result:
-                    return False
-                cover_path = f"{album_name}/images/{Path(cover_image).name}"
-            else:
-                # Assume it's a path relative to the album
-                cover_path = cover_image
-                if not (album_dir / 'images' / Path(cover_image).name).exists():
-                    raise ValidationError(f"Cover image not found: {cover_image}")
-        else:
-            # Show selection menu
-            print("\nCurrent album images:")
-            images = target_album['images']
-            for i, img in enumerate(images, 1):
-                print(f"{i}. {Path(img).name}")
-            
-            while True:
-                try:
-                    choice = input("\nEnter the number of the image to use as cover (or 'q' to quit): ")
-                    if choice.lower() == 'q':
-                        return False
-                    
-                    idx = int(choice) - 1
-                    if 0 <= idx < len(images):
-                        cover_path = images[idx]
-                        break
-                    else:
-                        print("Invalid selection. Please try again.")
-                except ValueError:
-                    print("Please enter a valid number.")
-        
-        # Update album cover
-        target_album['coverImage'] = cover_path
-        
-        # Save changes
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Failed to load albums.json: {e}")
+        return {'albums': []}
+
+def save_albums_json(data: Dict) -> bool:
+    """Save albums.json data."""
+    try:
         with open(ALBUMS_JSON, 'w') as f:
             json.dump(data, f, indent=2)
-        
-        logger.info(f"Successfully updated cover image for album {album_name}")
         return True
-        
     except Exception as e:
-        logger.error(f"Failed to change cover image: {e}")
+        logger.error(f"Failed to save albums.json: {e}")
         return False
 
-def change_album_metadata(album_name: str, new_title: Optional[str] = None, new_date: Optional[str] = None) -> bool:
-    """Change the title and/or date of an existing album.
-    
-    Args:
-        album_name: Name of the album to modify
-        new_title: Optional new title for the album
-        new_date: Optional new date for the album (YYYY-MM-DD)
-    """
-    try:
-        # Load current albums data
-        with open(ALBUMS_JSON, 'r') as f:
-            data = json.load(f)
-        
-        # Find target album
-        target_album = next((a for a in data['albums'] if a['id'] == album_name), None)
-        if not target_album:
-            raise ValidationError(f"Album not found: {album_name}")
-        
-        # Update metadata
-        if new_title:
-            target_album['title'] = new_title
-            logger.info(f"Updated title to: {new_title}")
-            
-        if new_date:
-            # Validate date format
-            try:
-                datetime.strptime(new_date, '%Y-%m-%d')
-                target_album['date'] = new_date
-                logger.info(f"Updated date to: {new_date}")
-            except ValueError:
-                raise ValidationError("Date must be in YYYY-MM-DD format")
-        
-        # Save changes
-        with open(ALBUMS_JSON, 'w') as f:
-            json.dump(data, f, indent=2)
-        
-        logger.info(f"Successfully updated metadata for album {album_name}")
-        return True
-        
-    except Exception as e:
-        logger.error(f"Failed to update album metadata: {e}")
-        return False
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Create, modify, or delete photo albums',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-    # Create a new album
-    %(prog)s new-album --title "My New Album" --description "Photos from my trip" --date 2023-12-25 --images ./photos
-
-    # Add images to existing album
-    %(prog)s existing-album --add --images ./more-photos
-
-    # Change album cover image (interactive)
-    %(prog)s existing-album --change-cover
-
-    # Change album cover image (direct)
-    %(prog)s existing-album --change-cover --cover path/to/image.jpg
-
-    # Change album title
-    %(prog)s existing-album --new-title "Updated Title"
-
-    # Change album date
-    %(prog)s existing-album --new-date 2023-12-31
-
-    # Change both title and date
-    %(prog)s existing-album --new-title "Updated Title" --new-date 2023-12-31
-
-    # Delete an album
-    %(prog)s existing-album --delete
-    """
-    )
-    
-    parser.add_argument('album_name', help='URL-friendly name for the album (e.g., "summer-2023")')
-    parser.add_argument('--title', help='Display title for the album')
-    parser.add_argument('--description', help='Album description')
+def main():
+    parser = argparse.ArgumentParser(description='Create or modify a photo album')
+    parser.add_argument('album', help='Album name')
+    parser.add_argument('--title', help='Album title')
     parser.add_argument('--date', help='Album date (YYYY-MM-DD)')
-    parser.add_argument('--images', help='Directory containing images to process')
-    parser.add_argument('--cover', help='Cover image filename (must be in images directory)')
+    parser.add_argument('--description', help='Album description')
+    parser.add_argument('--images', help='Path to images directory or file')
+    parser.add_argument('--cover', help='Path to cover image')
     parser.add_argument('--add', action='store_true', help='Add images to existing album')
-    parser.add_argument('--delete', action='store_true', help='Delete the specified album')
     parser.add_argument('--change-cover', action='store_true', help='Change album cover image')
-    parser.add_argument('--new-title', help='New title for the album')
-    parser.add_argument('--new-date', help='New date for the album in YYYY-MM-DD format')
+    parser.add_argument('--new-title', help='Update album title')
+    parser.add_argument('--new-date', help='Update album date')
+    parser.add_argument('--delete', action='store_true', help='Delete the album')
     
     args = parser.parse_args()
     
+    # Handle album deletion
     if args.delete:
-        if delete_album(args.album_name):
-            print(f"Successfully deleted album: {args.album_name}")
-        else:
-            print("Failed to delete album")
-            sys.exit(1)
-    elif args.add:
+        return delete_album(args.album)
+    
+    # Load existing album data if needed
+    albums_data = load_albums_json()
+    existing_album = next((a for a in albums_data['albums'] if a['id'] == args.album), None)
+    
+    # Handle metadata changes
+    if args.new_title or args.new_date or args.change_cover:
+        if not existing_album:
+            logger.error(f"Album {args.album} not found")
+            return False
+            
+        if args.new_title:
+            existing_album['title'] = args.new_title
+            
+        if args.new_date:
+            if not re.match(r'^\d{4}-\d{2}-\d{2}$', args.new_date):
+                logger.error("Date must be in YYYY-MM-DD format")
+                return False
+            existing_album['date'] = args.new_date
+            
+        if args.change_cover:
+            album_dir = ALBUMS_DIR / args.album
+            if args.cover:
+                cover_path = Path(args.cover)
+                if not cover_path.is_file():
+                    logger.error(f"Cover image not found: {cover_path}")
+                    return False
+                    
+                # Process cover image if it's not already in the album
+                if not any(img['id'] == cover_path.name for img in existing_album['images']):
+                    processor = ImageProcessor(album_dir)
+                    cover_metadata = processor.process_single_image(cover_path)
+                    existing_album['images'].append(cover_metadata)
+                    
+                # Update cover image
+                cover_id = cover_path.name
+                cover_img = next((img for img in existing_album['images'] if img['id'] == cover_id), None)
+                if cover_img:
+                    existing_album['coverImage'] = cover_img['sizes']['grid']
+            else:
+                # Interactive selection
+                print("\nAvailable images:")
+                for i, img in enumerate(existing_album['images']):
+                    print(f"{i+1}. {img['id']}")
+                try:
+                    choice = int(input("\nSelect cover image number: ")) - 1
+                    if 0 <= choice < len(existing_album['images']):
+                        existing_album['coverImage'] = existing_album['images'][choice]['sizes']['grid']
+                    else:
+                        logger.error("Invalid selection")
+                        return False
+                except ValueError:
+                    logger.error("Invalid input")
+                    return False
+        
+        # Save changes
+        save_albums_json(albums_data)
+        logger.info(f"Successfully updated album {args.album}")
+        return True
+    
+    # Handle album creation or image addition
+    if not args.title and not args.date and not args.images and not args.add:
+        parser.print_help()
+        return False
+    
+    if args.add:
+        if not existing_album:
+            logger.error(f"Album {args.album} not found")
+            return False
         if not args.images:
-            parser.error("--images is required when adding to an album")
+            logger.error("--images is required when adding to existing album")
+            return False
+            
+        # Add images to existing album
+        album_dir = ALBUMS_DIR / args.album
+        new_images = process_images(args.images, album_dir)
+        existing_album['images'].extend(new_images)
+        save_albums_json(albums_data)
+        logger.info(f"Successfully added images to album {args.album}")
+        return True
+    
+    # Create new album
+    if not all([args.title, args.date, args.images]):
+        logger.error("--title, --date, and --images are required for new albums")
+        return False
         
-        if add_images_to_album(args.album_name, args.images):
-            print(f"Successfully added images to album: {args.album_name}")
-        else:
-            print("Failed to add images to album")
-            sys.exit(1)
-    elif args.new_title or args.new_date:
-        if change_album_metadata(args.album_name, args.new_title, args.new_date):
-            print(f"Successfully updated metadata for album: {args.album_name}")
-        else:
-            print("Failed to update album metadata")
-            sys.exit(1)
-    elif args.change_cover:
-        if change_album_cover(args.album_name, args.cover):
-            print(f"Successfully changed cover image for album: {args.album_name}")
-        else:
-            print("Failed to change cover image")
-            sys.exit(1)
-    else:
-        if not all([args.title, args.date, args.images]):
-            parser.error("--title, --date, and --images are required when creating a new album")
-        
-        if create_album(
-            album_name=args.album_name,
-            title=args.title,
-            date=args.date,
-            image_dir=args.images,
-            description=args.description,
-            cover_image=args.cover
-        ):
-            print(f"Successfully created album: {args.album_name}")
-            print(f"View it at: /photography/albums/{args.album_name}")
-        else:
-            print("Failed to create album")
-            sys.exit(1)
+    return create_album(
+        album_name=args.album,
+        title=args.title,
+        date=args.date,
+        image_dir=args.images,
+        description=args.description or "",
+        cover_image=args.cover
+    )
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
+    sys.exit(0 if main() else 1)

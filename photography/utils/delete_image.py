@@ -1,245 +1,146 @@
-#!/usr/bin/env python3
-
-"""Script to delete a specific image from an album."""
+"""Delete images from an album."""
 
 import os
-import sys
 import json
-import shutil
-import argparse
 import logging
+import argparse
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Dict
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler()]
-)
+from config import ALBUMS_DIR, ALBUMS_JSON
+
 logger = logging.getLogger(__name__)
 
-# Base paths
-BASE_DIR = Path(__file__).parent.parent
-ALBUMS_DIR = BASE_DIR / 'albums'
-ALBUMS_JSON = ALBUMS_DIR / 'albums.json'
-
-def load_albums() -> Dict:
-    """Load the albums.json file."""
+def load_albums_json() -> Dict:
+    """Load albums.json data."""
     try:
-        with open(ALBUMS_JSON) as f:
+        with open(ALBUMS_JSON, 'r') as f:
             return json.load(f)
     except Exception as e:
         logger.error(f"Failed to load albums.json: {e}")
-        sys.exit(1)
+        return {'albums': []}
 
-def save_albums(albums_data: Dict) -> None:
-    """Save the albums data back to albums.json."""
+def save_albums_json(data: Dict) -> bool:
+    """Save albums.json data."""
     try:
         with open(ALBUMS_JSON, 'w') as f:
-            json.dump(albums_data, f, indent=2)
+            json.dump(data, f, indent=2)
+        return True
     except Exception as e:
         logger.error(f"Failed to save albums.json: {e}")
-        sys.exit(1)
+        return False
 
-def delete_image_files(album_path: str, image_name: str) -> None:
-    """Delete the image file and its responsive versions."""
-    # Delete original image
-    original_path = ALBUMS_DIR / album_path / 'images' / image_name
-    if original_path.exists():
-        original_path.unlink()
-        logger.info(f"Deleted original image: {original_path}")
-    
-    # Delete responsive versions
-    responsive_dir = ALBUMS_DIR / album_path / 'responsive'
-    if responsive_dir.exists():
-        for size_dir in responsive_dir.iterdir():
-            if size_dir.is_dir():
-                img_path = size_dir / image_name
-                if img_path.exists():
-                    img_path.unlink()
-                webp_path = img_path.with_suffix('.webp')
-                if webp_path.exists():
-                    webp_path.unlink()
-        logger.info(f"Deleted responsive versions for: {image_name}")
-
-def update_albums_json(album_id: str, image_name: str) -> None:
-    """Update albums.json to remove the image entry."""
+def delete_image(album_name: str, image_id: str) -> bool:
+    """Delete an image from an album."""
     try:
-        # Load current data
-        albums_data = load_albums()
-        
-        # Find target album
-        album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
+        # Load album data
+        albums_data = load_albums_json()
+        album = next((a for a in albums_data['albums'] if a['id'] == album_name), None)
         if not album:
-            raise ValueError(f"Album not found: {album_id}")
-        
-        # Remove image from images list
-        image_path = f"{album_id}/images/{image_name}"
-        if image_path in album['images']:
-            album['images'].remove(image_path)
-        
-        # Remove metadata for this image
-        if 'metadata' in album and image_name in album['metadata']:
-            del album['metadata'][image_name]
-        
-        # Update cover image if needed
-        if album.get('coverImage') == image_path or album.get('cover') == image_path:
-            album['coverImage'] = album['images'][0] if album['images'] else ''
-        
-        # Save changes
-        save_albums(albums_data)
-        logger.info(f"Updated albums.json: removed {image_name}")
-        
-    except Exception as e:
-        logger.error(f"Failed to update albums.json: {e}")
-        raise
+            logger.error(f"Album not found: {album_name}")
+            return False
 
-def delete_image(album_id: str, image_path: str) -> None:
-    """Delete a specific image from an album."""
-    try:
-        # Extract image name from path
-        image_name = Path(image_path).name
+        # Find image in album
+        target_image = next((img for img in album['images'] if img['id'] == image_id), None)
+        if not target_image:
+            logger.error(f"Image not found in album: {image_id}")
+            return False
+
+        album_dir = ALBUMS_DIR / album_name
+
+        # Delete image files for all sizes
+        for size_name in target_image['sizes']:
+            size_info = target_image['sizes'][size_name]
+            webp_path = album_dir / size_info['webp']
+            if webp_path.exists():
+                webp_path.unlink()
+                logger.info(f"Deleted {webp_path}")
+
+        # Update cover image if needed
+        if album['coverImage']['webp'] == target_image['sizes']['grid']['webp']:
+            remaining_images = [img for img in album['images'] if img['id'] != image_id]
+            if remaining_images:
+                album['coverImage'] = remaining_images[0]['sizes']['grid']
+            else:
+                album['coverImage'] = {}
+
+        # Remove image from album data
+        album['images'] = [img for img in album['images'] if img['id'] != image_id]
         
-        # Delete image files
-        delete_image_files(album_id, image_name)
-        
-        # Update albums.json
-        update_albums_json(album_id, image_name)
-        
-        logger.info(f"Successfully deleted image: {image_name}")
-        
+        # Save updated album data
+        if save_albums_json(albums_data):
+            logger.info(f"Successfully deleted image {image_id} from album {album_name}")
+            return True
+        return False
+
     except Exception as e:
         logger.error(f"Failed to delete image: {e}")
-        raise
+        return False
 
-def select_album() -> Optional[str]:
-    """Interactively select an album."""
-    try:
-        # Load albums data
-        albums_data = load_albums()
-        
-        print("\nAvailable albums:")
-        albums = [(a['id'], a['title']) for a in albums_data['albums']]
-        for i, (id, title) in enumerate(albums, 1):
-            print(f"{i}. {title} ({id})")
-        
-        while True:
-            choice = input("\nEnter the number of the album (or 'q' to quit): ")
-            if choice.lower() == 'q':
-                return None
-            
-            try:
-                idx = int(choice) - 1
-                if 0 <= idx < len(albums):
-                    return albums[idx][0]
-                else:
-                    print("Invalid selection. Please try again.")
-            except ValueError:
-                print("Please enter a valid number.")
-    
-    except Exception as e:
-        logger.error(f"Failed to select album: {e}")
-        return None
-
-def select_images(album_id: str) -> Optional[List[str]]:
-    """Interactively select images to delete from an album."""
-    try:
-        # Load albums data
-        albums_data = load_albums()
-        
-        # Find the album
-        album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
-        if not album:
-            raise ValueError(f"Album not found: {album_id}")
-        
-        if not album['images']:
-            print("No images found in this album.")
-            return None
-        
-        print("\nImages in album:")
-        for i, img_path in enumerate(album['images'], 1):
-            img_name = Path(img_path).name
-            cover_marker = " (cover)" if img_path == album.get('coverImage', album.get('cover')) else ""
-            print(f"{i}. {img_name}{cover_marker}")
-        
-        selected_indices = set()
-        while True:
-            choice = input("\nEnter image number to delete (or 'done'/'q' when finished): ")
-            if choice.lower() in ['q', 'quit']:
-                return None
-            if choice.lower() == 'done' and selected_indices:
-                break
-            
-            try:
-                idx = int(choice) - 1
-                if 0 <= idx < len(album['images']):
-                    if idx in selected_indices:
-                        print("Image already selected.")
-                    else:
-                        selected_indices.add(idx)
-                        print(f"Selected: {Path(album['images'][idx]).name}")
-                else:
-                    print("Invalid selection. Please try again.")
-            except ValueError:
-                if choice.lower() not in ['done', 'q', 'quit']:
-                    print("Please enter a valid number.")
-        
-        return [album['images'][i] for i in sorted(selected_indices)]
-    
-    except Exception as e:
-        logger.error(f"Failed to select images: {e}")
-        return None
-
-def delete_images(album_id: str, image_paths: List[str]) -> bool:
+def delete_images(album_name: str, image_ids: List[str]) -> bool:
     """Delete multiple images from an album."""
     success = True
-    for image_path in image_paths:
-        try:
-            delete_image(album_id, image_path)
-        except Exception as e:
-            logger.error(f"Failed to delete image: {e}")
+    for image_id in image_ids:
+        if not delete_image(album_name, image_id):
             success = False
     return success
 
+def interactive_delete(album_name: str) -> bool:
+    """Interactive mode for deleting images."""
+    try:
+        # Load album data
+        albums_data = load_albums_json()
+        album = next((a for a in albums_data['albums'] if a['id'] == album_name), None)
+        if not album:
+            logger.error(f"Album not found: {album_name}")
+            return False
+
+        # Display available images
+        print("\nAvailable images:")
+        for i, img in enumerate(album['images']):
+            print(f"{i+1}. {img['id']}")
+
+        # Get user selection
+        try:
+            selections = input("\nEnter image numbers to delete (comma-separated): ").split(',')
+            indices = [int(s.strip()) - 1 for s in selections]
+            
+            # Validate selections
+            if any(i < 0 or i >= len(album['images']) for i in indices):
+                logger.error("Invalid selection")
+                return False
+            
+            # Get image IDs and delete
+            image_ids = [album['images'][i]['id'] for i in indices]
+            return delete_images(album_name, image_ids)
+            
+        except ValueError:
+            logger.error("Invalid input")
+            return False
+
+    except Exception as e:
+        logger.error(f"Interactive deletion failed: {e}")
+        return False
+
 def main():
     parser = argparse.ArgumentParser(description='Delete images from an album')
-    parser.add_argument('--album', help='ID of the album')
-    parser.add_argument('--image', help='Name of the image file to delete')
-    parser.add_argument('--interactive', action='store_true', help='Use interactive mode to select images')
+    parser.add_argument('--album', help='Album name')
+    parser.add_argument('--image', help='Image ID to delete')
+    parser.add_argument('--interactive', action='store_true', help='Interactive mode')
     
     args = parser.parse_args()
     
     if args.interactive:
-        # Interactive mode
-        album_id = args.album or select_album()
-        if not album_id:
-            print("No album selected. Exiting.")
-            sys.exit(0)
-        
-        image_paths = select_images(album_id)
-        if not image_paths:
-            print("No images selected. Exiting.")
-            sys.exit(0)
-        
-        if delete_images(album_id, image_paths):
-            print(f"Successfully deleted {len(image_paths)} image(s)")
-        else:
-            print("Some images failed to delete")
-            sys.exit(1)
+        if not args.album:
+            parser.error("--album is required with --interactive")
+        return interactive_delete(args.album)
     
-    else:
-        # Direct mode (original functionality)
-        if not args.album or not args.image:
-            parser.error("Both --album and --image are required in non-interactive mode")
-        
-        image_path = f"{args.album}/images/{args.image}"
-        try:
-            delete_image(args.album, image_path)
-        except Exception as e:
-            logger.error(f"Failed to delete image: {e}")
-            sys.exit(1)
-        print(f"Successfully deleted image: {args.image}")
+    if not args.album or not args.image:
+        parser.error("Both --album and --image are required")
+    
+    return delete_image(args.album, args.image)
 
 if __name__ == '__main__':
-    main()
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
+    import sys
+    sys.exit(0 if main() else 1)
