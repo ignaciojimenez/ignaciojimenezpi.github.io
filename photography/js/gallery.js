@@ -85,22 +85,17 @@ class GridAwareImageLoader {
 }
 
 // Gallery loading and rendering functions
-function createResponsivePicture(imagePath, title, metadata, priority = 'auto') {
+function createResponsivePicture(imagePath, title, metadata, albumId, priority = 'auto') {
     const picture = document.createElement('picture');
     
-    // Get album name and filename from the path
-    const parts = imagePath.split('/');
-    const albumName = parts[0];
-    const filename = parts[parts.length - 1];
-    
-    // Base path for responsive images
-    const responsiveBasePath = `/photography/albums/${albumName}/responsive`;
+    // Base path for images
+    const basePath = `/photography/albums/${albumId}`;
     
     // Add WebP sources with priority
     ['large', 'medium', 'small'].forEach(size => {
         const source = document.createElement('source');
         source.type = 'image/webp';
-        source.srcset = `${responsiveBasePath}/${size}/${filename.replace(/\.[^.]+$/, '.webp')}`;
+        source.srcset = `${basePath}/${imagePath}`; // Use the full path from JSON
         
         switch(size) {
             case 'large':
@@ -115,38 +110,17 @@ function createResponsivePicture(imagePath, title, metadata, priority = 'auto') 
         picture.appendChild(source);
     });
     
-    // Add JPEG sources as fallback
-    ['large', 'medium', 'small'].forEach(size => {
-        const source = document.createElement('source');
-        source.srcset = `${responsiveBasePath}/${size}/${filename}`;
-        
-        switch(size) {
-            case 'large':
-                source.media = '(min-width: 1200px)';
-                break;
-            case 'medium':
-                source.media = '(min-width: 800px)';
-                break;
-            default:
-                source.media = '(max-width: 799px)';
-        }
-        picture.appendChild(source);
-    });
-    
-    // Add fallback image with loading priority
+    // Add image element
     const img = document.createElement('img');
-    img.src = `/photography/albums/${imagePath}`;
+    img.src = `${basePath}/${imagePath}`; // Use the full path from JSON
     img.alt = title;
     img.loading = priority === 'high' ? 'eager' : 'lazy';
     img.fetchPriority = priority;
     img.className = 'w-full h-full object-cover transition-opacity duration-300 opacity-0';
     
-    if (metadata && metadata.responsive && metadata.responsive.medium) {
-        img.width = metadata.responsive.medium.width;
-        img.height = metadata.responsive.medium.height;
-    } else if (metadata && metadata.original) {
-        img.width = metadata.original.width;
-        img.height = metadata.original.height;
+    if (metadata && metadata.sizes && metadata.sizes.medium) {
+        img.width = metadata.sizes.medium.width;
+        img.height = metadata.sizes.medium.height;
     }
     
     picture.appendChild(img);
@@ -155,11 +129,11 @@ function createResponsivePicture(imagePath, title, metadata, priority = 'auto') 
 
 function createAlbumCard(album, metadata, priority = 'auto') {
     const card = document.createElement('div');
-    card.className = 'album-item';
-    card.setAttribute('data-album-id', album.id); // Add album ID for loader reference
+    card.className = 'album-card opacity-0';
+    card.setAttribute('data-album-id', album.id);
     
     const container = document.createElement('div');
-    container.className = 'image-container relative group cursor-pointer';
+    container.className = 'image-container relative group cursor-pointer aspect-[3/2]';
     
     // Add loading skeleton
     const skeleton = document.createElement('div');
@@ -168,9 +142,10 @@ function createAlbumCard(album, metadata, priority = 'auto') {
     
     // Create responsive picture element with priority
     const picture = createResponsivePicture(
-        album.coverImage,
+        album.coverImage.webp,
         album.title,
         metadata,
+        album.id,
         priority
     );
     
@@ -190,7 +165,7 @@ function createAlbumCard(album, metadata, priority = 'auto') {
         skeleton.remove();
         imageElement.classList.add('opacity-100');
         imageElement.classList.remove('opacity-0');
-        card.classList.add('visible');
+        card.classList.add('opacity-100');
     };
     
     const overlay = document.createElement('div');

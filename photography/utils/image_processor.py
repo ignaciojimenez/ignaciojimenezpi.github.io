@@ -6,7 +6,7 @@ from PIL import Image, ImageOps
 import logging
 from concurrent.futures import ThreadPoolExecutor
 import json
-from config import RESPONSIVE_SIZES, JPEG_QUALITY, WEBP_QUALITY
+from config import RESPONSIVE_SIZES, WEBP_QUALITY
 from validation import validate_image_file, validate_metadata
 
 # Configure logging
@@ -23,9 +23,12 @@ class ImageProcessor:
     def __init__(self, album_dir: Path, albums_json: Optional[Path] = None):
         self.album_dir = Path(album_dir)
         self.images_dir = self.album_dir / 'images'
-        self.responsive_dir = self.album_dir / 'responsive'
         self.albums_json = albums_json or self.album_dir.parent / 'albums.json'
         self.metadata: Dict = {}
+        
+        # Create output directories
+        for size_name in RESPONSIVE_SIZES:
+            (self.images_dir / size_name).mkdir(parents=True, exist_ok=True)
     
     def process_single_image(self, img_path: Path) -> Dict:
         """Process a single image and generate all required versions."""
@@ -40,39 +43,19 @@ class ImageProcessor:
                 # Create responsive versions
                 responsive_versions = self._create_responsive_versions(img, img_path)
                 
-                # Create WebP version of original
-                webp_path = self._create_webp_version(img, img_path)
-                
                 return {
-                    "original": {
-                        "path": str(img_path.relative_to(self.album_dir)),
-                        "width": orig_width,
-                        "height": orig_height,
-                        "webp": str(webp_path.relative_to(self.album_dir)) if webp_path else None
-                    },
-                    "responsive": responsive_versions
+                    "id": img_path.stem.split('.')[0],  # Remove all extensions from ID
+                    "sizes": responsive_versions
                 }
         
         except Exception as e:
             logger.error(f"Failed to process image {img_path}: {e}")
             raise
 
-    def process_album(self, save_metadata: bool = False) -> Dict:
+    def process_album(self, image_files: List[Path]) -> Dict:
         """Process all images in the album."""
-        if not self.images_dir.exists():
-            raise FileNotFoundError(f"Images directory not found: {self.images_dir}")
-        
-        # Create output directories
-        self.responsive_dir.mkdir(exist_ok=True)
-        for size_name in RESPONSIVE_SIZES:
-            (self.responsive_dir / size_name).mkdir(exist_ok=True)
-        
-        # Get all images
-        image_files = [p for p in self.images_dir.glob('*') 
-                      if p.suffix.lower() in {'.jpg', '.jpeg', '.png'}]
-        
         if not image_files:
-            logger.warning(f"No images found in {self.images_dir}")
+            logger.warning("No images provided for processing")
             return {}
         
         # Process images in parallel
@@ -91,100 +74,82 @@ class ImageProcessor:
                 except Exception as e:
                     logger.error(f"Failed to process {path}: {e}")
         
-        # Save metadata only if requested
-        if save_metadata:
-            self._save_metadata()
-            
         return self.metadata
     
     def _create_responsive_versions(self, img: Image.Image, source_path: Path) -> Dict:
-        """Create all responsive versions of an image."""
+        """Create responsive versions of an image."""
         versions = {}
         
-        for size_name, size_config in RESPONSIVE_SIZES.items():
-            target_width = size_config['width']
-            
-            # If original is smaller, use original dimensions
-            if img.width <= target_width:
-                versions[size_name] = {
-                    "path": str(source_path.relative_to(self.album_dir)),
-                    "width": img.width,
-                    "height": img.height,
-                    "webp": str(source_path.with_suffix('.webp').relative_to(self.album_dir))
-                }
-                continue
-            
-            # Calculate height maintaining aspect ratio
-            aspect_ratio = img.height / img.width
-            target_height = int(target_width * aspect_ratio)
-            
-            size_dir = self.responsive_dir / size_name
-            size_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Create JPEG version
-            jpeg_path = size_dir / source_path.name
-            resized = img.resize((target_width, target_height), Image.Resampling.LANCZOS)
-            resized.save(jpeg_path, 'JPEG', quality=size_config['quality'])
-            
-            # Create WebP version
-            webp_path = jpeg_path.with_suffix('.webp')
-            resized.save(webp_path, 'WEBP', quality=WEBP_QUALITY)
-            
-            versions[size_name] = {
-                "path": str(jpeg_path.relative_to(self.album_dir)),
-                "width": target_width,
-                "height": target_height,
-                "webp": str(webp_path.relative_to(self.album_dir))
-            }
-        
-        return versions
-    
-    def _create_webp_version(self, img: Image.Image, source_path: Path) -> Optional[Path]:
-        """Create WebP version of an image."""
         try:
-            webp_path = source_path.with_suffix('.webp')
-            img.save(webp_path, 'WEBP', quality=WEBP_QUALITY)
-            return webp_path
+            # Get base name without extension
+            base_name = source_path.stem.split('.')[0]  # Remove all extensions
+            
+            # Create versions for each size
+            for size_name, size_config in RESPONSIVE_SIZES.items():
+                try:
+                    # Calculate new dimensions
+                    width = size_config['width']
+                    orig_width, orig_height = img.size
+                    
+                    if width:
+                        w_percent = width / float(orig_width)
+                        height = int(float(orig_height) * float(w_percent))
+                        if w_percent < 1:
+                            resized = img.resize((width, height), Image.Resampling.LANCZOS)
+                        else:
+                            resized = img
+                            width, height = orig_width, orig_height
+                    else:
+                        resized = img
+                        width, height = orig_width, orig_height
+                    
+                    # Save WebP version
+                    webp_path = self.images_dir / size_name / f"{base_name}.webp"
+                    resized.save(str(webp_path), 'WEBP', quality=size_config['quality'])
+                    
+                    versions[size_name] = {
+                        "webp": f"images/{size_name}/{base_name}.webp",
+                        "width": width,
+                        "height": height
+                    }
+                    
+                except Exception as e:
+                    logger.error(f"Failed to create {size_name} version of {source_path}: {e}")
+                    raise
+            
+            return versions
+            
         except Exception as e:
-            logger.error(f"Error creating WebP version for {source_path}: {e}")
-            return None
+            logger.error(f"Failed to create responsive versions: {e}")
+            raise
     
     def _save_metadata(self) -> None:
-        """Save metadata to file."""
+        """Save metadata to albums.json."""
         try:
-            # Load current albums data
-            with open(self.albums_json) as f:
-                albums_data = json.load(f)
+            with open(self.albums_json, 'r') as f:
+                data = json.load(f)
             
             # Find the current album
             album_id = self.album_dir.name
-            album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
-            if not album:
-                raise ValueError(f"Album not found: {album_id}")
+            album = next((a for a in data['albums'] if a['id'] == album_id), None)
             
-            # Initialize metadata if needed
-            if 'metadata' not in album:
-                album['metadata'] = {}
-            
-            # Update metadata
-            for img_name, metadata in self.metadata.items():
-                album['metadata'][img_name] = metadata
+            if album:
+                # Update images list with new metadata
+                album['images'] = [
+                    {
+                        "id": img_id,
+                        "sizes": metadata["sizes"]
+                    }
+                    for img_id, metadata in self.metadata.items()
+                ]
                 
-                # Add to images list if not already present
-                img_rel_path = f"{album_id}/images/{img_name}"
-                if img_rel_path not in album['images']:
-                    album['images'].append(img_rel_path)
+                # Save updated data
+                with open(self.albums_json, 'w') as f:
+                    json.dump(data, f, indent=2)
+                    
+            else:
+                logger.error(f"Album {album_id} not found in albums.json")
                 
-                # Set as cover if none exists
-                if not album.get('cover'):
-                    album['cover'] = img_rel_path
-            
-            # Save updated albums data
-            with open(self.albums_json, 'w') as f:
-                json.dump(albums_data, f, indent=2)
-            
-            logger.info(f"Successfully saved metadata for {len(self.metadata)} images")
-        
         except Exception as e:
-            logger.error(f"Error saving metadata: {e}")
+            logger.error(f"Failed to save metadata: {e}")
             raise

@@ -48,8 +48,7 @@ def validate_album_data(
     date: str,
     description: Optional[str] = "",
     cover_image: Optional[str] = None,
-    images: Optional[List[str]] = None,
-    metadata: Optional[Dict] = None
+    images: Optional[List[Dict]] = None
 ) -> Dict:
     """Validate and format album data."""
     try:
@@ -62,8 +61,7 @@ def validate_album_data(
             "description": description or "",
             "date": date,
             "coverImage": cover_image or "",
-            "images": images or [],
-            "metadata": metadata or {}
+            "images": images or []
         }
         
         jsonschema.validate(instance=album_data, schema=ALBUM_SCHEMA)
@@ -83,13 +81,12 @@ def validate_album_structure(album_dir: Path) -> None:
     if not images_dir.exists():
         raise ValidationError(f"Images directory does not exist: {images_dir}")
     
-    # Check root albums.json instead of per-album metadata
-    metadata_file = ALBUMS_JSON
-    if not metadata_file.exists():
-        raise ValidationError(f"Root metadata file does not exist: {metadata_file}")
+    # Check root albums.json
+    if not ALBUMS_JSON.exists():
+        raise ValidationError(f"Root metadata file does not exist: {ALBUMS_JSON}")
     
     try:
-        with open(metadata_file) as f:
+        with open(ALBUMS_JSON) as f:
             data = json.load(f)
             # Find the album in the metadata
             album_id = album_dir.name
@@ -99,24 +96,16 @@ def validate_album_structure(album_dir: Path) -> None:
     except json.JSONDecodeError as e:
         raise ValidationError(f"Invalid metadata JSON: {e}")
 
-def validate_path_string(path: str) -> str:
-    """Validate and normalize a path string."""
-    try:
-        # Convert to Path and back to string to normalize
-        normalized = str(Path(path))
-        # Remove leading 'albums/' if present
-        if normalized.startswith('albums/'):
-            normalized = normalized[7:]
-        return normalized
-    except Exception as e:
-        raise ValidationError(f"Invalid path string: {e}")
-
-def validate_image_paths(paths: List[str], base_dir: Path) -> List[str]:
+def validate_image_paths(paths: List[str], base_dir: Path) -> None:
     """Validate a list of image paths."""
-    validated = []
     for path in paths:
-        normalized = validate_path_string(path)
-        full_path = base_dir / normalized
-        validate_image_file(full_path)
-        validated.append(normalized)
-    return validated
+        full_path = base_dir / path
+        if not full_path.exists():
+            raise ValidationError(f"Image file does not exist: {full_path}")
+        if not any(path.endswith(ext) for ext in ALLOWED_EXTENSIONS):
+            raise ValidationError(f"Invalid image format: {full_path}")
+        try:
+            with Image.open(full_path) as img:
+                img.verify()
+        except Exception as e:
+            raise ValidationError(f"Invalid image file {full_path}: {e}")
