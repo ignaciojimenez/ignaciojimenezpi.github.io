@@ -695,31 +695,6 @@
           }
         },
         {
-          "id": "000046450026",
-          "sizes": {
-            "grid": {
-              "width": 800,
-              "height": 530,
-              "webp": "images/grid/000046450026.webp"
-            },
-            "small": {
-              "width": 1000,
-              "height": 662,
-              "webp": "images/small/000046450026.webp"
-            },
-            "medium": {
-              "width": 1400,
-              "height": 928,
-              "webp": "images/medium/000046450026.webp"
-            },
-            "large": {
-              "width": 1800,
-              "height": 1193,
-              "webp": "images/large/000046450026.webp"
-            }
-          }
-        },
-        {
           "id": "000046450016",
           "sizes": {
             "grid": {
@@ -1104,31 +1079,6 @@
               "width": 1800,
               "height": 2714,
               "webp": "images/large/IMG_3285.webp"
-            }
-          }
-        },
-        {
-          "id": "IMG_3322",
-          "sizes": {
-            "grid": {
-              "width": 800,
-              "height": 1255,
-              "webp": "images/grid/IMG_3322.webp"
-            },
-            "small": {
-              "width": 1000,
-              "height": 1569,
-              "webp": "images/small/IMG_3322.webp"
-            },
-            "medium": {
-              "width": 1400,
-              "height": 2197,
-              "webp": "images/medium/IMG_3322.webp"
-            },
-            "large": {
-              "width": 1800,
-              "height": 2825,
-              "webp": "images/large/IMG_3322.webp"
             }
           }
         },
@@ -3211,31 +3161,6 @@
           }
         },
         {
-          "id": "000010320031",
-          "sizes": {
-            "grid": {
-              "width": 800,
-              "height": 1206,
-              "webp": "images/grid/000010320031.webp"
-            },
-            "small": {
-              "width": 1000,
-              "height": 1508,
-              "webp": "images/small/000010320031.webp"
-            },
-            "medium": {
-              "width": 1400,
-              "height": 2111,
-              "webp": "images/medium/000010320031.webp"
-            },
-            "large": {
-              "width": 1800,
-              "height": 2715,
-              "webp": "images/large/000010320031.webp"
-            }
-          }
-        },
-        {
           "id": "000010320027",
           "sizes": {
             "grid": {
@@ -3282,31 +3207,6 @@
               "width": 1800,
               "height": 2715,
               "webp": "images/large/000010320026.webp"
-            }
-          }
-        },
-        {
-          "id": "000010320032",
-          "sizes": {
-            "grid": {
-              "width": 800,
-              "height": 530,
-              "webp": "images/grid/000010320032.webp"
-            },
-            "small": {
-              "width": 1000,
-              "height": 662,
-              "webp": "images/small/000010320032.webp"
-            },
-            "medium": {
-              "width": 1400,
-              "height": 928,
-              "webp": "images/medium/000010320032.webp"
-            },
-            "large": {
-              "width": 1800,
-              "height": 1193,
-              "webp": "images/large/000010320032.webp"
             }
           }
         }
@@ -3649,31 +3549,6 @@
           }
         },
         {
-          "id": "000029040022",
-          "sizes": {
-            "grid": {
-              "width": 800,
-              "height": 530,
-              "webp": "images/grid/000029040022.webp"
-            },
-            "small": {
-              "width": 1000,
-              "height": 662,
-              "webp": "images/small/000029040022.webp"
-            },
-            "medium": {
-              "width": 1400,
-              "height": 928,
-              "webp": "images/medium/000029040022.webp"
-            },
-            "large": {
-              "width": 1800,
-              "height": 1193,
-              "webp": "images/large/000029040022.webp"
-            }
-          }
-        },
-        {
           "id": "000029040023",
           "sizes": {
             "grid": {
@@ -3720,31 +3595,6 @@
               "width": 1800,
               "height": 1193,
               "webp": "images/large/000029040015 2.webp"
-            }
-          }
-        },
-        {
-          "id": "000029040009",
-          "sizes": {
-            "grid": {
-              "width": 800,
-              "height": 530,
-              "webp": "images/grid/000029040009.webp"
-            },
-            "small": {
-              "width": 1000,
-              "height": 662,
-              "webp": "images/small/000029040009.webp"
-            },
-            "medium": {
-              "width": 1400,
-              "height": 928,
-              "webp": "images/medium/000029040009.webp"
-            },
-            "large": {
-              "width": 1800,
-              "height": 1193,
-              "webp": "images/large/000029040009.webp"
             }
           }
         },
