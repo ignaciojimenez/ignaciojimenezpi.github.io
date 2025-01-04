@@ -9,6 +9,8 @@ class AlbumViewer {
         this.albumId = this.getAlbumIdFromUrl();
         this.lastHeight = null;
         this.preloadedImages = new Map();
+        this.ratioTypeCache = new Map();
+        this.initialLoadComplete = false;  // Add flag for initial load
         
         if (!this.modal) {
             this.createModal();
@@ -30,27 +32,26 @@ class AlbumViewer {
             threshold: 0.1
         });
 
-        let initialWidth = window.innerWidth;
-        this.debouncedResize = this.debounce(() => {
-            if (window.imagesData) {
-                this.isResizing = false;
-                this.reflow();
-            }
-        }, 150);
-
-        window.addEventListener('resize', () => {
-            const currentWidth = window.innerWidth;
-            if (currentWidth !== initialWidth) {
-                if (!this.isResizing) {
+        // Use ResizeObserver instead of resize event for better performance
+        this.resizeObserver = new ResizeObserver(
+            this.debounce(() => {
+                // Only respond to resize events after initial load
+                if (window.imagesData && this.initialLoadComplete && !this.isResizing) {
                     this.isResizing = true;
-                    document.querySelectorAll('.gallery-item').forEach(item => {
-                        item.classList.add('resizing');
+                    requestAnimationFrame(() => {
+                        document.querySelectorAll('.gallery-item').forEach(item => {
+                            item.classList.add('resizing');
+                        });
+                        this.reflow();
+                        this.isResizing = false;
                     });
                 }
-                this.debouncedResize();
-                initialWidth = currentWidth;
-            }
-        });
+            }, 150)
+        );
+        
+        if (this.gallery) {
+            // this.resizeObserver.observe(this.gallery);
+        }
     }
 
     getAlbumIdFromUrl() {
@@ -143,14 +144,32 @@ class AlbumViewer {
         Promise.all(loadPromises).then(() => {
             window.imagesData = this.sortByAspectRatioDiversity(images);
             this.reflow(true);
+            
+            // Only start observing resize after initial layout is complete
+            if (this.gallery && !this.initialLoadComplete) {
+                this.resizeObserver.observe(this.gallery);
+                this.initialLoadComplete = true;
+            }
+            
+            // Show gallery after initial layout
+            if (this.gallery) {
+                requestAnimationFrame(() => {
+                    this.gallery.style.opacity = '1';
+                });
+            }
             this.preloadAllHighResImages();
         });
     }
 
     sortByAspectRatioDiversity(images) {
         const getRatioType = (image) => {
+            if (this.ratioTypeCache.has(image.id)) {
+                return this.ratioTypeCache.get(image.id);
+            }
             const ratio = image.sizes.large.width / image.sizes.large.height;
-            return ratio < 1 ? 'portrait' : 'landscape';
+            const type = ratio < 1 ? 'portrait' : 'landscape';
+            this.ratioTypeCache.set(image.id, type);
+            return type;
         };
 
         const shuffle = (array) => {
@@ -365,12 +384,19 @@ class AlbumViewer {
     reflow(isInitial = false) {
         if (!window.imagesData) return;
 
+        const fragment = document.createDocumentFragment();
         const existingItems = new Map();
+        
         if (!isInitial) {
             document.querySelectorAll('.gallery-item').forEach(item => {
                 const img = item.querySelector('img');
                 if (img) {
-                    existingItems.set(img.src.split('/').pop(), item);
+                    const id = img.src.split('/').pop();
+                    existingItems.set(id, item);
+                    // Preserve loaded state during reflow
+                    if (item.classList.contains('loaded')) {
+                        item.setAttribute('data-was-loaded', 'true');
+                    }
                 }
             });
         }
@@ -393,6 +419,11 @@ class AlbumViewer {
                 imageCard = existingItems.get(image.id);
                 imageCard.style.removeProperty('width');
                 imageCard.style.removeProperty('height');
+                // Restore loaded state immediately if it was loaded before
+                if (imageCard.getAttribute('data-was-loaded') === 'true') {
+                    imageCard.classList.add('loaded');
+                    imageCard.removeAttribute('data-was-loaded');
+                }
             } else {
                 imageCard = this.createImageCard(image, index);
             }
@@ -400,25 +431,28 @@ class AlbumViewer {
             currentRow.push(imageCard);
 
             if (currentRow.length === maxImagesPerRow || index === window.imagesData.length - 1) {
-                this.createRowFromImages(currentRow, currentRowAspectRatios, this.targetHeight, containerWidth, gap);
+                const row = document.createElement('div');
+                row.className = 'gallery-row';
+                this.createRowFromImages(row, currentRow, currentRowAspectRatios, this.targetHeight, containerWidth, gap);
+                fragment.appendChild(row);
                 currentRow = [];
                 currentRowAspectRatios = [];
             }
         });
 
-        requestAnimationFrame(() => {
-            document.querySelectorAll('.gallery-item').forEach(item => {
-                item.classList.remove('resizing');
-            });
-        });
+        this.gallery.appendChild(fragment);
 
-        this.isResizing = false;
+        // Only handle resizing class for non-initial loads
+        if (!isInitial) {
+            requestAnimationFrame(() => {
+                document.querySelectorAll('.gallery-item').forEach(item => {
+                    item.classList.remove('resizing');
+                });
+            });
+        }
     }
 
-    createRowFromImages(images, aspectRatios, targetHeight, containerWidth, gap) {
-        const row = document.createElement('div');
-        row.className = 'gallery-row';
-        
+    createRowFromImages(row, images, aspectRatios, targetHeight, containerWidth, gap) {
         const totalNaturalWidth = aspectRatios.reduce((sum, ratio) => sum + (targetHeight * ratio), 0);
         const totalGapWidth = (images.length - 1) * gap;
         const scale = (containerWidth - totalGapWidth) / totalNaturalWidth;
@@ -426,10 +460,8 @@ class AlbumViewer {
         images.forEach((imageCard, i) => {
             const width = Math.floor(targetHeight * aspectRatios[i] * scale);
             
-            requestAnimationFrame(() => {
-                imageCard.style.width = `${width}px`;
-                imageCard.style.height = `${targetHeight}px`;
-            });
+            imageCard.style.width = `${width}px`;
+            imageCard.style.height = `${targetHeight}px`;
             
             row.appendChild(imageCard);
             
@@ -437,8 +469,6 @@ class AlbumViewer {
                 this.observer.observe(imageCard);
             }
         });
-        
-        this.gallery.appendChild(row);
     }
 
     createImageCard(imageData, index) {
@@ -448,21 +478,17 @@ class AlbumViewer {
         const picture = document.createElement('picture');
         const sizes = imageData.sizes;
         
-        const breakpoints = {
-            'grid': '(max-width: 640px)',
-            'small': '(max-width: 1024px)',
-            'medium': '(min-width: 1025px)'
-        };
-
-        Object.entries(breakpoints).forEach(([size, media]) => {
-            if (sizes[size] && sizes[size].webp) {
-                const source = document.createElement('source');
-                source.srcset = `/photography/albums/${this.albumId}/${sizes[size].webp}`;
-                source.media = media;
-                source.type = 'image/webp';
-                picture.appendChild(source);
-            }
-        });
+        // Only create sources for current viewport
+        const currentWidth = window.innerWidth;
+        const appropriateSize = currentWidth < 640 ? 'grid' :
+                              currentWidth < 1024 ? 'small' : 'medium';
+        
+        if (sizes[appropriateSize] && sizes[appropriateSize].webp) {
+            const source = document.createElement('source');
+            source.srcset = `/photography/albums/${this.albumId}/${sizes[appropriateSize].webp}`;
+            source.type = 'image/webp';
+            picture.appendChild(source);
+        }
         
         const img = document.createElement('img');
         const gridSize = sizes.grid;
