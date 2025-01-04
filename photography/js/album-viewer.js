@@ -141,9 +141,217 @@ class AlbumViewer {
         });
 
         Promise.all(loadPromises).then(() => {
+            window.imagesData = this.sortByAspectRatioDiversity(images);
             this.reflow(true);
             this.preloadAllHighResImages();
         });
+    }
+
+    sortByAspectRatioDiversity(images) {
+        const getRatioType = (image) => {
+            const ratio = image.sizes.large.width / image.sizes.large.height;
+            return ratio < 1 ? 'portrait' : 'landscape';
+        };
+
+        const shuffle = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        const groups = {
+            portrait: [],
+            landscape: []
+        };
+        
+        images.forEach(img => {
+            groups[getRatioType(img)].push(img);
+        });
+
+        groups.portrait = shuffle([...groups.portrait]);
+        groups.landscape = shuffle([...groups.landscape]);
+
+        const maxPerRow = this.getMaxImagesPerRow();
+        const sortedImages = [];
+        const totalImages = images.length;
+        const completeRows = Math.floor(totalImages / maxPerRow);
+        const remainingImages = totalImages % maxPerRow;
+
+        const getRowPattern = (row) => row.map(img => getRatioType(img)[0]).join('');
+
+        let lastRowPattern = '';
+
+        const threeImagePatterns = [
+            ['landscape', 'portrait', 'landscape'],   // LPL
+            ['portrait', 'landscape', 'portrait'],    // PLP
+            ['landscape', 'landscape', 'portrait'],   // LLP
+            ['portrait', 'landscape', 'landscape'],   // PLL
+            ['landscape', 'portrait', 'portrait'],    // LPP
+            ['portrait', 'portrait', 'landscape']     // PPL
+        ];
+
+        const getNextRowPattern = (lastPattern, availableGroups) => {
+            if (maxPerRow !== 3) return null; 
+
+            const viablePatterns = threeImagePatterns.filter(pattern => {
+                const neededCounts = {
+                    portrait: pattern.filter(t => t === 'portrait').length,
+                    landscape: pattern.filter(t => t === 'landscape').length
+                };
+                return neededCounts.portrait <= availableGroups.portrait.length &&
+                       neededCounts.landscape <= availableGroups.landscape.length;
+            });
+
+            const shuffledPatterns = shuffle([...viablePatterns]);
+            
+            const patternStr = lastPattern.split('').join('');
+            return shuffledPatterns.find(p => p.map(t => t[0]).join('') !== patternStr) || 
+                   shuffledPatterns[0];
+        };
+
+        for (let row = 0; row < completeRows; row++) {
+            const currentRow = [];
+            
+            if (maxPerRow === 3) {
+                const nextPattern = getNextRowPattern(lastRowPattern, groups);
+                
+                if (nextPattern) {
+                    nextPattern.forEach(type => {
+                        const img = groups[type].pop();
+                        currentRow.push(img);
+                    });
+                } else {
+                    for (let i = 0; i < maxPerRow; i++) {
+                        const preferredType = i === 0 ? 'landscape' : 
+                            getRatioType(currentRow[currentRow.length - 1]) === 'portrait' ? 'landscape' : 'portrait';
+                        const img = groups[preferredType].length > 0 ? 
+                            groups[preferredType].pop() : 
+                            (groups.landscape.length > 0 ? groups.landscape.pop() : groups.portrait.pop());
+                        currentRow.push(img);
+                    }
+                }
+            } else {
+                for (let i = 0; i < maxPerRow; i++) {
+                    const preferredType = i === 0 ? 'landscape' : 
+                        getRatioType(currentRow[currentRow.length - 1]) === 'portrait' ? 'landscape' : 'portrait';
+                    const img = groups[preferredType].length > 0 ? 
+                        groups[preferredType].pop() : 
+                        (groups.landscape.length > 0 ? groups.landscape.pop() : groups.portrait.pop());
+                    currentRow.push(img);
+                }
+            }
+
+            lastRowPattern = getRowPattern(currentRow);
+            sortedImages.push(...currentRow);
+        }
+
+        if (remainingImages > 0) {
+            const lastRow = [];
+            
+            // For a single remaining image, ONLY use landscape
+            // If no landscape is available, steal one from earlier in the sequence
+            if (remainingImages === 1) {
+                if (groups.landscape.length > 0) {
+                    lastRow.push(groups.landscape.pop());
+                } else {
+                    // Look for a landscape image in the sorted images (from the end)
+                    for (let i = sortedImages.length - 1; i >= 0; i--) {
+                        const ratio = sortedImages[i].sizes.large.width / sortedImages[i].sizes.large.height;
+                        if (ratio >= 1) {
+                            // Found a landscape image, swap it
+                            const landscapeImg = sortedImages[i];
+                            if (groups.portrait.length > 0) {
+                                // Replace it with a portrait image
+                                sortedImages[i] = groups.portrait.pop();
+                            } else {
+                                // If no portrait available, remove it and adjust arrays
+                                sortedImages.splice(i, 1);
+                            }
+                            lastRow.push(landscapeImg);
+                            break;
+                        }
+                    }
+                    // If still no landscape found (unlikely), use first available image
+                    if (lastRow.length === 0) {
+                        lastRow.push(groups.portrait.length > 0 ? groups.portrait.pop() : sortedImages.pop());
+                    }
+                }
+            } else if (remainingImages === 2) {
+                // For two remaining images, prefer two landscapes
+                // If not possible, ensure at least the second one is landscape
+                const firstType = groups.landscape.length > 0 ? 'landscape' : 'portrait';
+                lastRow.push(groups[firstType].pop());
+
+                // For second image, ensure landscape if possible
+                if (groups.landscape.length > 0) {
+                    lastRow.push(groups.landscape.pop());
+                } else {
+                    // Look for a landscape image in sorted images if none available
+                    let foundLandscape = false;
+                    for (let i = sortedImages.length - 1; i >= 0; i--) {
+                        const ratio = sortedImages[i].sizes.large.width / sortedImages[i].sizes.large.height;
+                        if (ratio >= 1) {
+                            const landscapeImg = sortedImages[i];
+                            if (groups.portrait.length > 0) {
+                                sortedImages[i] = groups.portrait.pop();
+                            } else {
+                                sortedImages.splice(i, 1);
+                            }
+                            lastRow.push(landscapeImg);
+                            foundLandscape = true;
+                            break;
+                        }
+                    }
+                    if (!foundLandscape && groups.portrait.length > 0) {
+                        lastRow.push(groups.portrait.pop());
+                    }
+                }
+            } else {
+                // For 3+ remaining images, ensure no trailing portrait
+                const lastIsLandscape = groups.landscape.length > 0;
+                
+                // Handle all but the last image
+                for (let i = 0; i < remainingImages - 1; i++) {
+                    const preferredType = i === 0 ? 'landscape' : 
+                        getRatioType(lastRow[lastRow.length - 1]) === 'portrait' ? 'landscape' : 'portrait';
+                    const img = groups[preferredType].length > 0 ? 
+                        groups[preferredType].pop() : 
+                        (groups.landscape.length > 0 ? groups.landscape.pop() : groups.portrait.pop());
+                    lastRow.push(img);
+                }
+
+                // Handle last image - ensure landscape if possible
+                if (lastIsLandscape) {
+                    lastRow.push(groups.landscape.pop());
+                } else {
+                    // Try to swap with a previous landscape
+                    let foundLandscape = false;
+                    for (let i = sortedImages.length - 1; i >= 0; i--) {
+                        const ratio = sortedImages[i].sizes.large.width / sortedImages[i].sizes.large.height;
+                        if (ratio >= 1) {
+                            const landscapeImg = sortedImages[i];
+                            if (groups.portrait.length > 0) {
+                                sortedImages[i] = groups.portrait.pop();
+                            } else {
+                                sortedImages.splice(i, 1);
+                            }
+                            lastRow.push(landscapeImg);
+                            foundLandscape = true;
+                            break;
+                        }
+                    }
+                    if (!foundLandscape) {
+                        lastRow.push(groups.portrait.pop());
+                    }
+                }
+            }
+            
+            sortedImages.push(...lastRow);
+        }
+
+        return sortedImages;
     }
 
     preloadAllHighResImages() {
