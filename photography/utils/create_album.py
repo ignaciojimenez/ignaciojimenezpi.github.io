@@ -150,15 +150,21 @@ def create_album(
     """Create a new album with optimized images."""
     temp_dir = None
     try:
+        logger.info(f"Creating album: {title}")
+        
         # Create temporary directory for processing
         temp_dir = Path(tempfile.mkdtemp())
         temp_album_dir = create_album_directory(album_name, temp_dir)
+        logger.info("Created temporary processing directory")
         
         # Process images in temporary directory
+        logger.info(f"Processing images from: {image_dir}")
         images = process_images(image_dir, temp_album_dir)
         
         if not images:
             raise ValueError(f"No valid images found in directory: {image_dir}")
+        
+        logger.info(f"Successfully processed {len(images)} images")
         
         # Handle cover image
         if cover_image:
@@ -185,12 +191,11 @@ def create_album(
                 logger.warning(f"Specified cover image {cover_id} not found in processed images, using first image")
                 cover_data = images[0]['sizes']['grid']
         else:
-                logger.warning("Cover image file not found, using first image")
-                cover_data = images[0]['sizes']['grid']
-        else:
+            logger.info("No cover image specified, using first image")
             cover_data = images[0]['sizes']['grid']
         
         # Validate album data
+        logger.info("Validating album data...")
         album_data = validate_album_data(
             album_id=album_name,
             title=title,
@@ -212,13 +217,23 @@ def create_album(
         ):
             raise ValueError("Failed to validate album data")
         
-        # If everything is successful, move the temporary directory to final location
-        final_album_dir = ALBUMS_DIR / album_name
-        if final_album_dir.exists():
-            shutil.rmtree(final_album_dir)
-        shutil.copytree(temp_album_dir, final_album_dir)
+        # Create final album directory
+        logger.info("Creating final album directory...")
+        album_dir = create_album_directory(album_name)
         
-        # Finally, update albums.json
+        # Copy processed images from temp directory to final location
+        logger.info("Copying processed images to final location...")
+        temp_images_dir = temp_album_dir / 'images'
+        final_images_dir = album_dir / 'images'
+        if temp_images_dir.exists() and final_images_dir.exists():
+            for size_dir in ['grid', 'small', 'medium', 'large']:
+                temp_size_dir = temp_images_dir / size_dir
+                final_size_dir = final_images_dir / size_dir
+                if temp_size_dir.exists():
+                    shutil.copytree(temp_size_dir, final_size_dir, dirs_exist_ok=True)
+        
+        # Update albums.json with final data
+        logger.info("Updating albums.json...")
         if not update_albums_json(
             album_name=album_name,
             title=title,
@@ -229,39 +244,17 @@ def create_album(
         ):
             raise ValueError("Failed to update albums.json")
         
-        logger.info(f"Successfully created album: {album_name}")
+        logger.info(f"Album '{title}' created successfully!")
         return True
         
     except Exception as e:
         logger.error(f"Failed to create album: {e}")
-        
-        # Clean up the album entry from albums.json if it was created
-        try:
-            with open(ALBUMS_JSON, 'r') as f:
-                data = json.load(f)
-            data['albums'] = [a for a in data['albums'] if a['id'] != album_name]
-            with open(ALBUMS_JSON, 'w') as f:
-                json.dump(data, f, indent=2)
-        except Exception as cleanup_error:
-            logger.error(f"Error during cleanup: {cleanup_error}")
-        
-        # Clean up the album directory if it exists
-        try:
-            album_dir = ALBUMS_DIR / album_name
-            if album_dir.exists():
-                shutil.rmtree(album_dir)
-        except Exception as cleanup_error:
-            logger.error(f"Error cleaning up album directory: {cleanup_error}")
-        
         return False
         
     finally:
         # Clean up temporary directory
         if temp_dir and temp_dir.exists():
-            try:
-                shutil.rmtree(temp_dir)
-            except Exception as cleanup_error:
-                logger.error(f"Error cleaning up temporary directory: {cleanup_error}")
+            shutil.rmtree(temp_dir)
 
 def add_images_to_album(album_name: str, image_path: str) -> bool:
     """Add images to an existing album."""
@@ -330,10 +323,7 @@ def add_images_to_album(album_name: str, image_path: str) -> bool:
     finally:
         # Clean up temporary directory
         if temp_dir and temp_dir.exists():
-            try:
-                shutil.rmtree(temp_dir)
-            except Exception as cleanup_error:
-                logger.error(f"Error cleaning up temporary directory: {cleanup_error}")
+            shutil.rmtree(temp_dir)
 
 def delete_album(album_name: str) -> bool:
     """Delete an album and all its contents."""
