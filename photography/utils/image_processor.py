@@ -49,7 +49,7 @@ class ImageProcessor:
                 }
         
         except Exception as e:
-            logger.error(f"Failed to process image {img_path}: {e}")
+            logger.error(f"Failed to process image {img_path.name}: {e}")
             raise
 
     def process_album(self, image_files: List[Path]) -> Dict:
@@ -57,6 +57,10 @@ class ImageProcessor:
         if not image_files:
             logger.warning("No images provided for processing")
             return {}
+        
+        total_images = len(image_files)
+        logger.info(f"Starting to process {total_images} images...")
+        processed_count = 0
         
         # Process images in parallel
         with ThreadPoolExecutor() as executor:
@@ -71,8 +75,16 @@ class ImageProcessor:
                     result = future.result()
                     if result:
                         self.metadata[path.name] = result
+                        processed_count += 1
+                        if processed_count % max(1, total_images // 10) == 0:  # Show progress every 10%
+                            logger.info(f"Processed {processed_count}/{total_images} images")
                 except Exception as e:
-                    logger.error(f"Failed to process {path}: {e}")
+                    logger.error(f"Failed to process {path.name}: {e}")
+        
+        if processed_count == total_images:
+            logger.info("Image processing completed successfully")
+        else:
+            logger.warning(f"Completed with some failures: {processed_count}/{total_images} images processed")
         
         return self.metadata
     
@@ -114,7 +126,7 @@ class ImageProcessor:
                     }
                     
                 except Exception as e:
-                    logger.error(f"Failed to create {size_name} version of {source_path}: {e}")
+                    logger.error(f"Failed to create {size_name} version of {source_path.name}: {e}")
                     raise
             
             return versions
