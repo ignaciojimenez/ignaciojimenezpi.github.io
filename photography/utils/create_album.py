@@ -162,17 +162,29 @@ def create_album(
         
         # Handle cover image
         if cover_image:
+            # Try different ways to find the cover image
+            cover_id = None
+            logger.info(f"Setting cover image: {cover_image}")
+            
+            # First try as a full path
             cover_path = Path(cover_image)
             if cover_path.is_file():
-                cover_id = cover_path.stem.split('.')[0]  # Remove all extensions
-                # Find the processed cover image in the metadata
-                cover_img = next((img for img in images if img['id'] == cover_id), None)
-                if cover_img:
-                    cover_data = cover_img['sizes']['grid']
-                else:
-                    logger.warning(f"Specified cover image {cover_id} not found in processed images, using first image")
-                    cover_data = images[0]['sizes']['grid']
+                cover_id = cover_path.stem.split('.')[0]
             else:
+                # Try as just a filename (with or without extension)
+                cover_base = Path(cover_image).stem
+                # Look for the image in the processed images
+                cover_id = cover_base
+            
+            # Find the processed cover image in the metadata
+            cover_img = next((img for img in images if img['id'] == cover_id), None)
+            if cover_img:
+                cover_data = cover_img['sizes']['grid']
+                logger.info(f"Using {cover_id} as cover image")
+            else:
+                logger.warning(f"Specified cover image {cover_id} not found in processed images, using first image")
+                cover_data = images[0]['sizes']['grid']
+        else:
                 logger.warning("Cover image file not found, using first image")
                 cover_data = images[0]['sizes']['grid']
         else:
