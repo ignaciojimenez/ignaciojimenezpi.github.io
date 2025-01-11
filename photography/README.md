@@ -4,88 +4,104 @@ A minimalist photography portfolio website with dynamic album loading and respon
 
 ## Album Management
 
-### Create Album
+The album management system provides two modes of operation:
+
+### Interactive Mode
+
+Simply run:
 ```bash
 cd photography/utils
-python3 create_album.py album-name \
+python album.py
+```
+
+This will launch an interactive menu where you can:
+- Create new albums
+- Delete existing albums
+- Update album metadata
+- Add images to albums
+- Remove images from albums
+
+### CLI Mode
+
+All operations support both interactive and non-interactive (CLI) usage. The CLI mode is designed for automation and scripting.
+
+#### Create Album
+```bash
+python album.py create \
+  --album-name my-album \
   --title "Album Title" \
-  --description "Description" \
-  --date "YYYY-MM-DD" \
-  --images path/to/images \
-  --cover cover-image.jpg
+  --date 2025-01-08 \
+  --image-dir ~/photos \
+  [--description "Optional description"] \
+  [--cover-image cover.jpg] \
+  [--yes]
 ```
 
-### Add Images to Album
+#### Delete Album
 ```bash
-# Add directory of images
-python3 create_album.py album-name --add --images path/to/more-images
-
-# Add single image
-python3 create_album.py album-name --add --images path/to/single-image.jpg
+python album.py delete \
+  --album-name my-album \
+  [--yes]  # Skip confirmation prompt
 ```
 
-### Change Metadata
+#### Update Album Metadata
 ```bash
-# Interactive selection from album images
-python3 create_album.py album-name --change-cover
-
-# Directly specify cover image
-python3 create_album.py album-name --change-cover --cover path/to/image.jpg
-
-# Change title
-python3 create_album.py existing-album --new-title "Updated Title"
-
-# Change date
-python3 create_album.py existing-album --new-date 2023-12-31
+python album.py update \
+  --album-name my-album \
+  [--title "New Title"] \
+  [--date 2025-01-08] \
+  [--description "New description"] \
+  [--cover-image new-cover.jpg]
 ```
 
-### Delete Images from Album
+#### Add Images
 ```bash
-# Interactive mode - select multiple images
-python3 delete_image.py --interactive
-
-# Interactive mode with pre-selected album
-python3 delete_image.py --interactive --album album-name
-
-# Direct mode - delete single image
-python3 delete_image.py --album album-name --image image-name.jpg
+python album.py add-images \
+  --album-name my-album \
+  --image-paths path1.jpg path2.jpg dir1/ \
+  [--yes]
 ```
 
-### Delete Album
+#### Remove Images
 ```bash
-python3 create_album.py album-name --delete
+python album.py remove-images \
+  --album-name my-album \
+  --image-ids IMG_001 IMG_002 \
+  [--yes]  # Skip confirmation prompt
 ```
 
-## Features
-- Responsive images with WebP support
-- Dynamic image loading
-- Mobile-friendly design
-- Automated image optimization
-- Comprehensive album management utilities:
-  - Create and delete albums
-  - Add single images or directories
-  - Interactive image deletion
-  - Change album cover images
-  - Automatic responsive image generation
+### Common Options
+All commands support these options:
+- `--interactive/-i`: Run in interactive mode
+- `--yes/-y`: Skip confirmation prompts (for automation)
 
 ## Project Structure
 ```
 photography/
-├── albums/              # Album content and metadata
-│   ├── */              # Individual album directories
-│   │   ├── images/     # Original images
-│   │   ├── responsive/ # Responsive image versions
-│   │   └── metadata.json
-│   └── albums.json     # Album index and configuration
-├── css/                # Stylesheet directory
-│   └── styles.css      # Main stylesheet
-├── js/                 # Frontend JavaScript
-│   ├── album-viewer.js # Album viewing functionality
-│   ├── gallery.js      # Gallery layout and interactions
-│   └── sw.js          # Service worker for offline support
-├── utils/              # Album management scripts
-│   ├── create_album.py # Album creation and modification
-│   ├── delete_image.py # Image deletion utility
-│   └── config.py       # Utility configuration
-├── index.html          # Portfolio home page
-└── manifest.json       # Progressive Web App manifest
+├── albums/                 # Album content and metadata
+│   ├── */                 # Individual album directories
+│   │   ├── images/        # Image directory
+│   │   │   ├── grid/     # Grid thumbnails (400px)
+│   │   │   ├── small/    # Small images (800px)
+│   │   │   ├── medium/   # Medium images (1200px)
+│   │   │   └── large/    # Large images (1600px)
+│   │   └── index.html    # Album page
+│   ├── template.html      # Album page template
+│   └── albums.json        # Album index and metadata
+├── css/                   # Stylesheet directory
+│   ├── input.css         # Input styles for preprocessing
+│   └── styles.css        # Main compiled stylesheet
+├── js/                    # Frontend JavaScript
+│   ├── album-viewer.js    # Album viewing functionality
+│   ├── gallery.js         # Gallery layout and interactions
+│   └── sw.js             # Service worker for offline support
+├── utils/                 # Album management utilities
+│   ├── album.py          # Main CLI/interactive tool
+│   ├── album_manager.py   # Album operations
+│   ├── image_processor.py # Image processing
+│   ├── interactive.py     # Interactive prompts
+│   ├── validation.py      # Input validation
+│   ├── config.py         # Configuration
+│   ├── create_album.py   # Legacy album creation script (deprecated)
+│   └── delete_image.py   # Legacy image deletion script (deprecated)
+└── index.html            # Portfolio home page
