@@ -10,7 +10,10 @@ class AlbumViewer {
         this.lastHeight = null;
         this.preloadedImages = new Map();
         this.ratioTypeCache = new Map();
-        this.initialLoadComplete = false;  // Add flag for initial load
+        this.initialLoadComplete = false;
+        
+        // Add mobile detection
+        this.isMobile = window.innerWidth < 640;
         
         if (!this.modal) {
             this.createModal();
@@ -28,7 +31,7 @@ class AlbumViewer {
             });
         }, {
             root: null,
-            rootMargin: '50px',
+            rootMargin: '100% 0px', // Load images one viewport ahead
             threshold: 0.1
         });
 
@@ -49,8 +52,9 @@ class AlbumViewer {
             }, 150)
         );
         
-        if (this.gallery) {
-            // this.resizeObserver.observe(this.gallery);
+        // Only observe resize on desktop
+        if (this.gallery && !this.isMobile) {
+            this.resizeObserver.observe(this.gallery);
         }
     }
 
@@ -74,8 +78,8 @@ class AlbumViewer {
     }
 
     getMaxImagesPerRow() {
+        if (this.isMobile) return 1;
         const width = window.innerWidth;
-        if (width < 640) return 1;
         if (width < 1024) return 2;
         return 3;
     }
@@ -109,68 +113,130 @@ class AlbumViewer {
                 }
             }
 
-            window.imagesData = album.images;
-            this.processImages(window.imagesData);
+            if (this.isMobile) {
+                // Mobile-optimized path
+                this.processMobileImages(album.images);
+            } else {
+                // Desktop path - unchanged
+                this.processImages(album.images);
+            }
         } catch (error) {
             console.error('Error loading album:', error);
             this.showError(error.message);
         }
     }
 
+    processMobileImages(images) {
+        if (!images || images.length === 0) return;
+        
+        // No need for aspect ratios or sorting on mobile
+        window.imagesData = images;
+        
+        // Create a simple vertical layout
+        const fragment = document.createDocumentFragment();
+        
+        images.forEach((image, index) => {
+            const imageCard = this.createMobileImageCard(image, index);
+            fragment.appendChild(imageCard);
+        });
+        
+        this.gallery.innerHTML = '';
+        this.gallery.appendChild(fragment);
+        
+        // Show gallery immediately
+        requestAnimationFrame(() => {
+            this.gallery.style.opacity = '1';
+        });
+        
+        this.initialLoadComplete = true;
+        this.preloadAllHighResImages();
+    }
+
+    createMobileImageCard(imageData, index) {
+        const imageCard = document.createElement('div');
+        imageCard.className = 'gallery-item';
+        
+        const picture = document.createElement('picture');
+        const sizes = imageData.sizes;
+        
+        if (sizes.grid && sizes.grid.webp) {
+            const source = document.createElement('source');
+            source.srcset = `/photography/albums/${this.albumId}/${sizes.grid.webp}`;
+            source.type = 'image/webp';
+            picture.appendChild(source);
+        }
+        
+        const img = document.createElement('img');
+        img.src = `/photography/albums/${this.albumId}/${sizes.grid.webp}`;
+        img.alt = `Image ${index + 1}`;
+        img.loading = 'lazy';
+        
+        // Set fixed aspect ratio for smooth loading
+        img.style.aspectRatio = `${sizes.grid.width}/${sizes.grid.height}`;
+        
+        picture.appendChild(img);
+        imageCard.appendChild(picture);
+        imageCard.addEventListener('click', () => this.showModal(index));
+        
+        // Observe for lazy loading
+        this.observer.observe(imageCard);
+        
+        return imageCard;
+    }
+
     processImages(images) {
         if (!images || images.length === 0) return;
         
-        const loadPromises = images.map((image, index) => {
-            return new Promise((resolve) => {
-                if (this.imageBuffer.has(image.id)) {
-                    resolve();
-                    return;
-                }
-
-                const sizes = image.sizes;
-                if (sizes && sizes.large) {
-                    this.imageBuffer.set(image.id, {
-                        aspectRatio: sizes.large.width / sizes.large.height,
-                        id: image.id
-                    });
-                    resolve();
-                    return;
-                }
-
-                resolve();
+        // Pre-calculate all aspect ratios in one pass
+        const aspectRatios = new Map();
+        images.forEach(image => {
+            if (image.sizes && image.sizes.large) {
+                // Store the aspect ratio directly in the image data
+                aspectRatios.set(image.id, image.sizes.large.width / image.sizes.large.height);
+            }
+        });
+        
+        // Update the imageBuffer in bulk
+        this.imageBuffer = aspectRatios;
+        
+        // Sort images once and proceed with layout
+        window.imagesData = this.sortByAspectRatioDiversity(images);
+        this.reflow(true);
+        
+        if (this.gallery && !this.initialLoadComplete) {
+            this.resizeObserver.observe(this.gallery);
+            this.initialLoadComplete = true;
+        }
+        
+        // Show gallery after initial layout
+        if (this.gallery) {
+            requestAnimationFrame(() => {
+                this.gallery.style.opacity = '1';
             });
-        });
-
-        Promise.all(loadPromises).then(() => {
-            window.imagesData = this.sortByAspectRatioDiversity(images);
-            this.reflow(true);
-            
-            // Only start observing resize after initial layout is complete
-            if (this.gallery && !this.initialLoadComplete) {
-                this.resizeObserver.observe(this.gallery);
-                this.initialLoadComplete = true;
-            }
-            
-            // Show gallery after initial layout
-            if (this.gallery) {
-                requestAnimationFrame(() => {
-                    this.gallery.style.opacity = '1';
-                });
-            }
-            this.preloadAllHighResImages();
-        });
+        }
+        this.preloadAllHighResImages();
     }
 
     sortByAspectRatioDiversity(images) {
-        const getRatioType = (image) => {
-            if (this.ratioTypeCache.has(image.id)) {
-                return this.ratioTypeCache.get(image.id);
-            }
-            const ratio = image.sizes.large.width / image.sizes.large.height;
-            const type = ratio < 1 ? 'portrait' : 'landscape';
-            this.ratioTypeCache.set(image.id, type);
-            return type;
+        // Pre-calculate ratio types for all images at once
+        const ratioTypes = new Map();
+        const groups = {
+            portrait: [],
+            landscape: []
         };
+        
+        // Single pass grouping
+        images.forEach(img => {
+            const ratio = this.imageBuffer.get(img.id);
+            const type = ratio < 1 ? 'portrait' : 'landscape';
+            ratioTypes.set(img.id, type);
+            groups[type].push(img);
+        });
+        
+        // Cache all ratio types
+        this.ratioTypeCache = ratioTypes;
+
+        const getRatioType = (image) => ratioTypes.get(image.id);
 
         const shuffle = (array) => {
             for (let i = array.length - 1; i > 0; i--) {
@@ -179,15 +245,6 @@ class AlbumViewer {
             }
             return array;
         };
-
-        const groups = {
-            portrait: [],
-            landscape: []
-        };
-        
-        images.forEach(img => {
-            groups[getRatioType(img)].push(img);
-        });
 
         groups.portrait = shuffle([...groups.portrait]);
         groups.landscape = shuffle([...groups.landscape]);
@@ -277,7 +334,7 @@ class AlbumViewer {
                 } else {
                     // Look for a landscape image in the sorted images (from the end)
                     for (let i = sortedImages.length - 1; i >= 0; i--) {
-                        const ratio = sortedImages[i].sizes.large.width / sortedImages[i].sizes.large.height;
+                        const ratio = this.imageBuffer.get(sortedImages[i].id);
                         if (ratio >= 1) {
                             // Found a landscape image, swap it
                             const landscapeImg = sortedImages[i];
@@ -310,7 +367,7 @@ class AlbumViewer {
                     // Look for a landscape image in sorted images if none available
                     let foundLandscape = false;
                     for (let i = sortedImages.length - 1; i >= 0; i--) {
-                        const ratio = sortedImages[i].sizes.large.width / sortedImages[i].sizes.large.height;
+                        const ratio = this.imageBuffer.get(sortedImages[i].id);
                         if (ratio >= 1) {
                             const landscapeImg = sortedImages[i];
                             if (groups.portrait.length > 0) {
@@ -348,7 +405,7 @@ class AlbumViewer {
                     // Try to swap with a previous landscape
                     let foundLandscape = false;
                     for (let i = sortedImages.length - 1; i >= 0; i--) {
-                        const ratio = sortedImages[i].sizes.large.width / sortedImages[i].sizes.large.height;
+                        const ratio = this.imageBuffer.get(sortedImages[i].id);
                         if (ratio >= 1) {
                             const landscapeImg = sortedImages[i];
                             if (groups.portrait.length > 0) {
@@ -412,7 +469,7 @@ class AlbumViewer {
             const imageData = this.imageBuffer.get(image.id);
             if (!imageData) return;
 
-            currentRowAspectRatios.push(imageData.aspectRatio);
+            currentRowAspectRatios.push(imageData);
             
             let imageCard;
             if (existingItems.has(image.id)) {
@@ -643,18 +700,43 @@ class AlbumViewer {
         
         const picture = document.createElement('picture');
         
-        if (sizes.large.webp) {
-            const webpSource = document.createElement('source');
-            webpSource.srcset = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
-            webpSource.type = 'image/webp';
-            picture.appendChild(webpSource);
+        if (this.isMobile) {
+            // On mobile, use grid size for initial display, then upgrade to large
+            if (sizes.grid.webp) {
+                const webpSource = document.createElement('source');
+                webpSource.srcset = `/photography/albums/${this.albumId}/${sizes.grid.webp}`;
+                webpSource.type = 'image/webp';
+                picture.appendChild(webpSource);
+            }
+            
+            const img = document.createElement('img');
+            img.src = `/photography/albums/${this.albumId}/${sizes.grid.webp}`;
+            img.alt = `Image ${index + 1}`;
+            img.className = 'max-w-full max-h-[90vh] object-contain mx-auto loading';
+            picture.appendChild(img);
+            
+            // Immediately start loading high-res version
+            const highResImg = new Image();
+            highResImg.onload = () => {
+                img.src = highResImg.src;
+                img.classList.remove('loading');
+            };
+            highResImg.src = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
+        } else {
+            // Desktop behavior remains unchanged
+            if (sizes.large.webp) {
+                const webpSource = document.createElement('source');
+                webpSource.srcset = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
+                webpSource.type = 'image/webp';
+                picture.appendChild(webpSource);
+            }
+            
+            const img = document.createElement('img');
+            img.src = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
+            img.alt = `Image ${index + 1}`;
+            img.className = 'max-w-full max-h-[90vh] object-contain mx-auto';
+            picture.appendChild(img);
         }
-        
-        const img = document.createElement('img');
-        img.src = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
-        img.alt = `Image ${index + 1}`;
-        img.className = 'max-w-full max-h-[90vh] object-contain mx-auto';
-        picture.appendChild(img);
         
         const modalContent = document.querySelector('.modal-content');
         modalContent.innerHTML = '';
@@ -708,71 +790,80 @@ class AlbumViewer {
     }
 
     setupEventListeners() {
-        document.addEventListener('keydown', (e) => {
-            if (this.modal.classList.contains('active')) {
-                this.handleKeyPress(e);
-            }
-        });
-
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        this.modal.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        this.modal.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            this.handleSwipe(touchStartX, touchEndX);
-        }, { passive: true });
-
-        let mouseStartX = 0;
-        let isMouseDown = false;
-
-        this.modal.addEventListener('mousedown', (e) => {
-            isMouseDown = true;
-            mouseStartX = e.screenX;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isMouseDown) return;
-        });
-
-        document.addEventListener('mouseup', (e) => {
-            if (!isMouseDown) return;
-            isMouseDown = false;
-            this.handleSwipe(mouseStartX, e.screenX);
-        });
-
-        if (this.modal) {
-            const prevButton = this.modal.querySelector('.modal-prev');
-            const nextButton = this.modal.querySelector('.modal-next');
+        if (this.isMobile) {
+            // Mobile-optimized touch handling
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+            let startTime = 0;
+            
+            this.modal.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                startTime = Date.now();
+            }, { passive: true });
+            
+            this.modal.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].clientX;
+                touchEndY = e.changedTouches[0].clientY;
+                
+                const deltaX = touchEndX - touchStartX;
+                const deltaY = touchEndY - touchStartY;
+                const deltaTime = Date.now() - startTime;
+                
+                // Only handle horizontal swipes if they're intentional
+                if (Math.abs(deltaX) > Math.abs(deltaY) * 2 && // Horizontal movement is dominant
+                    Math.abs(deltaX) > 50 && // Minimum swipe distance
+                    deltaTime < 300) { // Maximum swipe time
+                    if (deltaX > 0) {
+                        this.showPrevImage();
+                    } else {
+                        this.showNextImage();
+                    }
+                }
+            }, { passive: true });
+            
+            // Simpler close button for mobile
             const closeButton = this.modal.querySelector('.modal-close');
-
-            if (prevButton) {
-                prevButton.addEventListener('click', () => this.showPrevImage());
-                
-                prevButton.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    this.showPrevImage();
-                }, { passive: false });
-            }
-
-            if (nextButton) {
-                nextButton.addEventListener('click', () => this.showNextImage());
-                
-                nextButton.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    this.showNextImage();
-                }, { passive: false });
-            }
-
             if (closeButton) {
-                closeButton.addEventListener('click', () => this.closeModal());
+                closeButton.addEventListener('click', () => this.closeModal(), { passive: true });
             }
         } else {
-            console.warn('Modal not found during event listener setup');
+            // Desktop event listeners
+            document.addEventListener('keydown', (e) => {
+                if (this.modal.classList.contains('active')) {
+                    this.handleKeyPress(e);
+                }
+            });
+
+            let mouseStartX = 0;
+            let isMouseDown = false;
+
+            this.modal.addEventListener('mousedown', (e) => {
+                isMouseDown = true;
+                mouseStartX = e.screenX;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isMouseDown) return;
+            });
+
+            document.addEventListener('mouseup', (e) => {
+                if (!isMouseDown) return;
+                isMouseDown = false;
+                this.handleSwipe(mouseStartX, e.screenX);
+            });
         }
+
+        // Common event listeners for both mobile and desktop
+        const closeButton = this.modal.querySelector('.modal-close');
+        const prevButton = this.modal.querySelector('.modal-prev');
+        const nextButton = this.modal.querySelector('.modal-next');
+        
+        if (closeButton) closeButton.addEventListener('click', () => this.closeModal());
+        if (prevButton) prevButton.addEventListener('click', () => this.showPrevImage());
+        if (nextButton) nextButton.addEventListener('click', () => this.showNextImage());
     }
 
     handleKeyPress(e) {
