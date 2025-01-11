@@ -112,6 +112,51 @@
         @apply mt-1;
     }
 
+    .gallery-row {
+        @apply block p-0 m-0;
+    }
+
+    .gallery-item {
+        @apply w-full mb-2.5 transform-none;
+        opacity: 0;
+        transition: opacity 0.3s ease-out;
+    }
+
+    .gallery-item.loaded {
+        opacity: 1;
+    }
+
+    .gallery-item picture,
+    .gallery-item img {
+        @apply w-full h-auto object-cover;
+    }
+
+    /* Optimize modal for mobile */
+    #imageModal .modal-content {
+        @apply m-0 w-full h-full max-w-full max-h-full flex items-center bg-black/95;
+    }
+    
+    #imageModal .modal-content picture {
+        @apply w-full h-full flex items-center;
+    }
+    
+    #imageModal .modal-content img {
+        @apply w-full h-auto object-contain;
+    }
+    
+    #imageModal .modal-content img.loading {
+        filter: blur(10px);
+        opacity: 0.6;
+        transition: filter 0.3s ease-out, opacity 0.3s ease-out;
+    }
+
+    /* Optimize touch targets */
+    #imageModal .modal-close,
+    #imageModal .modal-prev,
+    #imageModal .modal-next {
+        @apply min-w-[44px] min-h-[44px] flex items-center justify-center;
+    }
+
     .modal-close {
         @apply top-2 right-2 p-2;
     }
@@ -126,6 +171,21 @@
 
     .modal-next {
         @apply right-2;
+    }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .gallery-item {
+        transition: none;
+    }
+    
+    #imageModal .modal-content picture {
+        transition: none;
+    }
+    
+    #imageModal .modal-content img.loading {
+        transition: none;
     }
 }
 
