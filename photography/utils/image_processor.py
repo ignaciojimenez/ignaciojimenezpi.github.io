@@ -43,15 +43,16 @@ class ImageProcessor:
                 # Create responsive versions
                 responsive_versions = self._create_responsive_versions(img, img_path)
                 
+                # Use filename without extension as ID
                 return {
-                    "id": img_path.stem.split('.')[0],  # Remove all extensions from ID
+                    "id": img_path.stem,  # Just use stem (filename without extension)
                     "sizes": responsive_versions
                 }
         
         except Exception as e:
             logger.error(f"Failed to process image {img_path.name}: {e}")
             raise
-
+    
     def process_album(self, image_files: List[Path]) -> Dict:
         """Process all images in the album."""
         if not image_files:
@@ -87,6 +88,35 @@ class ImageProcessor:
             logger.warning(f"Completed with some failures: {processed_count}/{total_images} images processed")
         
         return self.metadata
+    
+    def process_directory(self, dir_path: Path) -> List[Dict]:
+        """Process all images in a directory.
+        
+        Args:
+            dir_path: Path to directory containing images
+            
+        Returns:
+            List of image metadata dictionaries
+        """
+        # Get all image files in directory
+        image_files = []
+        for ext in ['.jpg', '.jpeg', '.png']:
+            image_files.extend(dir_path.glob(f'*{ext}'))
+            image_files.extend(dir_path.glob(f'*{ext.upper()}'))
+        
+        if not image_files:
+            logger.warning(f"No image files found in {dir_path}")
+            return []
+        
+        # Sort files to ensure consistent order
+        image_files = sorted(image_files)
+        logger.info(f"Found {len(image_files)} images in {dir_path}")
+        
+        # Process images in parallel using process_album
+        metadata = self.process_album(image_files)
+        
+        # Convert metadata dict to list in the same order as image_files
+        return [metadata[f.name] for f in image_files if f.name in metadata]
     
     def _create_responsive_versions(self, img: Image.Image, source_path: Path) -> Dict:
         """Create responsive versions of an image."""
