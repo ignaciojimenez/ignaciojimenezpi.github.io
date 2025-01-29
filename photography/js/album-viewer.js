@@ -797,14 +797,54 @@ class AlbumViewer {
             let touchEndX = 0;
             let touchEndY = 0;
             let startTime = 0;
+            let initialTransform = 0;
             
             this.modal.addEventListener('touchstart', (e) => {
+                // Close modal if background is tapped (not the content or controls)
+                // Check if the clicked element is the modal itself (background) and not its children
+                if (e.target === this.modal || e.target.classList.contains('modal-content')) {
+                    e.preventDefault(); // Prevent any default behavior
+                    e.stopPropagation(); // Stop event from bubbling to elements behind the modal
+                    this.closeModal();
+                    return;
+                }
+                
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
                 startTime = Date.now();
-            }, { passive: true });
+                
+                // Reset transform
+                const picture = this.modal.querySelector('picture');
+                if (picture) {
+                    initialTransform = 0;
+                    picture.style.transform = `translateX(0)`;
+                    picture.style.transition = 'none';
+                }
+            }, { passive: false });
+
+            this.modal.addEventListener('touchmove', (e) => {
+                if (e.target === this.modal) return; // Don't track swipes on background
+                
+                const deltaX = e.touches[0].clientX - touchStartX;
+                const deltaY = e.touches[0].clientY - touchStartY;
+                
+                // Only handle horizontal movement if it's more horizontal than vertical
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    e.preventDefault(); // Prevent page scroll
+                    
+                    const picture = this.modal.querySelector('picture');
+                    if (picture) {
+                        // Add resistance to the swipe
+                        const resistance = 0.4;
+                        const transform = deltaX * resistance;
+                        picture.style.transform = `translateX(${transform}px)`;
+                    }
+                }
+            }, { passive: false });
             
             this.modal.addEventListener('touchend', (e) => {
+                if (e.target === this.modal) return; // Don't handle swipes on background
+                
                 touchEndX = e.changedTouches[0].clientX;
                 touchEndY = e.changedTouches[0].clientY;
                 
@@ -812,14 +852,28 @@ class AlbumViewer {
                 const deltaY = touchEndY - touchStartY;
                 const deltaTime = Date.now() - startTime;
                 
-                // Only handle horizontal swipes if they're intentional
-                if (Math.abs(deltaX) > Math.abs(deltaY) * 2 && // Horizontal movement is dominant
-                    Math.abs(deltaX) > 50 && // Minimum swipe distance
-                    deltaTime < 300) { // Maximum swipe time
+                const picture = this.modal.querySelector('picture');
+                if (picture) {
+                    picture.style.transition = 'transform 0.3s ease-out';
+                }
+                
+                // Handle swipe if:
+                // 1. Horizontal movement is dominant
+                // 2. Minimum distance is met
+                // 3. Maximum time is not exceeded
+                if (Math.abs(deltaX) > Math.abs(deltaY) * 2 && 
+                    Math.abs(deltaX) > 50 && 
+                    deltaTime < 300) {
+                    
                     if (deltaX > 0) {
                         this.showPrevImage();
                     } else {
                         this.showNextImage();
+                    }
+                } else {
+                    // Reset position if swipe wasn't decisive
+                    if (picture) {
+                        picture.style.transform = `translateX(0)`;
                     }
                 }
             }, { passive: true });
