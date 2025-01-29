@@ -596,66 +596,6 @@ class AlbumViewer {
         
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
-        
-        if (!document.getElementById('modalStyles')) {
-            const style = document.createElement('style');
-            style.id = 'modalStyles';
-            style.textContent = `
-                #imageModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; }
-                #imageModal.active { display: flex !important; }
-                #imageModal .modal-content { position: relative; margin: auto; max-width: 90%; max-height: 90%; }
-                #imageModal .modal-content picture { 
-                    max-width: 100%; 
-                    max-height: 90vh; 
-                    display: block; 
-                    margin: 0 auto; 
-                    transition: opacity 0.2s ease-out, filter 0.2s ease-out; 
-                    opacity: 1;
-                }
-                #imageModal .modal-content picture img.loading { 
-                    filter: blur(10px);
-                    opacity: 0.6;
-                }
-                #imageModal .modal-prev, 
-                #imageModal .modal-next { 
-                    position: absolute !important; 
-                    top: 50% !important; 
-                    transform: translateY(-50%) !important; 
-                    background: rgba(255,255,255,0.1) !important; 
-                    color: white !important; 
-                    border: none !important; 
-                    padding: 1rem !important; 
-                    cursor: pointer !important; 
-                    font-size: 1.5rem !important;
-                    z-index: 1001 !important;
-                }
-                #imageModal .modal-prev.hidden,
-                #imageModal .modal-next.hidden { 
-                    display: none !important;
-                    opacity: 0 !important;
-                    visibility: hidden !important;
-                    pointer-events: none !important;
-                }
-                #imageModal .modal-prev:hover,
-                #imageModal .modal-next:hover { 
-                    background: rgba(255,255,255,0.2) !important; 
-                }
-                #imageModal .modal-prev { left: 1rem !important; }
-                #imageModal .modal-next { right: 1rem !important; }
-                #imageModal .modal-close { 
-                    position: absolute !important; 
-                    top: -2rem !important; 
-                    right: 0 !important; 
-                    color: white !important; 
-                    background: none !important; 
-                    border: none !important;
-                    font-size: 2rem !important; 
-                    cursor: pointer !important; 
-                    padding: 0.5rem !important;
-                }
-            `;
-            document.head.appendChild(style);
-        }
     }
 
     initializeButtonReferences() {
