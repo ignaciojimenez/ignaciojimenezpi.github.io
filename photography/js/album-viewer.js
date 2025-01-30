@@ -351,7 +351,7 @@ class AlbumViewer {
                     }
                     // If still no landscape found (unlikely), use first available image
                     if (lastRow.length === 0) {
-                        lastRow.push(groups.portrait.length > 0 ? groups.portrait.pop() : sortedImages.pop());
+                        lastRow.push(groups.portrait.pop());
                     }
                 }
             } else if (remainingImages === 2) {
@@ -738,6 +738,9 @@ class AlbumViewer {
             let isDragging = false;
             const SWIPE_THRESHOLD = 0.3; // 30% of screen width
             
+            const canSwipeNext = () => this.currentImageIndex < window.imagesData.length - 1;
+            const canSwipePrev = () => this.currentImageIndex > 0;
+            
             this.modal.addEventListener('touchstart', (e) => {
                 // Only handle swipes on the image/picture element
                 if (!e.target.closest('picture')) return;
@@ -766,17 +769,40 @@ class AlbumViewer {
                     
                     const picture = this.modal.querySelector('picture');
                     if (picture) {
-                        // Add progressive resistance as user swipes
-                        const screenWidth = window.innerWidth;
-                        const resistance = Math.abs(deltaX) > screenWidth / 3 ? 0.15 : 0.65;
+                        // Check swipe direction and boundaries
+                        const isSwipingNext = deltaX < 0;
+                        const isSwipingPrev = deltaX > 0;
+                        
+                        // Add extra resistance at boundaries
+                        let resistance = 0.65;
+                        if ((isSwipingNext && !canSwipeNext()) || 
+                            (isSwipingPrev && !canSwipePrev())) {
+                            resistance = 0.15; // Much stronger resistance at boundaries
+                        } else if (Math.abs(deltaX) > window.innerWidth / 3) {
+                            resistance = 0.3; // Normal progressive resistance
+                        }
+                        
                         currentTranslateX = deltaX * resistance;
                         
                         // Limit maximum swipe distance
-                        const maxTranslate = screenWidth * 0.8;
+                        const maxTranslate = window.innerWidth * 0.8;
                         currentTranslateX = Math.max(Math.min(currentTranslateX, maxTranslate), -maxTranslate);
                         
+                        // Apply transform with spring-like effect at boundaries
+                        if ((isSwipingNext && !canSwipeNext()) || 
+                            (isSwipingPrev && !canSwipePrev())) {
+                            // Add spring effect
+                            const springEffect = Math.sin(Math.abs(currentTranslateX) / 30) * 10;
+                            currentTranslateX = currentTranslateX / 2 + springEffect;
+                        }
+                        
                         picture.style.transform = `translateX(${currentTranslateX}px)`;
-                        picture.style.opacity = `${1 - Math.abs(currentTranslateX) / (screenWidth * 0.8)}`;
+                        
+                        // Adjust opacity based on movement, but keep it higher at boundaries
+                        const opacityFactor = ((isSwipingNext && !canSwipeNext()) || 
+                                             (isSwipingPrev && !canSwipePrev())) ? 0.8 : 0.5;
+                        const opacity = 1 - (Math.abs(currentTranslateX) / (window.innerWidth * 0.8)) * opacityFactor;
+                        picture.style.opacity = Math.max(opacity, 0.5);
                     }
                 }
             }, { passive: false });
@@ -792,31 +818,31 @@ class AlbumViewer {
                 
                 const picture = this.modal.querySelector('picture');
                 if (picture) {
-                    picture.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+                    picture.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out';
                     
-                    // Determine if swipe should trigger navigation
                     const swipeThreshold = screenWidth * SWIPE_THRESHOLD;
                     const isSwipe = Math.abs(deltaX) > swipeThreshold || (Math.abs(deltaX) > 30 && velocity > 0.5);
+                    const isSwipingNext = deltaX < 0;
+                    const isSwipingPrev = deltaX > 0;
                     
-                    if (isSwipe) {
+                    if (isSwipe && ((isSwipingNext && canSwipeNext()) || 
+                                  (isSwipingPrev && canSwipePrev()))) {
                         // Complete the swipe animation
                         const targetTranslate = deltaX > 0 ? screenWidth : -screenWidth;
                         picture.style.transform = `translateX(${targetTranslate}px)`;
                         picture.style.opacity = '0';
                         
-                        // Wait for animation to complete before changing image
                         setTimeout(() => {
-                            if (deltaX > 0) {
+                            if (deltaX > 0 && canSwipePrev()) {
                                 this.showPrevImage();
-                            } else {
+                            } else if (deltaX < 0 && canSwipeNext()) {
                                 this.showNextImage();
                             }
-                            // Reset transform and opacity after image change
                             picture.style.transform = 'translateX(0)';
                             picture.style.opacity = '1';
                         }, 300);
                     } else {
-                        // Reset position with smooth animation
+                        // Add spring-back effect
                         picture.style.transform = 'translateX(0)';
                         picture.style.opacity = '1';
                     }
