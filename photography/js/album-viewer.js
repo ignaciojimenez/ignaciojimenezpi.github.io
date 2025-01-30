@@ -818,7 +818,8 @@ class AlbumViewer {
                 
                 const picture = this.modal.querySelector('picture');
                 if (picture) {
-                    picture.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-out';
+                    // Ultra-fast transition (reduced to 0.15s)
+                    picture.style.transition = 'transform 0.15s cubic-bezier(0.1, 0, 0.1, 1), opacity 0.15s ease-out';
                     
                     const swipeThreshold = screenWidth * SWIPE_THRESHOLD;
                     const isSwipe = Math.abs(deltaX) > swipeThreshold || (Math.abs(deltaX) > 30 && velocity > 0.5);
@@ -832,6 +833,7 @@ class AlbumViewer {
                         picture.style.transform = `translateX(${targetTranslate}px)`;
                         picture.style.opacity = '0';
                         
+                        // Reduced timeout to 120ms for near-instant feeling
                         setTimeout(() => {
                             if (deltaX > 0 && canSwipePrev()) {
                                 this.showPrevImage();
@@ -840,9 +842,9 @@ class AlbumViewer {
                             }
                             picture.style.transform = 'translateX(0)';
                             picture.style.opacity = '1';
-                        }, 300);
+                        }, 120);
                     } else {
-                        // Add spring-back effect
+                        // Spring-back effect
                         picture.style.transform = 'translateX(0)';
                         picture.style.opacity = '1';
                     }
