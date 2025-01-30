@@ -731,90 +731,102 @@ class AlbumViewer {
 
     setupEventListeners() {
         if (this.isMobile) {
-            // Mobile-optimized touch handling
             let touchStartX = 0;
             let touchStartY = 0;
-            let touchEndX = 0;
-            let touchEndY = 0;
+            let currentTranslateX = 0;
             let startTime = 0;
-            let initialTransform = 0;
+            let isDragging = false;
+            const SWIPE_THRESHOLD = 0.3; // 30% of screen width
             
             this.modal.addEventListener('touchstart', (e) => {
-                // Close modal if background is tapped (not the content or controls)
-                // Check if the clicked element is the modal itself (background) and not its children
-                if (e.target === this.modal || e.target.classList.contains('modal-content')) {
-                    e.preventDefault(); // Prevent any default behavior
-                    e.stopPropagation(); // Stop event from bubbling to elements behind the modal
-                    this.closeModal();
-                    return;
-                }
+                // Only handle swipes on the image/picture element
+                if (!e.target.closest('picture')) return;
                 
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
                 startTime = Date.now();
+                isDragging = true;
+                currentTranslateX = 0;
                 
-                // Reset transform
                 const picture = this.modal.querySelector('picture');
                 if (picture) {
-                    initialTransform = 0;
-                    picture.style.transform = `translateX(0)`;
                     picture.style.transition = 'none';
                 }
-            }, { passive: false });
+            }, { passive: true });
 
             this.modal.addEventListener('touchmove', (e) => {
-                if (e.target === this.modal) return; // Don't track swipes on background
+                if (!isDragging || !e.target.closest('picture')) return;
                 
                 const deltaX = e.touches[0].clientX - touchStartX;
                 const deltaY = e.touches[0].clientY - touchStartY;
                 
                 // Only handle horizontal movement if it's more horizontal than vertical
                 if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                    e.preventDefault(); // Prevent page scroll
+                    e.preventDefault();
                     
                     const picture = this.modal.querySelector('picture');
                     if (picture) {
-                        // Add resistance to the swipe
-                        const resistance = 0.4;
-                        const transform = deltaX * resistance;
-                        picture.style.transform = `translateX(${transform}px)`;
+                        // Add progressive resistance as user swipes
+                        const screenWidth = window.innerWidth;
+                        const resistance = Math.abs(deltaX) > screenWidth / 3 ? 0.15 : 0.65;
+                        currentTranslateX = deltaX * resistance;
+                        
+                        // Limit maximum swipe distance
+                        const maxTranslate = screenWidth * 0.8;
+                        currentTranslateX = Math.max(Math.min(currentTranslateX, maxTranslate), -maxTranslate);
+                        
+                        picture.style.transform = `translateX(${currentTranslateX}px)`;
+                        picture.style.opacity = `${1 - Math.abs(currentTranslateX) / (screenWidth * 0.8)}`;
                     }
                 }
             }, { passive: false });
             
             this.modal.addEventListener('touchend', (e) => {
-                if (e.target === this.modal) return; // Don't handle swipes on background
+                if (!isDragging || !e.target.closest('picture')) return;
+                isDragging = false;
                 
-                touchEndX = e.changedTouches[0].clientX;
-                touchEndY = e.changedTouches[0].clientY;
-                
-                const deltaX = touchEndX - touchStartX;
-                const deltaY = touchEndY - touchStartY;
+                const deltaX = e.changedTouches[0].clientX - touchStartX;
                 const deltaTime = Date.now() - startTime;
+                const velocity = Math.abs(deltaX) / deltaTime;
+                const screenWidth = window.innerWidth;
                 
                 const picture = this.modal.querySelector('picture');
                 if (picture) {
-                    picture.style.transition = 'transform 0.3s ease-out';
-                }
-                
-                // Handle swipe if:
-                // 1. Horizontal movement is dominant
-                // 2. Minimum distance is met
-                // 3. Maximum time is not exceeded
-                if (Math.abs(deltaX) > Math.abs(deltaY) * 2 && 
-                    Math.abs(deltaX) > 50 && 
-                    deltaTime < 300) {
+                    picture.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
                     
-                    if (deltaX > 0) {
-                        this.showPrevImage();
+                    // Determine if swipe should trigger navigation
+                    const swipeThreshold = screenWidth * SWIPE_THRESHOLD;
+                    const isSwipe = Math.abs(deltaX) > swipeThreshold || (Math.abs(deltaX) > 30 && velocity > 0.5);
+                    
+                    if (isSwipe) {
+                        // Complete the swipe animation
+                        const targetTranslate = deltaX > 0 ? screenWidth : -screenWidth;
+                        picture.style.transform = `translateX(${targetTranslate}px)`;
+                        picture.style.opacity = '0';
+                        
+                        // Wait for animation to complete before changing image
+                        setTimeout(() => {
+                            if (deltaX > 0) {
+                                this.showPrevImage();
+                            } else {
+                                this.showNextImage();
+                            }
+                            // Reset transform and opacity after image change
+                            picture.style.transform = 'translateX(0)';
+                            picture.style.opacity = '1';
+                        }, 300);
                     } else {
-                        this.showNextImage();
+                        // Reset position with smooth animation
+                        picture.style.transform = 'translateX(0)';
+                        picture.style.opacity = '1';
                     }
-                } else {
-                    // Reset position if swipe wasn't decisive
-                    if (picture) {
-                        picture.style.transform = `translateX(0)`;
-                    }
+                }
+            }, { passive: true });
+            
+            // Handle modal background tap to close
+            this.modal.addEventListener('click', (e) => {
+                if (e.target === this.modal) {
+                    this.closeModal();
                 }
             }, { passive: true });
             
