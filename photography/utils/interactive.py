@@ -172,6 +172,9 @@ def prompt_image_deletion(album_id: str) -> Optional[List[str]]:
         print("Image deletion cancelled.")
         return None
     
+    # Always ensure we return a list, even if only one item is selected
+    if isinstance(image_ids, str):
+        return [image_ids]
     return image_ids
 
 def prompt_image_addition(album_id: str) -> Optional[Union[str, List[str]]]:

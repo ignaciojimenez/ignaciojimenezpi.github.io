@@ -261,6 +261,9 @@ def main() -> bool:
             if args.interactive:
                 image_ids = prompt_image_deletion(args.album_name)
                 if image_ids:
+                    # Ensure image_ids is a list even if only one ID is returned
+                    if isinstance(image_ids, str):
+                        image_ids = [image_ids]
                     return album_manager.delete_images(args.album_name, image_ids)
                 return False
             else:
