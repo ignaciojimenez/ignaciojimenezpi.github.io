@@ -58,7 +58,8 @@ def update_albums_json(
     date: str,
     cover_image: Optional[Dict] = None,
     images: Optional[List[Dict]] = None,
-    temp_operation: bool = False
+    temp_operation: bool = False,
+    favorite: bool = False
 ) -> bool:
     """Update the albums.json file with album information."""
     try:
@@ -74,6 +75,7 @@ def update_albums_json(
             'title': title,
             'description': description,
             'date': date,
+            'favorite': favorite,
             'coverImage': cover_image or {},
             'images': images or []
         }
@@ -145,7 +147,8 @@ def create_album(
     date: str,
     image_dir: str,
     description: Optional[str] = "",
-    cover_image: Optional[str] = None
+    cover_image: Optional[str] = None,
+    favorite: bool = False
 ) -> bool:
     """Create a new album with optimized images."""
     temp_dir = None
@@ -202,7 +205,8 @@ def create_album(
             date=date,
             description=description,
             cover_image=cover_data,
-            images=images
+            images=images,
+            favorite=favorite
         )
         
         # First update albums.json with initial data (temporary)
@@ -213,7 +217,8 @@ def create_album(
             date=date,
             cover_image=cover_data,
             images=images,
-            temp_operation=True
+            temp_operation=True,
+            favorite=favorite
         ):
             raise ValueError("Failed to validate album data")
         
@@ -380,10 +385,13 @@ def main():
     parser.add_argument('--description', help='Album description')
     parser.add_argument('--images', help='Path to images directory or file')
     parser.add_argument('--cover', help='Path to cover image')
+    parser.add_argument('--favorite', action='store_true', help='Mark album as favorite (will always appear first in gallery)')
     parser.add_argument('--add', action='store_true', help='Add images to existing album')
     parser.add_argument('--change-cover', action='store_true', help='Change album cover image')
     parser.add_argument('--new-title', help='Update album title')
     parser.add_argument('--new-date', help='Update album date')
+    parser.add_argument('--set-favorite', action='store_true', help='Mark album as favorite')
+    parser.add_argument('--unset-favorite', action='store_true', help='Remove favorite status from album')
     parser.add_argument('--delete', action='store_true', help='Delete the album')
     
     args = parser.parse_args()
@@ -397,7 +405,7 @@ def main():
     existing_album = next((a for a in albums_data['albums'] if a['id'] == args.album), None)
     
     # Handle metadata changes
-    if args.new_title or args.new_date or args.change_cover:
+    if args.new_title or args.new_date or args.change_cover or args.set_favorite or args.unset_favorite:
         if not existing_album:
             logger.error(f"Album {args.album} not found")
             return False
@@ -410,6 +418,14 @@ def main():
                 logger.error("Date must be in YYYY-MM-DD format")
                 return False
             existing_album['date'] = args.new_date
+            
+        if args.set_favorite:
+            existing_album['favorite'] = True
+            logger.info(f"Marked album {args.album} as favorite")
+            
+        if args.unset_favorite:
+            existing_album['favorite'] = False
+            logger.info(f"Removed favorite status from album {args.album}")
             
         if args.change_cover:
             album_dir = ALBUMS_DIR / args.album
@@ -483,7 +499,8 @@ def main():
         date=args.date,
         image_dir=args.images,
         description=args.description or "",
-        cover_image=args.cover
+        cover_image=args.cover,
+        favorite=args.favorite
     )
 
 if __name__ == '__main__':

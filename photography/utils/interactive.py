@@ -38,6 +38,9 @@ def prompt_album_creation() -> Dict[str, Any]:
                      message="Enter album date (YYYY-MM-DD)",
                      validate=lambda _, x: validate_date(x),
                      default=datetime.now().strftime('%Y-%m-%d')),
+        inquirer.Confirm('favorite',
+                        message="Mark this album as a favorite? (will always appear first in gallery)",
+                        default=False),
     ]
     
     # First get basic album info
@@ -252,6 +255,7 @@ def prompt_album_update(album_id: str) -> Optional[Dict[str, Any]]:
     print(f"Date: {album['date']}")
     print(f"Description: {album['description']}")
     print(f"Cover Image: {album['coverImage']['webp']}")
+    print(f"Favorite: {album.get('favorite', False)}")
     print("\nLeave fields empty to keep current values")
     
     questions = [
@@ -265,6 +269,13 @@ def prompt_album_update(album_id: str) -> Optional[Dict[str, Any]]:
         inquirer.Text('description',
                      message="New description",
                      default=''),
+        inquirer.List('favorite',
+                     message="Favorite status",
+                     choices=[
+                         ('No change', None),
+                         ('Mark as favorite', True),
+                         ('Remove favorite status', False)
+                     ]),
     ]
     
     # First get basic updates
@@ -272,8 +283,12 @@ def prompt_album_update(album_id: str) -> Optional[Dict[str, Any]]:
     if not answers:
         return None
     
-    # Remove empty values
-    updates = {k: v for k, v in answers.items() if v}
+    # Remove empty values and handle favorite status
+    updates = {k: v for k, v in answers.items() if v is not None and v != ''}
+    
+    # Handle favorite status separately since it can be a boolean False
+    if answers['favorite'] is not None:
+        updates['favorite'] = answers['favorite']
     
     # Handle cover image selection if there are images
     if album['images']:

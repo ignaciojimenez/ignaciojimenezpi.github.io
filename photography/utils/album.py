@@ -67,6 +67,8 @@ def main() -> bool:
                            help='Directory containing images')
     create_parser.add_argument('--cover-image',
                            help='Cover image file')
+    create_parser.add_argument('--favorite', action='store_true',
+                           help='Mark album as favorite (will always appear first in gallery)')
     
     # Delete album command
     delete_parser = subparsers.add_parser('delete', help='Delete an album',
@@ -137,7 +139,8 @@ def main() -> bool:
                     date=params['date'],
                     description=params['description'],
                     image_dir=params['image_dir'],
-                    cover_image=params['cover_image']
+                    cover_image=params['cover_image'],
+                    favorite=params['favorite']
                 )
             else:
                 # Validate arguments
@@ -165,7 +168,8 @@ def main() -> bool:
                     date=args.date,
                     description=args.description or "",
                     image_dir=str(image_dir) if image_dir else None,
-                    cover_image=args.cover_image
+                    cover_image=args.cover_image,
+                    favorite=args.favorite
                 )
                 
         elif args.command == 'delete':
