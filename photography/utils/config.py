@@ -92,6 +92,7 @@ ALBUM_SCHEMA = {
         "title": {"type": "string"},
         "description": {"type": "string", "default": ""},
         "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "favorite": {"type": "boolean", "default": False},
         "coverImage": {
             "type": "object",
             "required": ["width", "height", "webp"],

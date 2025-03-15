@@ -28,7 +28,8 @@ class AlbumManager:
         date: str,
         image_dir: str,
         description: str = "",
-        cover_image: Optional[str] = None
+        cover_image: Optional[str] = None,
+        favorite: bool = False
     ) -> bool:
         """Create a new album with the given parameters."""
         try:
@@ -84,7 +85,8 @@ class AlbumManager:
                 date=date,
                 description=description,
                 cover_image=cover_metadata['sizes']['grid'],
-                images=images_metadata
+                images=images_metadata,
+                favorite=favorite
             )
             
             # Update albums.json
@@ -258,6 +260,7 @@ class AlbumManager:
                 - date: New album date (YYYY-MM-DD)
                 - description: New album description
                 - cover_image: New cover image ID (must be an existing image in the album)
+                - favorite: Boolean flag to mark album as favorite
         """
         try:
             # Load album data
@@ -293,6 +296,10 @@ class AlbumManager:
                     raise ValueError(f"Cover image not found in album: {cover_id}")
                 album['coverImage'] = cover_image['sizes']['grid']
             
+            # Update favorite status
+            if 'favorite' in updates:
+                album['favorite'] = updates['favorite']
+            
             # Save changes
             self._save_albums_json(albums_data)
             logger.info(f"Successfully updated album: {album_id}")
@@ -321,6 +328,10 @@ class AlbumManager:
         # Check for duplicate
         if any(a['id'] == new_album['id'] for a in albums_data['albums']):
             raise ValueError(f"Album ID already exists: {new_album['id']}")
+        
+        # Check if this is a new favorite album and there are existing favorites
+        if new_album.get('favorite', False):
+            logger.info(f"Adding new favorite album: {new_album['id']}")
         
         albums_data['albums'].append(new_album)
         self._save_albums_json(albums_data)

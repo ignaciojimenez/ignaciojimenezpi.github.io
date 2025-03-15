@@ -174,10 +174,11 @@ function createAlbumCard(album, metadata, priority = 'auto') {
     const content = document.createElement('div');
     content.className = 'text-white text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4';
     
-    const dateStr = album.date ? new Date(album.date).toLocaleDateString('en-US', { 
+    // Don't show date for favorite albums
+    const dateStr = (album.favorite) ? '' : (album.date ? new Date(album.date).toLocaleDateString('en-US', { 
         year: 'numeric',
         month: 'long'
-    }) : '';
+    }) : '');
     
     content.innerHTML = `
         <h3 class="text-xl font-semibold mb-2">${album.title}</h3>
@@ -193,7 +194,8 @@ function createAlbumCard(album, metadata, priority = 'auto') {
     const mobileMetadata = document.createElement('div');
     mobileMetadata.className = 'album-metadata-mobile';
     
-    const year = album.date ? new Date(album.date).getFullYear() : '';
+    // Don't show year for favorite albums
+    const year = (album.favorite) ? '' : (album.date ? new Date(album.date).getFullYear() : '');
     mobileMetadata.innerHTML = `
         <h3>${year} ${album.title}</h3>
     `;
@@ -248,8 +250,13 @@ async function initGallery() {
         const albums = albumsData.albums;
         albumGrid.innerHTML = ''; // Clear loading spinner
         
-        // Sort albums by date (newest first)
+        // Sort albums by special flag first, then by date (newest first)
         const sortedAlbums = [...albums].sort((a, b) => {
+            // If album has a 'favorite' flag, it comes first
+            if (a.favorite && !b.favorite) return -1;
+            if (!a.favorite && b.favorite) return 1;
+            
+            // Otherwise sort by date (newest first)
             const dateA = new Date(a.date);
             const dateB = new Date(b.date);
             return dateB - dateA;

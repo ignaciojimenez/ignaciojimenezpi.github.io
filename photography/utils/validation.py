@@ -48,7 +48,8 @@ def validate_album_data(
     date: str,
     description: Optional[str] = "",
     cover_image: Optional[Dict] = None,
-    images: Optional[List[Dict]] = None
+    images: Optional[List[Dict]] = None,
+    favorite: bool = False
 ) -> Dict:
     """Validate and format album data."""
     try:
@@ -60,6 +61,7 @@ def validate_album_data(
             "title": title,
             "description": description or "",
             "date": date,
+            "favorite": favorite,
             "coverImage": cover_image or {"width": 0, "height": 0, "webp": ""},
             "images": images or []
         }
