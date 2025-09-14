@@ -22,6 +22,7 @@ class AlbumViewer {
         
         this.initializeButtonReferences();
         this.setupEventListeners();
+        this.setupModalEventDelegation();
         
         this.observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -898,6 +899,46 @@ class AlbumViewer {
         if (closeButton) closeButton.addEventListener('click', () => this.closeModal());
         if (prevButton) prevButton.addEventListener('click', () => this.showPrevImage());
         if (nextButton) nextButton.addEventListener('click', () => this.showNextImage());
+    }
+
+    setupModalEventDelegation() {
+        // Event delegation for modal buttons to avoid inline onclick handlers
+        // This replaces the direct event listeners to comply with strict CSP
+        if (this.modal) {
+            // Handle all button clicks via delegation
+            this.modal.addEventListener('click', (e) => {
+                const button = e.target.closest('[data-action]');
+                if (!button) return;
+                
+                const action = button.dataset.action;
+                switch(action) {
+                    case 'close-modal':
+                        this.closeModal();
+                        break;
+                    case 'prev-image':
+                        this.showPrevImage();
+                        break;
+                    case 'next-image':
+                        this.showNextImage();
+                        break;
+                }
+            });
+            
+            // Also handle clicks without data-action for backwards compatibility
+            const closeButton = this.modal.querySelector('.modal-close');
+            const prevButton = this.modal.querySelector('.modal-prev');
+            const nextButton = this.modal.querySelector('.modal-next');
+            
+            if (closeButton && !closeButton.hasAttribute('data-action')) {
+                closeButton.addEventListener('click', () => this.closeModal());
+            }
+            if (prevButton && !prevButton.hasAttribute('data-action')) {
+                prevButton.addEventListener('click', () => this.showPrevImage());
+            }
+            if (nextButton && !nextButton.hasAttribute('data-action')) {
+                nextButton.addEventListener('click', () => this.showNextImage());
+            }
+        }
     }
 
     handleKeyPress(e) {
