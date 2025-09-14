@@ -36,7 +36,6 @@
     
     <!-- Preload critical resources -->
     <link rel="preload" href="albums/albums.json" as="fetch" crossorigin="anonymous">
-    <link rel="preload" href="js/gallery.js" as="script">
     <link rel="preload" href="css/styles.css" as="style">
 </head>
 <body class="bg-white text-gray-900">
@@ -67,10 +66,6 @@
     </main>
 
     <script src="js/gallery.js?v=1"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            initGallery();
-        });
-    </script>
+    <script src="js/gallery-init.js"></script>
 </body>
 </html>
