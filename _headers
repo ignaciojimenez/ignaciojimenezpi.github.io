@@ -4,13 +4,9 @@
   # HSTS - Enforce HTTPS for 1 year including subdomains
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   
-  # Content Security Policy - STRICT MODE (Recommended)
-  # Remove 'unsafe-inline' from script-src after updating onclick handlers
-  # Current configuration allows unsafe-inline for compatibility
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;
-  
-  # STRICT CSP (Enable after removing inline onclick handlers):
-  # Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;
+  # Content Security Policy - STRICT MODE
+  # Inline onclick handlers have been removed and replaced with event delegation
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;
   
   # Prevent MIME type sniffing
   X-Content-Type-Options: nosniff

@@ -40,17 +40,17 @@
 
     <!-- Modal -->
     <div class="modal" id="imageModal">
-        <button class="modal-close" onclick="albumViewer.closeModal()">
+        <button class="modal-close" data-action="close-modal">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
-        <button class="modal-nav modal-prev" onclick="albumViewer.showPrevImage()">
+        <button class="modal-nav modal-prev" data-action="prev-image">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"></path>
             </svg>
         </button>
-        <button class="modal-nav modal-next" onclick="albumViewer.showNextImage()">
+        <button class="modal-nav modal-next" data-action="next-image">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"></path>
             </svg>
