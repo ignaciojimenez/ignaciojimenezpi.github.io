@@ -180,11 +180,25 @@ function createAlbumCard(album, metadata, priority = 'auto') {
         month: 'long'
     }) : '');
     
-    content.innerHTML = `
-        <h3 class="text-xl font-semibold mb-2">${album.title}</h3>
-        ${dateStr ? `<p class="text-sm mb-2">${dateStr}</p>` : ''}
-        <p class="text-sm">${album.description || ''}</p>
-    `;
+    // Create elements safely to prevent XSS
+    const title = document.createElement('h3');
+    title.className = 'text-xl font-semibold mb-2';
+    title.textContent = album.title;
+    content.appendChild(title);
+    
+    if (dateStr) {
+        const date = document.createElement('p');
+        date.className = 'text-sm mb-2';
+        date.textContent = dateStr;
+        content.appendChild(date);
+    }
+    
+    if (album.description) {
+        const description = document.createElement('p');
+        description.className = 'text-sm';
+        description.textContent = album.description;
+        content.appendChild(description);
+    }
     
     overlay.appendChild(content);
     container.appendChild(picture);
@@ -196,9 +210,9 @@ function createAlbumCard(album, metadata, priority = 'auto') {
     
     // Don't show year for favorite albums
     const year = (album.favorite) ? '' : (album.date ? new Date(album.date).getFullYear() : '');
-    mobileMetadata.innerHTML = `
-        <h3>${year} ${album.title}</h3>
-    `;
+    const mobileTitle = document.createElement('h3');
+    mobileTitle.textContent = `${year} ${album.title}`.trim();
+    mobileMetadata.appendChild(mobileTitle);
     container.appendChild(mobileMetadata);
     
     card.appendChild(container);
