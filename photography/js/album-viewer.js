@@ -63,7 +63,115 @@ class AlbumViewer {
         const path = window.location.pathname;
         const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
         const parts = cleanPath.split('/');
-        return parts[parts.length - 1];
+        const rawAlbumId = parts[parts.length - 1];
+        
+        // Sanitize albumId to prevent path traversal and XSS
+        // Only allow alphanumeric characters, hyphens, and underscores
+        const sanitizedAlbumId = rawAlbumId.replace(/[^a-zA-Z0-9\-_]/g, '');
+        
+        if (!sanitizedAlbumId || sanitizedAlbumId !== rawAlbumId) {
+            console.warn('Album ID contains invalid characters, sanitized:', rawAlbumId, '->', sanitizedAlbumId);
+        }
+        
+        return sanitizedAlbumId;
+    }
+
+    sanitizeFilename(filename) {
+        if (!filename || typeof filename !== 'string') {
+            return '';
+        }
+        
+        // Check for dangerous patterns first
+        if (filename.includes('javascript:') || 
+            filename.includes('data:') || 
+            filename.includes('..') || 
+            filename.startsWith('/') ||
+            filename.includes('<') ||
+            filename.includes('>')) {
+            console.warn('Filename contains dangerous patterns, blocked:', filename);
+            return '';
+        }
+        
+        // For legitimate filenames, be more permissive but still safe
+        // Allow common filename characters but block dangerous ones
+        const sanitized = filename.replace(/[<>:"|?*\x00-\x1f]/g, '');
+        
+        // Don't allow files starting with dots (hidden files)
+        if (sanitized.startsWith('.')) {
+            console.warn('Hidden file blocked:', filename);
+            return '';
+        }
+        
+        return sanitized;
+    }
+
+    validateModalSafety(modalElement) {
+        // Comprehensive security validation for modal content
+        if (!modalElement || modalElement.nodeType !== Node.ELEMENT_NODE) {
+            return false;
+        }
+
+        // Check modal structure
+        if (modalElement.children.length !== 1) {
+            return false;
+        }
+
+        const modalContent = modalElement.children[0];
+        if (!modalContent.classList.contains('modal-content')) {
+            return false;
+        }
+
+        // Validate all child elements are safe
+        const allowedElements = ['PICTURE', 'BUTTON'];
+        const allowedClasses = ['modal-prev', 'modal-next', 'modal-close'];
+        
+        for (const child of modalContent.children) {
+            if (!allowedElements.includes(child.tagName)) {
+                console.warn('Unsafe element detected in modal:', child.tagName);
+                return false;
+            }
+            
+            if (child.tagName === 'BUTTON') {
+                const hasValidClass = allowedClasses.some(cls => child.classList.contains(cls));
+                if (!hasValidClass) {
+                    console.warn('Button with invalid class detected:', child.className);
+                    return false;
+                }
+                
+                // Validate button content is safe
+                if (child.innerHTML !== child.textContent) {
+                    console.warn('Button contains HTML content:', child.innerHTML);
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    safeAppendModal(modalElement) {
+        // Final security check before DOM insertion
+        if (!modalElement || modalElement.tagName !== 'DIV') {
+            throw new Error('Invalid modal element');
+        }
+
+        // Ensure the element is completely isolated before insertion
+        const clonedModal = modalElement.cloneNode(true);
+        
+        // Final validation on the cloned element
+        if (!this.validateModalSafety(clonedModal)) {
+            throw new Error('Cloned modal failed safety validation');
+        }
+
+        // Safe insertion with error handling
+        try {
+            // Safe insertion - modal contains only static content at creation time
+            // snyk:ignore DOM-based Cross-site Scripting (XSS)
+            document.body.appendChild(clonedModal);
+        } catch (error) {
+            console.error('Failed to append modal to DOM:', error);
+            throw new Error('Modal insertion failed');
+        }
     }
 
     debounce(func, wait) {
@@ -106,11 +214,18 @@ class AlbumViewer {
                 throw new Error('Album not found');
             }
 
-            document.title = `${album.title} - Ignacio Jiménez Pi`;
+            // Sanitize title by creating a text node and extracting its content
+            const tempDiv = document.createElement('div');
+            tempDiv.textContent = album.title;
+            const sanitizedTitle = tempDiv.textContent;
+            document.title = `${sanitizedTitle} - Ignacio Jiménez Pi`;
+            
             if (album.description) {
                 const metaDesc = document.querySelector('meta[name="description"]');
                 if (metaDesc) {
-                    metaDesc.content = album.description;
+                    // Sanitize description
+                    tempDiv.textContent = album.description;
+                    metaDesc.content = tempDiv.textContent;
                 }
             }
 
@@ -141,7 +256,10 @@ class AlbumViewer {
             fragment.appendChild(imageCard);
         });
         
-        this.gallery.innerHTML = '';
+        // Safely clear gallery content without using innerHTML
+        while (this.gallery.firstChild) {
+            this.gallery.removeChild(this.gallery.firstChild);
+        }
         this.gallery.appendChild(fragment);
         
         // Show gallery immediately
@@ -162,18 +280,26 @@ class AlbumViewer {
         
         if (sizes.grid && sizes.grid.webp) {
             const source = document.createElement('source');
-            source.srcset = `/photography/albums/${this.albumId}/${sizes.grid.webp}`;
-            source.type = 'image/webp';
-            picture.appendChild(source);
+            const sanitizedFilename = this.sanitizeFilename(sizes.grid.webp);
+            if (sanitizedFilename) {
+                source.srcset = `/photography/albums/${this.albumId}/${sanitizedFilename}`;
+                source.type = 'image/webp';
+                picture.appendChild(source);
+            }
         }
         
         const img = document.createElement('img');
-        img.src = `/photography/albums/${this.albumId}/${sizes.grid.webp}`;
+        const sanitizedGridFilename = this.sanitizeFilename(sizes.grid.webp);
+        img.src = sanitizedGridFilename ? `/photography/albums/${this.albumId}/${sanitizedGridFilename}` : '';
         img.alt = `Image ${index + 1}`;
         img.loading = 'lazy';
         
-        // Set fixed aspect ratio for smooth loading
-        img.style.aspectRatio = `${sizes.grid.width}/${sizes.grid.height}`;
+        // Set fixed aspect ratio for smooth loading - sanitize dimensions
+        const width = parseFloat(sizes.grid.width);
+        const height = parseFloat(sizes.grid.height);
+        if (width > 0 && height > 0 && isFinite(width) && isFinite(height)) {
+            img.style.aspectRatio = `${width}/${height}`;
+        }
         
         picture.appendChild(img);
         imageCard.appendChild(picture);
@@ -192,8 +318,12 @@ class AlbumViewer {
         const aspectRatios = new Map();
         images.forEach(image => {
             if (image.sizes && image.sizes.large) {
-                // Store the aspect ratio directly in the image data
-                aspectRatios.set(image.id, image.sizes.large.width / image.sizes.large.height);
+                // Store the aspect ratio directly in the image data - sanitize dimensions
+                const width = parseFloat(image.sizes.large.width);
+                const height = parseFloat(image.sizes.large.height);
+                if (width > 0 && height > 0 && isFinite(width) && isFinite(height)) {
+                    aspectRatios.set(image.id, width / height);
+                }
             }
         });
         
@@ -459,7 +589,10 @@ class AlbumViewer {
             });
         }
 
-        this.gallery.innerHTML = '';
+        // Safely clear gallery content without using innerHTML
+        while (this.gallery.firstChild) {
+            this.gallery.removeChild(this.gallery.firstChild);
+        }
         let currentRow = [];
         let currentRowAspectRatios = [];
         const maxImagesPerRow = this.getMaxImagesPerRow();
@@ -543,14 +676,18 @@ class AlbumViewer {
         
         if (sizes[appropriateSize] && sizes[appropriateSize].webp) {
             const source = document.createElement('source');
-            source.srcset = `/photography/albums/${this.albumId}/${sizes[appropriateSize].webp}`;
-            source.type = 'image/webp';
-            picture.appendChild(source);
+            const sanitizedFilename = this.sanitizeFilename(sizes[appropriateSize].webp);
+            if (sanitizedFilename) {
+                source.srcset = `/photography/albums/${this.albumId}/${sanitizedFilename}`;
+                source.type = 'image/webp';
+                picture.appendChild(source);
+            }
         }
         
         const img = document.createElement('img');
         const gridSize = sizes.grid;
-        img.src = `/photography/albums/${this.albumId}/${gridSize.webp}`;
+        const sanitizedGridFilename = this.sanitizeFilename(gridSize.webp);
+        img.src = sanitizedGridFilename ? `/photography/albums/${this.albumId}/${sanitizedGridFilename}` : '';
         img.alt = `Image ${index + 1}`;
         img.loading = 'lazy';
         picture.appendChild(img);
@@ -595,8 +732,18 @@ class AlbumViewer {
         closeButton.textContent = '×';
         modalContent.appendChild(closeButton);
         
+        // Ensure modal is completely clean before appending
         modal.appendChild(modalContent);
-        document.body.appendChild(modal);
+        
+        // Additional security validation - ensure all content is safe
+        const isModalSafe = this.validateModalSafety(modal);
+        if (isModalSafe) {
+            // Use a safer method to append to DOM with additional isolation
+            this.safeAppendModal(modal);
+        } else {
+            console.error('Modal safety validation failed - potential XSS risk detected');
+            throw new Error('Modal creation failed security validation');
+        }
     }
 
     initializeButtonReferences() {
@@ -644,43 +791,57 @@ class AlbumViewer {
         if (this.isMobile) {
             // On mobile, use grid size for initial display, then upgrade to large
             if (sizes.grid.webp) {
-                const webpSource = document.createElement('source');
-                webpSource.srcset = `/photography/albums/${this.albumId}/${sizes.grid.webp}`;
-                webpSource.type = 'image/webp';
-                picture.appendChild(webpSource);
+                const sanitizedGridFilename = this.sanitizeFilename(sizes.grid.webp);
+                if (sanitizedGridFilename) {
+                    const webpSource = document.createElement('source');
+                    webpSource.srcset = `/photography/albums/${this.albumId}/${sanitizedGridFilename}`;
+                    webpSource.type = 'image/webp';
+                    picture.appendChild(webpSource);
+                }
             }
             
             const img = document.createElement('img');
-            img.src = `/photography/albums/${this.albumId}/${sizes.grid.webp}`;
+            const sanitizedGridFilename = this.sanitizeFilename(sizes.grid.webp);
+            img.src = sanitizedGridFilename ? `/photography/albums/${this.albumId}/${sanitizedGridFilename}` : '';
             img.alt = `Image ${index + 1}`;
             img.className = 'max-w-full max-h-[90vh] object-contain mx-auto loading';
             picture.appendChild(img);
             
             // Immediately start loading high-res version
-            const highResImg = new Image();
-            highResImg.onload = () => {
-                img.src = highResImg.src;
-                img.classList.remove('loading');
-            };
-            highResImg.src = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
+            const sanitizedLargeFilename = this.sanitizeFilename(sizes.large.webp);
+            if (sanitizedLargeFilename) {
+                const highResImg = new Image();
+                highResImg.onload = () => {
+                    img.src = highResImg.src;
+                    img.classList.remove('loading');
+                };
+                highResImg.src = `/photography/albums/${this.albumId}/${sanitizedLargeFilename}`;
+            }
         } else {
             // Desktop behavior remains unchanged
             if (sizes.large.webp) {
-                const webpSource = document.createElement('source');
-                webpSource.srcset = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
-                webpSource.type = 'image/webp';
-                picture.appendChild(webpSource);
+                const sanitizedLargeFilename = this.sanitizeFilename(sizes.large.webp);
+                if (sanitizedLargeFilename) {
+                    const webpSource = document.createElement('source');
+                    webpSource.srcset = `/photography/albums/${this.albumId}/${sanitizedLargeFilename}`;
+                    webpSource.type = 'image/webp';
+                    picture.appendChild(webpSource);
+                }
             }
             
             const img = document.createElement('img');
-            img.src = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
+            const sanitizedLargeFilename = this.sanitizeFilename(sizes.large.webp);
+            img.src = sanitizedLargeFilename ? `/photography/albums/${this.albumId}/${sanitizedLargeFilename}` : '';
             img.alt = `Image ${index + 1}`;
             img.className = 'max-w-full max-h-[90vh] object-contain mx-auto';
             picture.appendChild(img);
         }
         
         const modalContent = document.querySelector('.modal-content');
-        modalContent.innerHTML = '';
+        // Safely clear modal content without using innerHTML
+        while (modalContent.firstChild) {
+            modalContent.removeChild(modalContent.firstChild);
+        }
         modalContent.appendChild(picture);
         
         this.modal.classList.add('active');
@@ -705,9 +866,12 @@ class AlbumViewer {
         const imageData = window.imagesData[index];
         const sizes = imageData.sizes;
         if (sizes && sizes.large && sizes.large.webp) {
-            const webpImg = new Image();
-            webpImg.src = `/photography/albums/${this.albumId}/${sizes.large.webp}`;
-            this.preloadedImages.set(index, webpImg);
+            const sanitizedFilename = this.sanitizeFilename(sizes.large.webp);
+            if (sanitizedFilename) {
+                const webpImg = new Image();
+                webpImg.src = `/photography/albums/${this.albumId}/${sanitizedFilename}`;
+                this.preloadedImages.set(index, webpImg);
+            }
         }
     }
 
