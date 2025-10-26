@@ -4,5 +4,6 @@
     "terminal.integrated.defaultProfile.osx": "zsh",
     "terminal.integrated.env.osx": {
         "PYTHONPATH": "${workspaceFolder}/photography/utils"
-    }
+    },
+    "task.allowAutomaticTasks": "on"
 }

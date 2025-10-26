@@ -17,13 +17,18 @@
             "type": "npm",
             "script": "watch:css:all",
             "problemMatcher": [],
+            "isBackground": true,
             "presentation": {
-                "reveal": "always",
-                "panel": "new"
+                "reveal": "silent",
+                "panel": "dedicated",
+                "showReuseMessage": false
             },
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
             },
             "dependsOn": ["Install Dependencies"],
             "options": {
