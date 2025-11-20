@@ -53,8 +53,8 @@ def process_staging_album(album_dir: Path) -> bool:
     # Check for metadata.json
     metadata_path = album_dir / 'metadata.json'
     if not metadata_path.exists():
-        logger.error(f"No metadata.json found in {album_dir}")
-        return False
+        logger.info(f"No metadata.json found in {album_dir}. Skipping (waiting for upload completion).")
+        return True  # Return True to avoid failing the action
         
     metadata = load_metadata(metadata_path)
     if not metadata:
@@ -76,8 +76,8 @@ def process_staging_album(album_dir: Path) -> bool:
         image_files.extend(album_dir.glob(f'*{ext}'))
         
     if not image_files:
-        logger.error(f"No images found in {album_dir}")
-        return False
+        logger.info(f"No images found in {album_dir}. Skipping (waiting for upload completion).")
+        return True  # Return True to avoid failing the action
         
     if existing_album:
         logger.info(f"Album {album_id} exists, adding images...")

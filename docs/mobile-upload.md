@@ -48,27 +48,12 @@ Add a **Text** action at the top to store your configuration:
     -   `favorite`: `False` (Boolean)
 3.  **Get Dictionary from Input**: (This converts it to JSON text).
 
-### Step 5: Upload Metadata
-1.  **URL**: `https://api.github.com/repos/ignaciojimenezpi/ignaciojimenezpi.github.io/contents/photography/staging/AlbumID/metadata.json`
-    -   Replace `AlbumID` with your variable.
-2.  **Base64 Encode**:
-    -   Add the **Base64 Encode** action.
-    -   Input: The **Dictionary** from Step 4.
-    -   **Important**: Tap "Show More" and set **Line Breaks** to **None** (or "Every 76 Characters" is default, but None is safer for JSON payloads, though GitHub usually handles standard Base64). Let's stick to **None** to be safe.
-3.  **Get Contents of URL**:
-    -   Method: `PUT`
-    -   Headers:
-        -   `Authorization`: `token Token` (Use variable)
-        -   `Accept`: `application/vnd.github.v3+json`
-    -   Request Body: JSON
-        -   `message`: `Create album AlbumID`
-        -   `content`: Select the **Base64 Encoded** result from the previous step.
-        -   `branch`: `master` (or `main`)
-
-### Step 6: Upload Images (Loop)
+### Step 5: Upload Images (Loop)
 1.  **Repeat with Each** item in `Shortcut Input` (The images).
 2.  **Get Name** of `Repeat Item`.
-3.  **Base64 Encode** `Repeat Item`.
+3.  **Base64 Encode**:
+    -   Input: `Repeat Item` (the image).
+    -   **CRITICAL**: Tap "Show More" and set **Line Breaks** to **None**.
 4.  **URL**: `https://api.github.com/repos/ignaciojimenezpi/ignaciojimenezpi.github.io/contents/photography/staging/AlbumID/RepeatItemName`
     -   Replace `AlbumID` and `RepeatItemName` with variables.
 5.  **Get Contents of URL**:
@@ -79,8 +64,37 @@ Add a **Text** action at the top to store your configuration:
     -   Request Body: JSON
         -   `message`: `Add image RepeatItemName`
         -   `content`: `Base64 Encoded Result`
-        -   `branch`: `master` (or `main`)
+        -   `branch`: `feature/mobile-album-creation` (for testing)
 6.  **End Repeat**.
+
+### Step 6: Upload Metadata
+1.  **URL**: `https://api.github.com/repos/ignaciojimenezpi/ignaciojimenezpi.github.io/contents/photography/staging/AlbumID/metadata.json`
+    -   Replace `AlbumID` with your variable.
+2.  **Create JSON Manually**:
+    -   Add a **Text** action.
+    -   Type the JSON structure manually, inserting your variables:
+        ```json
+        {
+          "title": "AlbumTitle",
+          "date": "AlbumDate",
+          "description": "AlbumDescription",
+          "favorite": false
+        }
+        ```
+        *(Replace `AlbumTitle`, `AlbumDate`, etc. with your actual variables)*.
+3.  **Base64 Encode**:
+    -   Add the **Base64 Encode** action.
+    -   Input: The **Text** from the previous step.
+    -   **CRITICAL**: Tap "Show More" and set **Line Breaks** to **None**.
+4.  **Get Contents of URL**:
+    -   Method: `PUT`
+    -   Headers:
+        -   `Authorization`: `token Token` (Use variable)
+        -   `Accept`: `application/vnd.github.v3+json`
+    -   Request Body: JSON
+        -   `message`: `Create album AlbumID`
+        -   `content`: Select the **Base64 Encoded** result from the previous step.
+        -   `branch`: `feature/mobile-album-creation` (for testing)
 
 ### Step 7: Finish
 1.  **Show Alert**: "Upload Complete! Check GitHub Actions for progress."
