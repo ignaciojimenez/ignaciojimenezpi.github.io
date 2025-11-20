@@ -97,7 +97,16 @@ Add a **Text** action at the top to store your configuration:
         -   `branch`: `feature/mobile-album-creation` (for testing)
 
 ### Step 7: Finish
-1.  **Show Alert**: "Upload Complete! Check GitHub Actions for progress."
+1.  **Get Dictionary from Input**:
+    -   Pass the result of the **Metadata Upload** (Step 6) into this action.
+2.  **Get Value for Key**:
+    -   Key: `content` (or `sha`).
+    -   Input: The Dictionary from the previous step.
+3.  **If** `Dictionary Value` has any value:
+    -   **Show Alert**: "Upload Successful! Album 'AlbumTitle' is processing."
+4.  **Otherwise**:
+    -   **Show Alert**: "Upload Failed. Please check your token or internet connection."
+5.  **End If**.
 
 ## How it Works
 1.  The shortcut uploads files to `photography/staging/<album-id>/`.
