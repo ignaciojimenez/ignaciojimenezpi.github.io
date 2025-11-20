@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 STAGING_DIR = BASE_DIR / 'staging'
 
+from datetime import datetime
+
 def load_metadata(metadata_path: Path) -> Optional[Dict]:
     """Load and validate metadata.json."""
     try:
@@ -40,6 +42,24 @@ def load_metadata(metadata_path: Path) -> Optional[Dict]:
             if field not in data:
                 logger.error(f"Missing required field '{field}' in {metadata_path}")
                 return None
+
+        # Normalize date if needed
+        # iOS Shortcuts might send "19 Nov 2025 at 00:09"
+        if 'date' in data:
+            try:
+                # Try parsing common formats
+                date_str = data['date']
+                # If it's already YYYY-MM-DD, this might fail or just work if we use strptime correctly
+                # But let's handle the specific format mentioned first
+                if ' at ' in date_str:
+                    # Format: "19 Nov 2025 at 00:09"
+                    dt = datetime.strptime(date_str, "%d %b %Y at %H:%M")
+                    data['date'] = dt.strftime("%Y-%m-%d")
+                    logger.info(f"Normalized date from '{date_str}' to '{data['date']}'")
+            except ValueError:
+                # If parsing fails, leave it as is and let downstream validation handle it
+                # or try other formats if needed
+                pass
                 
         return data
     except Exception as e:
