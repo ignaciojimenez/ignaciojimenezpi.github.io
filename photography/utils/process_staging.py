@@ -90,6 +90,27 @@ def process_staging_album(album_dir: Path) -> bool:
     
     success = False
     
+    # Pre-process files: Rename extensionless files
+    # iOS Shortcuts often upload files without extensions. We use Pillow to detect the format.
+    from PIL import Image
+    
+    for file_path in album_dir.iterdir():
+        if file_path.is_file() and file_path.name != 'metadata.json' and not file_path.name.startswith('.'):
+            # Check if file has no extension
+            if not file_path.suffix:
+                try:
+                    with Image.open(file_path) as img:
+                        fmt = img.format.lower() if img.format else 'jpg'
+                        # Normalize jpeg to jpg
+                        if fmt == 'jpeg':
+                            fmt = 'jpg'
+                        
+                        new_path = file_path.with_suffix(f'.{fmt}')
+                        file_path.rename(new_path)
+                        logger.info(f"Renamed extensionless file {file_path.name} to {new_path.name}")
+                except Exception as e:
+                    logger.warning(f"Could not determine format for {file_path.name}: {e}")
+
     # Get all image files
     # iOS Shortcuts might upload files without extensions or with various extensions
     # We'll treat any file that isn't metadata.json or hidden as an image
