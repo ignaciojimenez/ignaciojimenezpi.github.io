@@ -71,9 +71,14 @@ def process_staging_album(album_dir: Path) -> bool:
     success = False
     
     # Get all image files
-    image_files = []
-    for ext in ['.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG', '.heic', '.HEIC']:
-        image_files.extend(album_dir.glob(f'*{ext}'))
+    # iOS Shortcuts might upload files without extensions or with various extensions
+    # We'll treat any file that isn't metadata.json or hidden as an image
+    image_files = [
+        f for f in album_dir.iterdir()
+        if f.is_file() 
+        and f.name != 'metadata.json'
+        and not f.name.startswith('.')
+    ]
         
     if not image_files:
         logger.info(f"No images found in {album_dir}. Skipping (waiting for upload completion).")
