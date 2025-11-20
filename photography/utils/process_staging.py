@@ -72,7 +72,7 @@ def process_staging_album(album_dir: Path) -> bool:
     
     # Get all image files
     image_files = []
-    for ext in ['.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG']:
+    for ext in ['.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG', '.heic', '.HEIC']:
         image_files.extend(album_dir.glob(f'*{ext}'))
         
     if not image_files:

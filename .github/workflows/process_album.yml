@@ -36,9 +36,9 @@ jobs:
         cd photography/utils
         python process_staging.py
         
-    - name: Commit and Push Changes
+    - name: Commit and push changes
       run: |
         git config --global user.name 'GitHub Action'
         git config --global user.email 'action@github.com'
-        git add photography/albums/ photography/albums.json photography/staging/
+        git add -A
         git diff --quiet && git diff --staged --quiet || (git commit -m "Process staged albums [skip ci]" && git push)
