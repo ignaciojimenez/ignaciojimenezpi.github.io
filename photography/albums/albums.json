@@ -23438,6 +23438,45 @@
           }
         }
       ]
+    },
+    {
+      "id": "tijuana-hhh",
+      "title": "Tijuana hhh",
+      "description": "",
+      "date": "2025-11-20",
+      "favorite": false,
+      "coverImage": {
+        "webp": "images/grid/IMG_6264.webp",
+        "width": 400,
+        "height": 300
+      },
+      "images": [
+        {
+          "id": "IMG_6264",
+          "sizes": {
+            "grid": {
+              "webp": "images/grid/IMG_6264.webp",
+              "width": 400,
+              "height": 300
+            },
+            "small": {
+              "webp": "images/small/IMG_6264.webp",
+              "width": 800,
+              "height": 600
+            },
+            "medium": {
+              "webp": "images/medium/IMG_6264.webp",
+              "width": 1200,
+              "height": 900
+            },
+            "large": {
+              "webp": "images/large/IMG_6264.webp",
+              "width": 1600,
+              "height": 1200
+            }
+          }
+        }
+      ]
     }
   ]
 }
