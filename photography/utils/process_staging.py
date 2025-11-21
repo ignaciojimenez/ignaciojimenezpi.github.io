@@ -93,9 +93,19 @@ def process_staging_album(album_dir: Path) -> bool:
     # Pre-process files: Rename extensionless files
     # iOS Shortcuts often upload files without extensions. We use Pillow to detect the format.
     from PIL import Image
+    import pillow_heif
+    pillow_heif.register_heif_opener()
     
     for file_path in album_dir.iterdir():
         if file_path.is_file() and file_path.name != 'metadata.json' and not file_path.name.startswith('.'):
+            # Debug: Check file header
+            try:
+                with open(file_path, 'rb') as f:
+                    header = f.read(20)
+                    logger.info(f"File {file_path.name} header: {header!r}")
+            except Exception as e:
+                logger.warning(f"Could not read header for {file_path.name}: {e}")
+
             # Check if file has no extension
             if not file_path.suffix:
                 try:
