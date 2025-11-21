@@ -111,9 +111,11 @@ def process_staging_album(album_dir: Path) -> bool:
                 try:
                     with Image.open(file_path) as img:
                         fmt = img.format.lower() if img.format else 'jpg'
-                        # Normalize jpeg to jpg
+                        # Normalize jpeg to jpg and heif to heic
                         if fmt == 'jpeg':
                             fmt = 'jpg'
+                        elif fmt == 'heif':
+                            fmt = 'heic'
                         
                         new_path = file_path.with_suffix(f'.{fmt}')
                         file_path.rename(new_path)

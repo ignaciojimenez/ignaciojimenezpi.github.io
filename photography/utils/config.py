@@ -23,7 +23,7 @@ RESPONSIVE_SIZES: Dict[str, ImageSize] = {
 
 # Image format settings
 WEBP_QUALITY = 85
-ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp'}  # Allow input images in various formats
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'}  # Allow input images in various formats
 
 # Directory structure
 ALBUM_DIRS = {
