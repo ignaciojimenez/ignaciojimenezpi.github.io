@@ -100,7 +100,7 @@ class ImageProcessor:
         """
         # Get all image files in directory
         image_files = []
-        for ext in ['.jpg', '.jpeg', '.png']:
+        for ext in ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif']:
             image_files.extend(dir_path.glob(f'*{ext}'))
             image_files.extend(dir_path.glob(f'*{ext.upper()}'))
         

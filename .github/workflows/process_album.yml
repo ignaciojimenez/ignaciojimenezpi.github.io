@@ -1,0 +1,48 @@
+name: Process Staged Albums
+
+on:
+  push:
+    paths:
+      - 'photography/staging/**'
+    branches:
+      - master
+      - main
+      - feature/mobile-album-creation
+      - feature/mobile-album-creation
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  process-album:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f photography/utils/requirements.txt ]; then pip install -r photography/utils/requirements.txt; fi
+        # Ensure Pillow is installed if not in requirements
+        pip install Pillow
+        
+    - name: Process Staged Albums
+      run: |
+        cd photography/utils
+        python process_staging.py
+        
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+        git add -A
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Process staged albums" && git push)

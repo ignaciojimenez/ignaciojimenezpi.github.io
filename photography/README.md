@@ -8,11 +8,13 @@ The album management system provides two modes of operation:
 
 ### Interactive Mode
 
-Simply run:
 ```bash
 cd photography/utils
 python album.py
 ```
+
+### Mobile Upload
+For instructions on how to upload albums from your iPhone using iOS Shortcuts, see [Mobile Upload Setup](docs/mobile-upload.md).
 
 This will launch an interactive menu where you can:
 - Create new albums
