@@ -1,0 +1,138 @@
+{
+  "id": "ski-24",
+  "title": "Val Thorens",
+  "description": "",
+  "date": "2024-01-29",
+  "images": [
+    {
+      "id": "000046450009",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000046450009.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000046450009.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000046450009.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000046450009.webp"
+        }
+      }
+    },
+    {
+      "id": "000046450008",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000046450008.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000046450008.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000046450008.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000046450008.webp"
+        }
+      }
+    },
+    {
+      "id": "000046450005",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000046450005.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000046450005.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000046450005.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000046450005.webp"
+        }
+      }
+    },
+    {
+      "id": "000046450004",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000046450004.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000046450004.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000046450004.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000046450004.webp"
+        }
+      }
+    },
+    {
+      "id": "000046450007",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000046450007.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000046450007.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000046450007.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000046450007.webp"
+        }
+      }
+    }
+  ],
+  "coverImage": {
+    "width": 800,
+    "height": 530,
+    "webp": "images/grid/000046450007.webp"
+  }
+}

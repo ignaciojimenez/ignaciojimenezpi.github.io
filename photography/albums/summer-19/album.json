@@ -1,0 +1,263 @@
+{
+  "id": "summer-19",
+  "title": "Summer in Mazag\u00f3n",
+  "description": "",
+  "date": "2019-09-01",
+  "coverImage": {
+    "webp": "images/grid/R1-07898-0000.webp",
+    "width": 400,
+    "height": 597
+  },
+  "images": [
+    {
+      "id": "R1-07898-0011",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0011.webp",
+          "width": 400,
+          "height": 267
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0011.webp",
+          "width": 800,
+          "height": 535
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0011.webp",
+          "width": 1200,
+          "height": 802
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0011.webp",
+          "width": 1600,
+          "height": 1070
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0005",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0005.webp",
+          "width": 400,
+          "height": 597
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0005.webp",
+          "width": 800,
+          "height": 1195
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0005.webp",
+          "width": 1200,
+          "height": 1793
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0005.webp",
+          "width": 1600,
+          "height": 2391
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0003",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0003.webp",
+          "width": 400,
+          "height": 267
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0003.webp",
+          "width": 800,
+          "height": 535
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0003.webp",
+          "width": 1200,
+          "height": 802
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0003.webp",
+          "width": 1600,
+          "height": 1070
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0016",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0016.webp",
+          "width": 400,
+          "height": 267
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0016.webp",
+          "width": 800,
+          "height": 535
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0016.webp",
+          "width": 1200,
+          "height": 802
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0016.webp",
+          "width": 1600,
+          "height": 1070
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0028",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0028.webp",
+          "width": 400,
+          "height": 267
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0028.webp",
+          "width": 800,
+          "height": 535
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0028.webp",
+          "width": 1200,
+          "height": 802
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0028.webp",
+          "width": 1600,
+          "height": 1070
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0014",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0014.webp",
+          "width": 400,
+          "height": 267
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0014.webp",
+          "width": 800,
+          "height": 535
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0014.webp",
+          "width": 1200,
+          "height": 802
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0014.webp",
+          "width": 1600,
+          "height": 1070
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0000",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0000.webp",
+          "width": 400,
+          "height": 597
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0000.webp",
+          "width": 800,
+          "height": 1195
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0000.webp",
+          "width": 1200,
+          "height": 1793
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0000.webp",
+          "width": 1600,
+          "height": 2391
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0019",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0019.webp",
+          "width": 400,
+          "height": 597
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0019.webp",
+          "width": 800,
+          "height": 1195
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0019.webp",
+          "width": 1200,
+          "height": 1793
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0019.webp",
+          "width": 1600,
+          "height": 2391
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0025",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0025.webp",
+          "width": 400,
+          "height": 597
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0025.webp",
+          "width": 800,
+          "height": 1195
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0025.webp",
+          "width": 1200,
+          "height": 1793
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0025.webp",
+          "width": 1600,
+          "height": 2391
+        }
+      }
+    },
+    {
+      "id": "R1-07898-0032",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/R1-07898-0032.webp",
+          "width": 400,
+          "height": 267
+        },
+        "small": {
+          "webp": "images/small/R1-07898-0032.webp",
+          "width": 800,
+          "height": 535
+        },
+        "medium": {
+          "webp": "images/medium/R1-07898-0032.webp",
+          "width": 1200,
+          "height": 802
+        },
+        "large": {
+          "webp": "images/large/R1-07898-0032.webp",
+          "width": 1600,
+          "height": 1070
+        }
+      }
+    }
+  ]
+}

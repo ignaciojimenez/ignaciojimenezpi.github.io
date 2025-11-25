@@ -1,0 +1,113 @@
+{
+  "id": "andreus-40",
+  "title": "Andreu's 40",
+  "description": "",
+  "date": "2023-05-05",
+  "images": [
+    {
+      "id": "000010320029",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000010320029.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000010320029.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000010320029.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000010320029.webp"
+        }
+      }
+    },
+    {
+      "id": "000010320030",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000010320030.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000010320030.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000010320030.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000010320030.webp"
+        }
+      }
+    },
+    {
+      "id": "000010320027",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000010320027.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000010320027.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000010320027.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000010320027.webp"
+        }
+      }
+    },
+    {
+      "id": "000010320026",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000010320026.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000010320026.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000010320026.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000010320026.webp"
+        }
+      }
+    }
+  ],
+  "coverImage": {
+    "width": 800,
+    "height": 530,
+    "webp": "images/grid/000010320029.webp"
+  }
+}

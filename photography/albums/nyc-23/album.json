@@ -1,0 +1,163 @@
+{
+  "id": "nyc-23",
+  "title": "NYC Spring",
+  "description": "",
+  "date": "2023-05-29",
+  "images": [
+    {
+      "id": "000046460019",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000046460019.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000046460019.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000046460019.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000046460019.webp"
+        }
+      }
+    },
+    {
+      "id": "000010320017",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000010320017.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000010320017.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000010320017.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000010320017.webp"
+        }
+      }
+    },
+    {
+      "id": "000010320016",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000010320016.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000010320016.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000010320016.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000010320016.webp"
+        }
+      }
+    },
+    {
+      "id": "000010320015",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000010320015.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000010320015.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000010320015.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000010320015.webp"
+        }
+      }
+    },
+    {
+      "id": "000046460017",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000046460017.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000046460017.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000046460017.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000046460017.webp"
+        }
+      }
+    },
+    {
+      "id": "000046460016",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000046460016.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000046460016.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000046460016.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000046460016.webp"
+        }
+      }
+    }
+  ],
+  "coverImage": {
+    "width": 800,
+    "height": 1206,
+    "webp": "images/grid/000010320016.webp"
+  }
+}

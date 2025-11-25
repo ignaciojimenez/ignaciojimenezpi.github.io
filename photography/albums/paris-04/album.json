@@ -1,0 +1,188 @@
+{
+  "id": "paris-04",
+  "title": "Family in Paris",
+  "description": "",
+  "date": "2004-04-10",
+  "images": [
+    {
+      "id": "enanaswarhol",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 606,
+          "webp": "images/grid/enanaswarhol.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 758,
+          "webp": "images/small/enanaswarhol.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 1061,
+          "webp": "images/medium/enanaswarhol.webp"
+        },
+        "large": {
+          "width": 1630,
+          "height": 1236,
+          "webp": "images/large/enanaswarhol.webp"
+        }
+      }
+    },
+    {
+      "id": "enanaspompidou",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 600,
+          "webp": "images/grid/enanaspompidou.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 751,
+          "webp": "images/small/enanaspompidou.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 1051,
+          "webp": "images/medium/enanaspompidou.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1351,
+          "webp": "images/large/enanaspompidou.webp"
+        }
+      }
+    },
+    {
+      "id": "cuchicuchiorsay",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1211,
+          "webp": "images/grid/cuchicuchiorsay.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1514,
+          "webp": "images/small/cuchicuchiorsay.webp"
+        },
+        "medium": {
+          "width": 1320,
+          "height": 1999,
+          "webp": "images/medium/cuchicuchiorsay.webp"
+        },
+        "large": {
+          "width": 1320,
+          "height": 1999,
+          "webp": "images/large/cuchicuchiorsay.webp"
+        }
+      }
+    },
+    {
+      "id": "todoshaciendoeltonto",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1216,
+          "webp": "images/grid/todoshaciendoeltonto.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1521,
+          "webp": "images/small/todoshaciendoeltonto.webp"
+        },
+        "medium": {
+          "width": 1320,
+          "height": 2008,
+          "webp": "images/medium/todoshaciendoeltonto.webp"
+        },
+        "large": {
+          "width": 1320,
+          "height": 2008,
+          "webp": "images/large/todoshaciendoeltonto.webp"
+        }
+      }
+    },
+    {
+      "id": "eifellnieltato",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 600,
+          "webp": "images/grid/eifellnieltato.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 751,
+          "webp": "images/small/eifellnieltato.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 1051,
+          "webp": "images/medium/eifellnieltato.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1351,
+          "webp": "images/large/eifellnieltato.webp"
+        }
+      }
+    },
+    {
+      "id": "martitaorsay",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1207,
+          "webp": "images/grid/martitaorsay.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1509,
+          "webp": "images/small/martitaorsay.webp"
+        },
+        "medium": {
+          "width": 1342,
+          "height": 2026,
+          "webp": "images/medium/martitaorsay.webp"
+        },
+        "large": {
+          "width": 1342,
+          "height": 2026,
+          "webp": "images/large/martitaorsay.webp"
+        }
+      }
+    },
+    {
+      "id": "martitapompodiu",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1058,
+          "webp": "images/grid/martitapompodiu.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1322,
+          "webp": "images/small/martitapompodiu.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 1852,
+          "webp": "images/medium/martitapompodiu.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2381,
+          "webp": "images/large/martitapompodiu.webp"
+        }
+      }
+    }
+  ],
+  "coverImage": {
+    "width": 800,
+    "height": 530,
+    "webp": "images/grid/martitapompodiu.webp"
+  }
+}

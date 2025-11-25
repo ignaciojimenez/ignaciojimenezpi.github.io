@@ -1,0 +1,163 @@
+{
+  "id": "chicago-23",
+  "title": "Chicago Fall",
+  "description": "",
+  "date": "2023-10-01",
+  "images": [
+    {
+      "id": "000046460024",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000046460024.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000046460024.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000046460024.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000046460024.webp"
+        }
+      }
+    },
+    {
+      "id": "000046460030",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000046460030.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000046460030.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000046460030.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000046460030.webp"
+        }
+      }
+    },
+    {
+      "id": "000046460025",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000046460025.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000046460025.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000046460025.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000046460025.webp"
+        }
+      }
+    },
+    {
+      "id": "000046450013",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000046450013.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000046450013.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000046450013.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000046450013.webp"
+        }
+      }
+    },
+    {
+      "id": "000046460028",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000046460028.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000046460028.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000046460028.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000046460028.webp"
+        }
+      }
+    },
+    {
+      "id": "000046460029",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000046460029.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000046460029.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000046460029.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000046460029.webp"
+        }
+      }
+    }
+  ],
+  "coverImage": {
+    "width": 800,
+    "height": 530,
+    "webp": "images/grid/000046450013.webp"
+  }
+}

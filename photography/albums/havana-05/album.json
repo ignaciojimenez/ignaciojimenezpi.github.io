@@ -1,0 +1,438 @@
+{
+  "id": "havana-05",
+  "title": "Havana",
+  "description": "",
+  "date": "2005-02-20",
+  "images": [
+    {
+      "id": "11050211",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 540,
+          "webp": "images/grid/11050211.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 675,
+          "webp": "images/small/11050211.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 945,
+          "webp": "images/medium/11050211.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1215,
+          "webp": "images/large/11050211.webp"
+        }
+      }
+    },
+    {
+      "id": "11050206",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050206.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1480,
+          "webp": "images/small/11050206.webp"
+        },
+        "medium": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/medium/11050206.webp"
+        },
+        "large": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/large/11050206.webp"
+        }
+      }
+    },
+    {
+      "id": "11050217",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 540,
+          "webp": "images/grid/11050217.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 675,
+          "webp": "images/small/11050217.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 945,
+          "webp": "images/medium/11050217.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1215,
+          "webp": "images/large/11050217.webp"
+        }
+      }
+    },
+    {
+      "id": "11050201",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050201.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1480,
+          "webp": "images/small/11050201.webp"
+        },
+        "medium": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/medium/11050201.webp"
+        },
+        "large": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/large/11050201.webp"
+        }
+      }
+    },
+    {
+      "id": "11050220",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050220.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1480,
+          "webp": "images/small/11050220.webp"
+        },
+        "medium": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/medium/11050220.webp"
+        },
+        "large": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/large/11050220.webp"
+        }
+      }
+    },
+    {
+      "id": "11050216",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050216.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1480,
+          "webp": "images/small/11050216.webp"
+        },
+        "medium": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/medium/11050216.webp"
+        },
+        "large": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/large/11050216.webp"
+        }
+      }
+    },
+    {
+      "id": "11050203",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 540,
+          "webp": "images/grid/11050203.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 675,
+          "webp": "images/small/11050203.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 945,
+          "webp": "images/medium/11050203.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1215,
+          "webp": "images/large/11050203.webp"
+        }
+      }
+    },
+    {
+      "id": "11050215",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 540,
+          "webp": "images/grid/11050215.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 675,
+          "webp": "images/small/11050215.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 945,
+          "webp": "images/medium/11050215.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1215,
+          "webp": "images/large/11050215.webp"
+        }
+      }
+    },
+    {
+      "id": "11050219",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050219.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1480,
+          "webp": "images/small/11050219.webp"
+        },
+        "medium": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/medium/11050219.webp"
+        },
+        "large": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/large/11050219.webp"
+        }
+      }
+    },
+    {
+      "id": "11050223",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050223.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1480,
+          "webp": "images/small/11050223.webp"
+        },
+        "medium": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/medium/11050223.webp"
+        },
+        "large": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/large/11050223.webp"
+        }
+      }
+    },
+    {
+      "id": "11050214",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050214.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1481,
+          "webp": "images/small/11050214.webp"
+        },
+        "medium": {
+          "width": 1197,
+          "height": 1773,
+          "webp": "images/medium/11050214.webp"
+        },
+        "large": {
+          "width": 1197,
+          "height": 1773,
+          "webp": "images/large/11050214.webp"
+        }
+      }
+    },
+    {
+      "id": "11050209",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 540,
+          "webp": "images/grid/11050209.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 675,
+          "webp": "images/small/11050209.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 945,
+          "webp": "images/medium/11050209.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1215,
+          "webp": "images/large/11050209.webp"
+        }
+      }
+    },
+    {
+      "id": "11050205",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 540,
+          "webp": "images/grid/11050205.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 675,
+          "webp": "images/small/11050205.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 945,
+          "webp": "images/medium/11050205.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1215,
+          "webp": "images/large/11050205.webp"
+        }
+      }
+    },
+    {
+      "id": "11050213",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050213.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1480,
+          "webp": "images/small/11050213.webp"
+        },
+        "medium": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/medium/11050213.webp"
+        },
+        "large": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/large/11050213.webp"
+        }
+      }
+    },
+    {
+      "id": "11050212",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 540,
+          "webp": "images/grid/11050212.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 675,
+          "webp": "images/small/11050212.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 945,
+          "webp": "images/medium/11050212.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1215,
+          "webp": "images/large/11050212.webp"
+        }
+      }
+    },
+    {
+      "id": "11050204",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1184,
+          "webp": "images/grid/11050204.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1480,
+          "webp": "images/small/11050204.webp"
+        },
+        "medium": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/medium/11050204.webp"
+        },
+        "large": {
+          "width": 1228,
+          "height": 1818,
+          "webp": "images/large/11050204.webp"
+        }
+      }
+    },
+    {
+      "id": "11050224",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 540,
+          "webp": "images/grid/11050224.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 675,
+          "webp": "images/small/11050224.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 945,
+          "webp": "images/medium/11050224.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1215,
+          "webp": "images/large/11050224.webp"
+        }
+      }
+    }
+  ],
+  "coverImage": {
+    "width": 800,
+    "height": 530,
+    "webp": "images/grid/11050217.webp"
+  }
+}

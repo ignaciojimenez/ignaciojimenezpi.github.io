@@ -11,19 +11,19 @@ class AlbumViewer {
         this.preloadedImages = new Map();
         this.ratioTypeCache = new Map();
         this.initialLoadComplete = false;
-        
+
         // Add mobile detection
         this.isMobile = window.innerWidth < 640;
-        
+
         if (!this.modal) {
             this.createModal();
             this.modal = document.getElementById('imageModal');
         }
-        
+
         this.initializeButtonReferences();
         this.setupEventListeners();
         this.setupModalEventDelegation();
-        
+
         this.observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -52,7 +52,7 @@ class AlbumViewer {
                 }
             }, 150)
         );
-        
+
         // Only observe resize on desktop
         if (this.gallery && !this.isMobile) {
             this.resizeObserver.observe(this.gallery);
@@ -64,15 +64,15 @@ class AlbumViewer {
         const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
         const parts = cleanPath.split('/');
         const rawAlbumId = parts[parts.length - 1];
-        
+
         // Sanitize albumId to prevent path traversal and XSS
         // Only allow alphanumeric characters, hyphens, and underscores
         const sanitizedAlbumId = rawAlbumId.replace(/[^a-zA-Z0-9\-_]/g, '');
-        
+
         if (!sanitizedAlbumId || sanitizedAlbumId !== rawAlbumId) {
             console.warn('Album ID contains invalid characters, sanitized:', rawAlbumId, '->', sanitizedAlbumId);
         }
-        
+
         return sanitizedAlbumId;
     }
 
@@ -80,28 +80,28 @@ class AlbumViewer {
         if (!filename || typeof filename !== 'string') {
             return '';
         }
-        
+
         // Check for dangerous patterns first
-        if (filename.includes('javascript:') || 
-            filename.includes('data:') || 
-            filename.includes('..') || 
+        if (filename.includes('javascript:') ||
+            filename.includes('data:') ||
+            filename.includes('..') ||
             filename.startsWith('/') ||
             filename.includes('<') ||
             filename.includes('>')) {
             console.warn('Filename contains dangerous patterns, blocked:', filename);
             return '';
         }
-        
+
         // For legitimate filenames, be more permissive but still safe
         // Allow common filename characters but block dangerous ones
         const sanitized = filename.replace(/[<>:"|?*\x00-\x1f]/g, '');
-        
+
         // Don't allow files starting with dots (hidden files)
         if (sanitized.startsWith('.')) {
             console.warn('Hidden file blocked:', filename);
             return '';
         }
-        
+
         return sanitized;
     }
 
@@ -124,20 +124,20 @@ class AlbumViewer {
         // Validate all child elements are safe
         const allowedElements = ['PICTURE', 'BUTTON'];
         const allowedClasses = ['modal-prev', 'modal-next', 'modal-close'];
-        
+
         for (const child of modalContent.children) {
             if (!allowedElements.includes(child.tagName)) {
                 console.warn('Unsafe element detected in modal:', child.tagName);
                 return false;
             }
-            
+
             if (child.tagName === 'BUTTON') {
                 const hasValidClass = allowedClasses.some(cls => child.classList.contains(cls));
                 if (!hasValidClass) {
                     console.warn('Button with invalid class detected:', child.className);
                     return false;
                 }
-                
+
                 // Validate button content is safe
                 if (child.innerHTML !== child.textContent) {
                     console.warn('Button contains HTML content:', child.innerHTML);
@@ -157,7 +157,7 @@ class AlbumViewer {
 
         // Ensure the element is completely isolated before insertion
         const clonedModal = modalElement.cloneNode(true);
-        
+
         // Final validation on the cloned element
         if (!this.validateModalSafety(clonedModal)) {
             throw new Error('Cloned modal failed safety validation');
@@ -202,24 +202,20 @@ class AlbumViewer {
             if (!this.albumId) {
                 throw new Error('No album ID specified');
             }
-            
-            const albumsResponse = await fetch('/photography/albums/albums.json');
-            if (!albumsResponse.ok) {
-                throw new Error(`HTTP error! status: ${albumsResponse.status}`);
+
+            // Fetch individual album.json
+            const albumResponse = await fetch(`/photography/albums/${this.albumId}/album.json`);
+            if (!albumResponse.ok) {
+                throw new Error(`HTTP error! status: ${albumResponse.status}`);
             }
-            const albumsData = await albumsResponse.json();
-            
-            const album = albumsData.albums.find(a => a.id === this.albumId);
-            if (!album) {
-                throw new Error('Album not found');
-            }
+            const album = await albumResponse.json();
 
             // Sanitize title by creating a text node and extracting its content
             const tempDiv = document.createElement('div');
             tempDiv.textContent = album.title;
             const sanitizedTitle = tempDiv.textContent;
             document.title = `${sanitizedTitle} - Ignacio Jiménez Pi`;
-            
+
             if (album.description) {
                 const metaDesc = document.querySelector('meta[name="description"]');
                 if (metaDesc) {
@@ -244,29 +240,29 @@ class AlbumViewer {
 
     processMobileImages(images) {
         if (!images || images.length === 0) return;
-        
+
         // No need for aspect ratios or sorting on mobile
         window.imagesData = images;
-        
+
         // Create a simple vertical layout
         const fragment = document.createDocumentFragment();
-        
+
         images.forEach((image, index) => {
             const imageCard = this.createMobileImageCard(image, index);
             fragment.appendChild(imageCard);
         });
-        
+
         // Safely clear gallery content without using innerHTML
         while (this.gallery.firstChild) {
             this.gallery.removeChild(this.gallery.firstChild);
         }
         this.gallery.appendChild(fragment);
-        
+
         // Show gallery immediately
         requestAnimationFrame(() => {
             this.gallery.style.opacity = '1';
         });
-        
+
         this.initialLoadComplete = true;
         this.preloadAllHighResImages();
     }
@@ -274,10 +270,10 @@ class AlbumViewer {
     createMobileImageCard(imageData, index) {
         const imageCard = document.createElement('div');
         imageCard.className = 'gallery-item';
-        
+
         const picture = document.createElement('picture');
         const sizes = imageData.sizes;
-        
+
         if (sizes.grid && sizes.grid.webp) {
             const source = document.createElement('source');
             const sanitizedFilename = this.sanitizeFilename(sizes.grid.webp);
@@ -287,33 +283,33 @@ class AlbumViewer {
                 picture.appendChild(source);
             }
         }
-        
+
         const img = document.createElement('img');
         const sanitizedGridFilename = this.sanitizeFilename(sizes.grid.webp);
         img.src = sanitizedGridFilename ? `/photography/albums/${this.albumId}/${sanitizedGridFilename}` : '';
         img.alt = `Image ${index + 1}`;
         img.loading = 'lazy';
-        
+
         // Set fixed aspect ratio for smooth loading - sanitize dimensions
         const width = parseFloat(sizes.grid.width);
         const height = parseFloat(sizes.grid.height);
         if (width > 0 && height > 0 && isFinite(width) && isFinite(height)) {
             img.style.aspectRatio = `${width}/${height}`;
         }
-        
+
         picture.appendChild(img);
         imageCard.appendChild(picture);
         imageCard.addEventListener('click', () => this.showModal(index));
-        
+
         // Observe for lazy loading
         this.observer.observe(imageCard);
-        
+
         return imageCard;
     }
 
     processImages(images) {
         if (!images || images.length === 0) return;
-        
+
         // Pre-calculate all aspect ratios in one pass
         const aspectRatios = new Map();
         images.forEach(image => {
@@ -326,19 +322,19 @@ class AlbumViewer {
                 }
             }
         });
-        
+
         // Update the imageBuffer in bulk
         this.imageBuffer = aspectRatios;
-        
+
         // Sort images once and proceed with layout
         window.imagesData = this.sortByAspectRatioDiversity(images);
         this.reflow(true);
-        
+
         if (this.gallery && !this.initialLoadComplete) {
             this.resizeObserver.observe(this.gallery);
             this.initialLoadComplete = true;
         }
-        
+
         // Show gallery after initial layout
         if (this.gallery) {
             requestAnimationFrame(() => {
@@ -355,7 +351,7 @@ class AlbumViewer {
             portrait: [],
             landscape: []
         };
-        
+
         // Single pass grouping
         images.forEach(img => {
             const ratio = this.imageBuffer.get(img.id);
@@ -363,7 +359,7 @@ class AlbumViewer {
             ratioTypes.set(img.id, type);
             groups[type].push(img);
         });
-        
+
         // Cache all ratio types
         this.ratioTypeCache = ratioTypes;
 
@@ -400,7 +396,7 @@ class AlbumViewer {
         ];
 
         const getNextRowPattern = (lastPattern, availableGroups) => {
-            if (maxPerRow !== 3) return null; 
+            if (maxPerRow !== 3) return null;
 
             const viablePatterns = threeImagePatterns.filter(pattern => {
                 const neededCounts = {
@@ -408,22 +404,22 @@ class AlbumViewer {
                     landscape: pattern.filter(t => t === 'landscape').length
                 };
                 return neededCounts.portrait <= availableGroups.portrait.length &&
-                       neededCounts.landscape <= availableGroups.landscape.length;
+                    neededCounts.landscape <= availableGroups.landscape.length;
             });
 
             const shuffledPatterns = shuffle([...viablePatterns]);
-            
+
             const patternStr = lastPattern.split('').join('');
-            return shuffledPatterns.find(p => p.map(t => t[0]).join('') !== patternStr) || 
-                   shuffledPatterns[0];
+            return shuffledPatterns.find(p => p.map(t => t[0]).join('') !== patternStr) ||
+                shuffledPatterns[0];
         };
 
         for (let row = 0; row < completeRows; row++) {
             const currentRow = [];
-            
+
             if (maxPerRow === 3) {
                 const nextPattern = getNextRowPattern(lastRowPattern, groups);
-                
+
                 if (nextPattern) {
                     nextPattern.forEach(type => {
                         const img = groups[type].pop();
@@ -431,20 +427,20 @@ class AlbumViewer {
                     });
                 } else {
                     for (let i = 0; i < maxPerRow; i++) {
-                        const preferredType = i === 0 ? 'landscape' : 
+                        const preferredType = i === 0 ? 'landscape' :
                             getRatioType(currentRow[currentRow.length - 1]) === 'portrait' ? 'landscape' : 'portrait';
-                        const img = groups[preferredType].length > 0 ? 
-                            groups[preferredType].pop() : 
+                        const img = groups[preferredType].length > 0 ?
+                            groups[preferredType].pop() :
                             (groups.landscape.length > 0 ? groups.landscape.pop() : groups.portrait.pop());
                         currentRow.push(img);
                     }
                 }
             } else {
                 for (let i = 0; i < maxPerRow; i++) {
-                    const preferredType = i === 0 ? 'landscape' : 
+                    const preferredType = i === 0 ? 'landscape' :
                         getRatioType(currentRow[currentRow.length - 1]) === 'portrait' ? 'landscape' : 'portrait';
-                    const img = groups[preferredType].length > 0 ? 
-                        groups[preferredType].pop() : 
+                    const img = groups[preferredType].length > 0 ?
+                        groups[preferredType].pop() :
                         (groups.landscape.length > 0 ? groups.landscape.pop() : groups.portrait.pop());
                     currentRow.push(img);
                 }
@@ -456,7 +452,7 @@ class AlbumViewer {
 
         if (remainingImages > 0) {
             const lastRow = [];
-            
+
             // For a single remaining image, ONLY use landscape
             // If no landscape is available, steal one from earlier in the sequence
             if (remainingImages === 1) {
@@ -518,13 +514,13 @@ class AlbumViewer {
             } else {
                 // For 3+ remaining images, ensure no trailing portrait
                 const lastIsLandscape = groups.landscape.length > 0;
-                
+
                 // Handle all but the last image
                 for (let i = 0; i < remainingImages - 1; i++) {
-                    const preferredType = i === 0 ? 'landscape' : 
+                    const preferredType = i === 0 ? 'landscape' :
                         getRatioType(lastRow[lastRow.length - 1]) === 'portrait' ? 'landscape' : 'portrait';
-                    const img = groups[preferredType].length > 0 ? 
-                        groups[preferredType].pop() : 
+                    const img = groups[preferredType].length > 0 ?
+                        groups[preferredType].pop() :
                         (groups.landscape.length > 0 ? groups.landscape.pop() : groups.portrait.pop());
                     lastRow.push(img);
                 }
@@ -554,7 +550,7 @@ class AlbumViewer {
                     }
                 }
             }
-            
+
             sortedImages.push(...lastRow);
         }
 
@@ -563,7 +559,7 @@ class AlbumViewer {
 
     preloadAllHighResImages() {
         if (!window.imagesData) return;
-        
+
         window.imagesData.forEach((_, index) => {
             this.preloadImage(index);
         });
@@ -574,7 +570,7 @@ class AlbumViewer {
 
         const fragment = document.createDocumentFragment();
         const existingItems = new Map();
-        
+
         if (!isInitial) {
             document.querySelectorAll('.gallery-item').forEach(item => {
                 const img = item.querySelector('img');
@@ -604,7 +600,7 @@ class AlbumViewer {
             if (!imageData) return;
 
             currentRowAspectRatios.push(imageData);
-            
+
             let imageCard;
             if (existingItems.has(image.id)) {
                 imageCard = existingItems.get(image.id);
@@ -618,7 +614,7 @@ class AlbumViewer {
             } else {
                 imageCard = this.createImageCard(image, index);
             }
-            
+
             currentRow.push(imageCard);
 
             if (currentRow.length === maxImagesPerRow || index === window.imagesData.length - 1) {
@@ -647,15 +643,15 @@ class AlbumViewer {
         const totalNaturalWidth = aspectRatios.reduce((sum, ratio) => sum + (targetHeight * ratio), 0);
         const totalGapWidth = (images.length - 1) * gap;
         const scale = (containerWidth - totalGapWidth) / totalNaturalWidth;
-        
+
         images.forEach((imageCard, i) => {
             const width = Math.floor(targetHeight * aspectRatios[i] * scale);
-            
+
             imageCard.style.width = `${width}px`;
             imageCard.style.height = `${targetHeight}px`;
-            
+
             row.appendChild(imageCard);
-            
+
             if (!imageCard.classList.contains('loaded')) {
                 this.observer.observe(imageCard);
             }
@@ -665,15 +661,15 @@ class AlbumViewer {
     createImageCard(imageData, index) {
         const imageCard = document.createElement('div');
         imageCard.className = 'gallery-item';
-        
+
         const picture = document.createElement('picture');
         const sizes = imageData.sizes;
-        
+
         // Only create sources for current viewport
         const currentWidth = window.innerWidth;
         const appropriateSize = currentWidth < 640 ? 'grid' :
-                              currentWidth < 1024 ? 'small' : 'medium';
-        
+            currentWidth < 1024 ? 'small' : 'medium';
+
         if (sizes[appropriateSize] && sizes[appropriateSize].webp) {
             const source = document.createElement('source');
             const sanitizedFilename = this.sanitizeFilename(sizes[appropriateSize].webp);
@@ -683,7 +679,7 @@ class AlbumViewer {
                 picture.appendChild(source);
             }
         }
-        
+
         const img = document.createElement('img');
         const gridSize = sizes.grid;
         const sanitizedGridFilename = this.sanitizeFilename(gridSize.webp);
@@ -691,10 +687,10 @@ class AlbumViewer {
         img.alt = `Image ${index + 1}`;
         img.loading = 'lazy';
         picture.appendChild(img);
-        
+
         imageCard.appendChild(picture);
         imageCard.addEventListener('click', () => this.showModal(index));
-        
+
         return imageCard;
     }
 
@@ -707,34 +703,34 @@ class AlbumViewer {
         const modal = document.createElement('div');
         modal.id = 'imageModal';
         modal.className = 'modal';
-        
+
         const modalContent = document.createElement('div');
         modalContent.className = 'modal-content';
-        
+
         const picture = document.createElement('picture');
         modalContent.appendChild(picture);
-        
+
         const prevButton = document.createElement('button');
         prevButton.className = 'modal-prev';
         prevButton.setAttribute('aria-label', 'Previous image');
         prevButton.textContent = '←';
         modalContent.appendChild(prevButton);
-        
+
         const nextButton = document.createElement('button');
         nextButton.className = 'modal-next';
         nextButton.setAttribute('aria-label', 'Next image');
         nextButton.textContent = '→';
         modalContent.appendChild(nextButton);
-        
+
         const closeButton = document.createElement('button');
         closeButton.className = 'modal-close';
         closeButton.setAttribute('aria-label', 'Close modal');
         closeButton.textContent = '×';
         modalContent.appendChild(closeButton);
-        
+
         // Ensure modal is completely clean before appending
         modal.appendChild(modalContent);
-        
+
         // Additional security validation - ensure all content is safe
         const isModalSafe = this.validateModalSafety(modal);
         if (isModalSafe) {
@@ -761,7 +757,7 @@ class AlbumViewer {
     updateNavigationButtons() {
         const prevButton = this.modal.querySelector('.modal-prev');
         const nextButton = this.modal.querySelector('.modal-next');
-        
+
         if (prevButton && nextButton) {
             if (this.currentImageIndex === 0) {
                 prevButton.style.display = 'none';
@@ -770,7 +766,7 @@ class AlbumViewer {
                 prevButton.style.display = 'block';
                 prevButton.classList.remove('hidden');
             }
-            
+
             if (this.currentImageIndex === window.imagesData.length - 1) {
                 nextButton.style.display = 'none';
                 nextButton.classList.add('hidden');
@@ -785,9 +781,9 @@ class AlbumViewer {
         this.currentImageIndex = index;
         const imageData = window.imagesData[index];
         const sizes = imageData.sizes;
-        
+
         const picture = document.createElement('picture');
-        
+
         if (this.isMobile) {
             // On mobile, use grid size for initial display, then upgrade to large
             if (sizes.grid.webp) {
@@ -799,14 +795,14 @@ class AlbumViewer {
                     picture.appendChild(webpSource);
                 }
             }
-            
+
             const img = document.createElement('img');
             const sanitizedGridFilename = this.sanitizeFilename(sizes.grid.webp);
             img.src = sanitizedGridFilename ? `/photography/albums/${this.albumId}/${sanitizedGridFilename}` : '';
             img.alt = `Image ${index + 1}`;
             img.className = 'max-w-full max-h-[90vh] object-contain mx-auto loading';
             picture.appendChild(img);
-            
+
             // Immediately start loading high-res version
             const sanitizedLargeFilename = this.sanitizeFilename(sizes.large.webp);
             if (sanitizedLargeFilename) {
@@ -828,7 +824,7 @@ class AlbumViewer {
                     picture.appendChild(webpSource);
                 }
             }
-            
+
             const img = document.createElement('img');
             const sanitizedLargeFilename = this.sanitizeFilename(sizes.large.webp);
             img.src = sanitizedLargeFilename ? `/photography/albums/${this.albumId}/${sanitizedLargeFilename}` : '';
@@ -836,18 +832,18 @@ class AlbumViewer {
             img.className = 'max-w-full max-h-[90vh] object-contain mx-auto';
             picture.appendChild(img);
         }
-        
+
         const modalContent = document.querySelector('.modal-content');
         // Safely clear modal content without using innerHTML
         while (modalContent.firstChild) {
             modalContent.removeChild(modalContent.firstChild);
         }
         modalContent.appendChild(picture);
-        
+
         this.modal.classList.add('active');
         this.updateNavigationButtons();
         this.preloadAdjacentImages(index);
-        
+
         document.body.style.overflow = 'hidden';
     }
 
@@ -902,20 +898,20 @@ class AlbumViewer {
             let startTime = 0;
             let isDragging = false;
             const SWIPE_THRESHOLD = 0.3; // 30% of screen width
-            
+
             const canSwipeNext = () => this.currentImageIndex < window.imagesData.length - 1;
             const canSwipePrev = () => this.currentImageIndex > 0;
-            
+
             this.modal.addEventListener('touchstart', (e) => {
                 // Only handle swipes on the image/picture element
                 if (!e.target.closest('picture')) return;
-                
+
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
                 startTime = Date.now();
                 isDragging = true;
                 currentTranslateX = 0;
-                
+
                 const picture = this.modal.querySelector('picture');
                 if (picture) {
                     picture.style.transition = 'none';
@@ -924,80 +920,80 @@ class AlbumViewer {
 
             this.modal.addEventListener('touchmove', (e) => {
                 if (!isDragging || !e.target.closest('picture')) return;
-                
+
                 const deltaX = e.touches[0].clientX - touchStartX;
                 const deltaY = e.touches[0].clientY - touchStartY;
-                
+
                 // Only handle horizontal movement if it's more horizontal than vertical
                 if (Math.abs(deltaX) > Math.abs(deltaY)) {
                     e.preventDefault();
-                    
+
                     const picture = this.modal.querySelector('picture');
                     if (picture) {
                         // Check swipe direction and boundaries
                         const isSwipingNext = deltaX < 0;
                         const isSwipingPrev = deltaX > 0;
-                        
+
                         // Add extra resistance at boundaries
                         let resistance = 0.65;
-                        if ((isSwipingNext && !canSwipeNext()) || 
+                        if ((isSwipingNext && !canSwipeNext()) ||
                             (isSwipingPrev && !canSwipePrev())) {
                             resistance = 0.15; // Much stronger resistance at boundaries
                         } else if (Math.abs(deltaX) > window.innerWidth / 3) {
                             resistance = 0.3; // Normal progressive resistance
                         }
-                        
+
                         currentTranslateX = deltaX * resistance;
-                        
+
                         // Limit maximum swipe distance
                         const maxTranslate = window.innerWidth * 0.8;
                         currentTranslateX = Math.max(Math.min(currentTranslateX, maxTranslate), -maxTranslate);
-                        
+
                         // Apply transform with spring-like effect at boundaries
-                        if ((isSwipingNext && !canSwipeNext()) || 
+                        if ((isSwipingNext && !canSwipeNext()) ||
                             (isSwipingPrev && !canSwipePrev())) {
                             // Add spring effect
                             const springEffect = Math.sin(Math.abs(currentTranslateX) / 30) * 10;
                             currentTranslateX = currentTranslateX / 2 + springEffect;
                         }
-                        
+
                         picture.style.transform = `translateX(${currentTranslateX}px)`;
-                        
+
                         // Adjust opacity based on movement, but keep it higher at boundaries
-                        const opacityFactor = ((isSwipingNext && !canSwipeNext()) || 
-                                             (isSwipingPrev && !canSwipePrev())) ? 0.8 : 0.5;
+                        const opacityFactor = ((isSwipingNext && !canSwipeNext()) ||
+                            (isSwipingPrev && !canSwipePrev())) ? 0.8 : 0.5;
                         const opacity = 1 - (Math.abs(currentTranslateX) / (window.innerWidth * 0.8)) * opacityFactor;
                         picture.style.opacity = Math.max(opacity, 0.5);
                     }
                 }
             }, { passive: false });
-            
+
             this.modal.addEventListener('touchend', (e) => {
                 if (!isDragging || !e.target.closest('picture')) return;
                 isDragging = false;
-                
+
                 const deltaX = e.changedTouches[0].clientX - touchStartX;
                 const deltaTime = Date.now() - startTime;
                 const velocity = Math.abs(deltaX) / deltaTime;
                 const screenWidth = window.innerWidth;
-                
+
                 const picture = this.modal.querySelector('picture');
                 if (picture) {
                     // Ultra-fast transition (reduced to 0.15s)
                     picture.style.transition = 'transform 0.15s cubic-bezier(0.1, 0, 0.1, 1), opacity 0.15s ease-out';
-                    
+
                     const swipeThreshold = screenWidth * SWIPE_THRESHOLD;
                     const isSwipe = Math.abs(deltaX) > swipeThreshold || (Math.abs(deltaX) > 30 && velocity > 0.5);
                     const isSwipingNext = deltaX < 0;
                     const isSwipingPrev = deltaX > 0;
-                    
-                    if (isSwipe && ((isSwipingNext && canSwipeNext()) || 
-                                  (isSwipingPrev && canSwipePrev()))) {
+
+                    if (isSwipe && ((isSwipingNext && canSwipeNext()) ||
+                        (isSwipingPrev && canSwipePrev()))) {
                         // Complete the swipe animation
                         const targetTranslate = deltaX > 0 ? screenWidth : -screenWidth;
                         picture.style.transform = `translateX(${targetTranslate}px)`;
                         picture.style.opacity = '0';
-                        
+
                         // Reduced timeout to 120ms for near-instant feeling
                         setTimeout(() => {
                             if (deltaX > 0 && canSwipePrev()) {
@@ -1015,14 +1011,14 @@ class AlbumViewer {
                     }
                 }
             }, { passive: true });
-            
+
             // Handle modal background tap to close
             this.modal.addEventListener('click', (e) => {
                 if (e.target === this.modal) {
                     this.closeModal();
                 }
             }, { passive: true });
-            
+
             // Simpler close button for mobile
             const closeButton = this.modal.querySelector('.modal-close');
             if (closeButton) {
@@ -1059,7 +1055,7 @@ class AlbumViewer {
         const closeButton = this.modal.querySelector('.modal-close');
         const prevButton = this.modal.querySelector('.modal-prev');
         const nextButton = this.modal.querySelector('.modal-next');
-        
+
         if (closeButton) closeButton.addEventListener('click', () => this.closeModal());
         if (prevButton) prevButton.addEventListener('click', () => this.showPrevImage());
         if (nextButton) nextButton.addEventListener('click', () => this.showNextImage());
@@ -1073,9 +1069,9 @@ class AlbumViewer {
             this.modal.addEventListener('click', (e) => {
                 const button = e.target.closest('[data-action]');
                 if (!button) return;
-                
+
                 const action = button.dataset.action;
-                switch(action) {
+                switch (action) {
                     case 'close-modal':
                         this.closeModal();
                         break;
@@ -1087,12 +1083,12 @@ class AlbumViewer {
                         break;
                 }
             });
-            
+
             // Also handle clicks without data-action for backwards compatibility
             const closeButton = this.modal.querySelector('.modal-close');
             const prevButton = this.modal.querySelector('.modal-prev');
             const nextButton = this.modal.querySelector('.modal-next');
-            
+
             if (closeButton && !closeButton.hasAttribute('data-action')) {
                 closeButton.addEventListener('click', () => this.closeModal());
             }
@@ -1107,8 +1103,8 @@ class AlbumViewer {
 
     handleKeyPress(e) {
         if (!this.modal.classList.contains('active')) return;
-        
-        switch(e.key) {
+
+        switch (e.key) {
             case 'ArrowRight':
                 this.showNextImage();
                 break;

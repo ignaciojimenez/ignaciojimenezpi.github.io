@@ -89,8 +89,11 @@ class AlbumManager:
                 favorite=favorite
             )
             
-            # Update albums.json
-            self._update_albums_json(album_data)
+            # Save individual album.json
+            self._save_album_json(album_dir, album_data)
+            
+            # Update summary albums.json
+            self._update_albums_summary(album_data)
             
             logger.info(f"Successfully created album: {album_name}")
             return True
@@ -105,10 +108,10 @@ class AlbumManager:
     def delete_album(self, album_id: str) -> bool:
         """Delete an album by its ID."""
         try:
-            # Load current albums
-            albums_data = self._load_albums_json()
+            # Load current summary
+            albums_data = self._load_albums_summary()
             
-            # Find and remove album
+            # Find and remove album from summary
             albums = albums_data['albums']
             album = next((a for a in albums if a['id'] == album_id), None)
             if not album:
@@ -121,7 +124,7 @@ class AlbumManager:
             
             # Update albums.json
             albums_data['albums'] = [a for a in albums if a['id'] != album_id]
-            self._save_albums_json(albums_data)
+            self._save_albums_summary(albums_data)
             
             logger.info(f"Successfully deleted album: {album_id}")
             return True
@@ -137,15 +140,14 @@ class AlbumManager:
             if isinstance(image_paths, str):
                 image_paths = [image_paths]
             
-            # Load album data
-            albums_data = self._load_albums_json()
-            album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
-            if not album:
-                raise ValueError(f"Album not found: {album_id}")
-            
             album_dir = ALBUMS_DIR / album_id
             if not album_dir.exists():
                 raise ValueError(f"Album directory not found: {album_id}")
+            
+            # Load individual album data
+            album = self._load_album_json(album_dir)
+            if not album:
+                raise ValueError(f"Album metadata not found for: {album_id}")
             
             # Process new images
             processor = ImageProcessor(album_dir)
@@ -165,7 +167,7 @@ class AlbumManager:
             
             # Update album data
             album['images'].extend(new_images)
-            self._save_albums_json(albums_data)
+            self._save_album_json(album_dir, album)
             
             logger.info(f"Successfully added {len(new_images)} images to album {album_id}")
             return True
@@ -181,15 +183,14 @@ class AlbumManager:
             if isinstance(image_ids, str):
                 image_ids = [image_ids]
             
-            # Load album data
-            albums_data = self._load_albums_json()
-            album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
-            if not album:
-                raise ValueError(f"Album not found: {album_id}")
-            
             album_dir = ALBUMS_DIR / album_id
             if not album_dir.exists():
                 raise ValueError(f"Album directory not found: {album_id}")
+            
+            # Load individual album data
+            album = self._load_album_json(album_dir)
+            if not album:
+                raise ValueError(f"Album metadata not found for: {album_id}")
             
             # Track success for each image
             success = True
@@ -215,6 +216,8 @@ class AlbumManager:
                             album['coverImage'] = remaining_images[0]['sizes']['grid']
                         else:
                             album['coverImage'] = {}
+                            # Update summary if cover changed
+                            self._update_summary_cover(album_id, album['coverImage'])
                     
                     # Remove image from album data
                     album['images'] = [img for img in album['images'] if img['id'] != image_id]
@@ -225,7 +228,7 @@ class AlbumManager:
                     success = False
             
             # Save updated album data
-            self._save_albums_json(albums_data)
+            self._save_album_json(album_dir, album)
             return success
             
         except Exception as e:
@@ -233,41 +236,34 @@ class AlbumManager:
             return False
     
     def list_albums(self) -> List[Dict]:
-        """List all albums."""
+        """List all albums (summary)."""
         try:
-            albums_data = self._load_albums_json()
+            albums_data = self._load_albums_summary()
             return sorted(albums_data['albums'], key=lambda x: x['date'], reverse=True)
         except Exception as e:
             logger.error(f"Failed to list albums: {e}")
             return []
     
     def get_album(self, album_id: str) -> Optional[Dict]:
-        """Get album by ID."""
+        """Get full album data by ID."""
         try:
-            albums_data = self._load_albums_json()
-            return next((a for a in albums_data['albums'] if a['id'] == album_id), None)
+            album_dir = ALBUMS_DIR / album_id
+            return self._load_album_json(album_dir)
         except Exception as e:
             logger.error(f"Failed to get album {album_id}: {e}")
             return None
     
     def update_album(self, album_id: str, **updates) -> bool:
-        """Update album metadata.
-        
-        Args:
-            album_id: Album ID to update
-            **updates: Keyword arguments for updates:
-                - title: New album title
-                - date: New album date (YYYY-MM-DD)
-                - description: New album description
-                - cover_image: New cover image ID (must be an existing image in the album)
-                - favorite: Boolean flag to mark album as favorite
-        """
+        """Update album metadata."""
         try:
-            # Load album data
-            albums_data = self._load_albums_json()
-            album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
+            album_dir = ALBUMS_DIR / album_id
+            if not album_dir.exists():
+                raise ValueError(f"Album directory not found: {album_id}")
+                
+            # Load full album data
+            album = self._load_album_json(album_dir)
             if not album:
-                raise ValueError(f"Album not found: {album_id}")
+                raise ValueError(f"Album metadata not found for: {album_id}")
             
             # Update title
             if 'title' in updates:
@@ -276,7 +272,6 @@ class AlbumManager:
             # Update date
             if 'date' in updates:
                 date = updates['date']
-                # Validate date format
                 try:
                     datetime.strptime(date, '%Y-%m-%d')
                     album['date'] = date
@@ -300,8 +295,12 @@ class AlbumManager:
             if 'favorite' in updates:
                 album['favorite'] = updates['favorite']
             
-            # Save changes
-            self._save_albums_json(albums_data)
+            # Save changes to individual file
+            self._save_album_json(album_dir, album)
+            
+            # Update summary
+            self._update_albums_summary(album, update_only=True)
+            
             logger.info(f"Successfully updated album: {album_id}")
             return True
             
@@ -309,29 +308,53 @@ class AlbumManager:
             logger.error(f"Failed to update album: {e}")
             return False
     
-    def _load_albums_json(self) -> Dict:
-        """Load albums.json data."""
+    def _load_albums_summary(self) -> Dict:
+        """Load albums.json summary data."""
         if not self.albums_json.exists():
             return {'albums': []}
         with open(self.albums_json, 'r') as f:
             return json.load(f)
     
-    def _save_albums_json(self, data: Dict) -> None:
-        """Save albums.json data."""
+    def _save_albums_summary(self, data: Dict) -> None:
+        """Save albums.json summary data."""
         with open(self.albums_json, 'w') as f:
             json.dump(data, f, indent=2)
+            
+    def _load_album_json(self, album_dir: Path) -> Optional[Dict]:
+        """Load individual album.json."""
+        album_json = album_dir / 'album.json'
+        if not album_json.exists():
+            return None
+        with open(album_json, 'r') as f:
+            return json.load(f)
+
+    def _save_album_json(self, album_dir: Path, data: Dict) -> None:
+        """Save individual album.json."""
+        album_json = album_dir / 'album.json'
+        with open(album_json, 'w') as f:
+            json.dump(data, f, indent=2)
     
-    def _update_albums_json(self, new_album: Dict) -> None:
-        """Update albums.json with a new album."""
-        albums_data = self._load_albums_json()
+    def _update_albums_summary(self, album_data: Dict, update_only: bool = False) -> None:
+        """Update or add album to albums.json summary."""
+        albums_data = self._load_albums_summary()
         
-        # Check for duplicate
-        if any(a['id'] == new_album['id'] for a in albums_data['albums']):
-            raise ValueError(f"Album ID already exists: {new_album['id']}")
+        # Create summary object (exclude images list)
+        summary = {k: v for k, v in album_data.items() if k != 'images'}
         
-        # Check if this is a new favorite album and there are existing favorites
-        if new_album.get('favorite', False):
-            logger.info(f"Adding new favorite album: {new_album['id']}")
+        # Check if exists
+        existing_idx = next((i for i, a in enumerate(albums_data['albums']) if a['id'] == summary['id']), -1)
         
-        albums_data['albums'].append(new_album)
-        self._save_albums_json(albums_data)
+        if existing_idx >= 0:
+            albums_data['albums'][existing_idx] = summary
+        elif not update_only:
+            albums_data['albums'].append(summary)
+        
+        self._save_albums_summary(albums_data)
+
+    def _update_summary_cover(self, album_id: str, new_cover: Dict) -> None:
+        """Update just the cover image in the summary."""
+        albums_data = self._load_albums_summary()
+        album = next((a for a in albums_data['albums'] if a['id'] == album_id), None)
+        if album:
+            album['coverImage'] = new_cover
+            self._save_albums_summary(albums_data)

@@ -1,0 +1,438 @@
+{
+  "id": "chicago-24",
+  "title": "Chicago with Marta",
+  "description": null,
+  "date": "2024-10-21",
+  "images": [
+    {
+      "id": "000074130020",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000074130020.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000074130020.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000074130020.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000074130020.webp"
+        }
+      }
+    },
+    {
+      "id": "000074130021",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000074130021.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000074130021.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000074130021.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000074130021.webp"
+        }
+      }
+    },
+    {
+      "id": "000074130022",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000074130022.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000074130022.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000074130022.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000074130022.webp"
+        }
+      }
+    },
+    {
+      "id": "000074130026",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000074130026.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000074130026.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000074130026.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000074130026.webp"
+        }
+      }
+    },
+    {
+      "id": "000074130015",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000074130015.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000074130015.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000074130015.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000074130015.webp"
+        }
+      }
+    },
+    {
+      "id": "000074130016",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1207,
+          "webp": "images/grid/000074130016.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000074130016.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2112,
+          "webp": "images/medium/000074130016.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2716,
+          "webp": "images/large/000074130016.webp"
+        }
+      }
+    },
+    {
+      "id": "000074130013",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/000074130013.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1508,
+          "webp": "images/small/000074130013.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/000074130013.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2715,
+          "webp": "images/large/000074130013.webp"
+        }
+      }
+    },
+    {
+      "id": "000074130012",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/000074130012.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/000074130012.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/000074130012.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/000074130012.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3313",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/IMG_3313.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1507,
+          "webp": "images/small/IMG_3313.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/IMG_3313.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2714,
+          "webp": "images/large/IMG_3313.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3328",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/IMG_3328.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1507,
+          "webp": "images/small/IMG_3328.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/IMG_3328.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2714,
+          "webp": "images/large/IMG_3328.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3312",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/IMG_3312.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1507,
+          "webp": "images/small/IMG_3312.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/IMG_3312.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2714,
+          "webp": "images/large/IMG_3312.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3332",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/IMG_3332.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1507,
+          "webp": "images/small/IMG_3332.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/IMG_3332.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2714,
+          "webp": "images/large/IMG_3332.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3318",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/IMG_3318.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1507,
+          "webp": "images/small/IMG_3318.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/IMG_3318.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2714,
+          "webp": "images/large/IMG_3318.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3316",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/IMG_3316.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1507,
+          "webp": "images/small/IMG_3316.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/IMG_3316.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2714,
+          "webp": "images/large/IMG_3316.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3300",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1206,
+          "webp": "images/grid/IMG_3300.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1507,
+          "webp": "images/small/IMG_3300.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2111,
+          "webp": "images/medium/IMG_3300.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2714,
+          "webp": "images/large/IMG_3300.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3331",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 530,
+          "webp": "images/grid/IMG_3331.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 662,
+          "webp": "images/small/IMG_3331.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 928,
+          "webp": "images/medium/IMG_3331.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 1193,
+          "webp": "images/large/IMG_3331.webp"
+        }
+      }
+    },
+    {
+      "id": "IMG_3330",
+      "sizes": {
+        "grid": {
+          "width": 800,
+          "height": 1286,
+          "webp": "images/grid/IMG_3330.webp"
+        },
+        "small": {
+          "width": 1000,
+          "height": 1608,
+          "webp": "images/small/IMG_3330.webp"
+        },
+        "medium": {
+          "width": 1400,
+          "height": 2251,
+          "webp": "images/medium/IMG_3330.webp"
+        },
+        "large": {
+          "width": 1800,
+          "height": 2895,
+          "webp": "images/large/IMG_3330.webp"
+        }
+      }
+    }
+  ],
+  "coverImage": {
+    "width": 800,
+    "height": 530,
+    "webp": "images/grid/IMG_3318.webp"
+  }
+}

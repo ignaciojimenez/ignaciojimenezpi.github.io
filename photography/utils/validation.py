@@ -83,20 +83,25 @@ def validate_album_structure(album_dir: Path) -> None:
     if not images_dir.exists():
         raise ValidationError(f"Images directory does not exist: {images_dir}")
     
-    # Check root albums.json
-    if not ALBUMS_JSON.exists():
-        raise ValidationError(f"Root metadata file does not exist: {ALBUMS_JSON}")
+    # Check individual album.json
+    album_json = album_dir / 'album.json'
+    if not album_json.exists():
+        raise ValidationError(f"Album metadata file does not exist: {album_json}")
     
     try:
-        with open(ALBUMS_JSON) as f:
+        with open(album_json) as f:
             data = json.load(f)
-            # Find the album in the metadata
-            album_id = album_dir.name
-            album = next((a for a in data['albums'] if a['id'] == album_id), None)
-            if not album:
-                raise ValidationError(f"Album {album_id} not found in metadata")
+            # Validate schema
+            jsonschema.validate(instance=data, schema=ALBUM_SCHEMA)
+            
+            # Verify ID matches directory name
+            if data['id'] != album_dir.name:
+                raise ValidationError(f"Album ID {data['id']} does not match directory name {album_dir.name}")
+                
     except json.JSONDecodeError as e:
         raise ValidationError(f"Invalid metadata JSON: {e}")
+    except jsonschema.exceptions.ValidationError as e:
+        raise ValidationError(f"Invalid album data format: {e}")
 
 def validate_image_paths(paths: List[str], base_dir: Path) -> None:
     """Validate a list of image paths."""
