@@ -1,0 +1,62 @@
+name: Remove Album
+
+on:
+  workflow_dispatch:
+    inputs:
+      album_id:
+        description: 'Album ID to remove'
+        required: true
+        type: string
+  repository_dispatch:
+    types: [remove_album]
+
+jobs:
+  remove-album:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f photography/utils/requirements.txt ]; then pip install -r photography/utils/requirements.txt; fi
+        # Ensure Pillow is installed if not in requirements (needed for AlbumManager imports)
+        pip install Pillow
+        
+    - name: Remove Album
+      run: |
+        cd photography/utils
+        # Get album_id from workflow_dispatch input or repository_dispatch payload
+        ALBUM_ID="${{ github.event.inputs.album_id }}"
+        if [ -z "$ALBUM_ID" ]; then
+          ALBUM_ID="${{ github.event.client_payload.album_id }}"
+        fi
+        
+        if [ -z "$ALBUM_ID" ]; then
+          echo "Error: No album_id provided"
+          exit 1
+        fi
+        
+        echo "Removing album: $ALBUM_ID"
+        python album.py delete --album-name "$ALBUM_ID" --yes
+        
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'GitHub Action'
+        git config --global user.email 'action@github.com'
+        git add -A
+        # Only commit if there are changes
+        if ! git diff --quiet || ! git diff --staged --quiet; then
+          git commit -m "Remove album: ${{ github.event.inputs.album_id || github.event.client_payload.album_id }}"
+          git push
+        else
+          echo "No changes to commit"
+        fi
