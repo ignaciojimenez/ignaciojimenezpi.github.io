@@ -5,12 +5,7 @@
             "label": "Install Dependencies",
             "type": "shell",
             "command": "npm install",
-            "problemMatcher": [],
-            "options": {
-                "shell": {
-                    "executable": "/bin/zsh"
-                }
-            }
+            "problemMatcher": []
         },
         {
             "label": "Watch CSS",
@@ -30,12 +25,9 @@
             "runOptions": {
                 "runOn": "folderOpen"
             },
-            "dependsOn": ["Install Dependencies"],
-            "options": {
-                "shell": {
-                    "executable": "/bin/zsh"
-                }
-            }
+            "dependsOn": [
+                "Install Dependencies"
+            ]
         }
     ]
 }
