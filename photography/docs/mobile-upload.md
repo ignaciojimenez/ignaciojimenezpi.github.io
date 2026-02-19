@@ -29,23 +29,16 @@ Ask for input and set variables:
 1.  **Title** (Text) -> `AlbumTitle`
 2.  **Date** (YYYY-MM-DD) -> `AlbumDate`
 3.  **Description** (Text) -> `AlbumDescription`
+4.  **Cover image index** (Number, default `1`) -> `CoverIndex` *(which image in the selection to use as cover; 1 = first)*
 
-### 4. Generate ID & Metadata
+### 4. Generate Album ID
 1.  **AlbumID**: Convert `AlbumTitle` to **lowercase** and replace spaces with hyphens (`-`).
-2.  **Metadata JSON**:
-    ```json
-    {
-      "title": "AlbumTitle",
-      "date": "AlbumDate",
-      "description": "AlbumDescription",
-      "favorite": false
-    }
-    ```
 
 ### 5. Upload Images (Loop)
 Loop through each image input:
 1.  **Base64 Encode** image (**Line Breaks: None**).
-2.  **PUT Request**:
+2.  If `Repeat Index == CoverIndex`, set variable `CoverImageName` to `ImageName`.
+3.  **PUT Request**:
     *   **URL**: `https://api.github.com/repos/{User}/{Repo}/contents/photography/staging/{AlbumID}/{ImageName}`
     *   **Headers**: `Authorization: token {Token}`, `Accept: application/vnd.github.v3+json`
     *   **Body**:
@@ -71,8 +64,19 @@ Loop through each image input:
         }
         ```
 
+**Metadata JSON** (use `CoverImageName` captured in the loop):
+```json
+{
+  "title": "AlbumTitle",
+  "date": "AlbumDate",
+  "description": "AlbumDescription",
+  "cover_image": "CoverImageName",
+  "favorite": false
+}
+```
+
 > [!IMPORTANT]
-> **Order Matters**: Upload images *before* metadata. The presence of `metadata.json` triggers the processing workflow.
+> **Order Matters**: Upload images *before* metadata. `metadata.json` must be the **last** push — it is the only file that triggers the processing workflow, so all images must already be staged when it arrives.
 
 ### 7. Finish
 Check the response of the last PUT request. If successful, show a notification.

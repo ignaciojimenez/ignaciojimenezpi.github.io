@@ -3,7 +3,7 @@ name: Process Staged Albums
 on:
   push:
     paths:
-      - 'photography/staging/**'
+      - 'photography/staging/**/metadata.json'
     branches:
       - master
       - main
