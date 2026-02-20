@@ -1,0 +1,289 @@
+{
+  "id": "sisters-in-den-haag",
+  "title": "Sisters in Den Haag",
+  "description": "",
+  "date": "2025-08-11",
+  "favorite": false,
+  "coverImage": {
+    "webp": "images/grid/000095970021.webp",
+    "width": 400,
+    "height": 603
+  },
+  "images": [
+    {
+      "id": "000095970021",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000095970021.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000095970021.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000095970021.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000095970021.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    },
+    {
+      "id": "000095970022",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000095970022.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000095970022.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000095970022.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000095970022.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    },
+    {
+      "id": "000095970023",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000095970023.webp",
+          "width": 400,
+          "height": 265
+        },
+        "small": {
+          "webp": "images/small/000095970023.webp",
+          "width": 800,
+          "height": 530
+        },
+        "medium": {
+          "webp": "images/medium/000095970023.webp",
+          "width": 1200,
+          "height": 795
+        },
+        "large": {
+          "webp": "images/large/000095970023.webp",
+          "width": 1600,
+          "height": 1060
+        }
+      }
+    },
+    {
+      "id": "000096000026",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000096000026.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000096000026.webp",
+          "width": 800,
+          "height": 1207
+        },
+        "medium": {
+          "webp": "images/medium/000096000026.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000096000026.webp",
+          "width": 1600,
+          "height": 2414
+        }
+      }
+    },
+    {
+      "id": "000096000027",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000096000027.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000096000027.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000096000027.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000096000027.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    },
+    {
+      "id": "000096000028",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000096000028.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000096000028.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000096000028.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000096000028.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    },
+    {
+      "id": "000096000029",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000096000029.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000096000029.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000096000029.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000096000029.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    },
+    {
+      "id": "000096000030",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000096000030.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000096000030.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000096000030.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000096000030.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    },
+    {
+      "id": "000096000031",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000096000031.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000096000031.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000096000031.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000096000031.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    },
+    {
+      "id": "000096000032",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000096000032.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000096000032.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000096000032.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000096000032.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    },
+    {
+      "id": "000096000034",
+      "sizes": {
+        "grid": {
+          "webp": "images/grid/000096000034.webp",
+          "width": 400,
+          "height": 603
+        },
+        "small": {
+          "webp": "images/small/000096000034.webp",
+          "width": 800,
+          "height": 1206
+        },
+        "medium": {
+          "webp": "images/medium/000096000034.webp",
+          "width": 1200,
+          "height": 1810
+        },
+        "large": {
+          "webp": "images/large/000096000034.webp",
+          "width": 1600,
+          "height": 2413
+        }
+      }
+    }
+  ]
+}

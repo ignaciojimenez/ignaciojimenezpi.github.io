@@ -539,6 +539,18 @@
         "width": 400,
         "height": 265
       }
+    },
+    {
+      "id": "sisters-in-den-haag",
+      "title": "Sisters in Den Haag",
+      "description": "",
+      "date": "2025-08-11",
+      "favorite": false,
+      "coverImage": {
+        "webp": "images/grid/000095970021.webp",
+        "width": 400,
+        "height": 603
+      }
     }
   ]
 }
