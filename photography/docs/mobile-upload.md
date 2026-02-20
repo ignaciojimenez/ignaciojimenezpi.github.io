@@ -75,6 +75,9 @@ Loop through each image input:
 }
 ```
 
+> [!NOTE]
+> **Cover image options**: `cover_image` (filename stem, e.g. `IMG_1234`) is the most reliable approach — capture it during the upload loop as shown in step 5.2. Alternatively, `cover_index` (1-based number) is supported as a fallback, but the index maps to **alphabetical filename order**, which may not match the order images were selected in iOS.
+
 > [!IMPORTANT]
 > **Order Matters**: Upload images *before* metadata. `metadata.json` must be the **last** push — it is the only file that triggers the processing workflow, so all images must already be staged when it arrives.
 

@@ -135,15 +135,29 @@ def process_staging_album(album_dir: Path) -> bool:
     # We'll treat any file that isn't metadata.json or hidden as an image
     image_files = [
         f for f in album_dir.iterdir()
-        if f.is_file() 
+        if f.is_file()
         and f.name != 'metadata.json'
         and not f.name.startswith('.')
     ]
-        
+
     if not image_files:
         logger.info(f"No images found in {album_dir}. Skipping (waiting for upload completion).")
         return True  # Return True to avoid failing the action
-        
+
+    # Resolve cover image from filename or numeric index
+    cover_image = metadata.get('cover_image')
+    if not cover_image and metadata.get('cover_index') is not None:
+        try:
+            idx = int(metadata['cover_index']) - 1  # 1-based to 0-based
+            sorted_images = sorted(image_files)
+            if 0 <= idx < len(sorted_images):
+                cover_image = sorted_images[idx].stem
+                logger.info(f"Resolved cover_index {metadata['cover_index']} to {cover_image}")
+            else:
+                logger.warning(f"cover_index {metadata['cover_index']} out of range (1-{len(sorted_images)})")
+        except (ValueError, IndexError) as e:
+            logger.warning(f"Invalid cover_index: {e}")
+
     if existing_album:
         logger.info(f"Album {album_id} exists, adding images...")
         # Add images to existing album
@@ -159,7 +173,7 @@ def process_staging_album(album_dir: Path) -> bool:
             date=metadata['date'],
             description=metadata.get('description', ''),
             image_dir=str(album_dir),
-            cover_image=metadata.get('cover_image'),
+            cover_image=cover_image,
             favorite=metadata.get('favorite', False)
         )
         
