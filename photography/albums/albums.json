@@ -551,6 +551,18 @@
         "width": 400,
         "height": 265
       }
+    },
+    {
+      "id": "zermatt",
+      "title": "Zermatt",
+      "description": "",
+      "date": "2026-02-11",
+      "favorite": false,
+      "coverImage": {
+        "webp": "images/grid/000095990013.webp",
+        "width": 400,
+        "height": 603
+      }
     }
   ]
 }
