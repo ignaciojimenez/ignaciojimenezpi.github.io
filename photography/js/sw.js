@@ -44,8 +44,9 @@ function isJSONRequest(request) {
 
 // Fetch event - handle requests
 self.addEventListener('fetch', event => {
-    // Skip cross-origin requests
-    if (!event.request.url.startsWith(self.location.origin)) {
+    const url = new URL(event.request.url);
+    // Only handle same-origin requests under /photography/
+    if (url.origin !== self.location.origin || !url.pathname.startsWith('/photography/')) {
         return;
     }
 

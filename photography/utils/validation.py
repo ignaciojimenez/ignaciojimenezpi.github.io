@@ -1,13 +1,14 @@
 """Validation utilities for the photography portfolio."""
 
 import json
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 from datetime import datetime
 import jsonschema
 from PIL import Image
 import logging
-from config import METADATA_SCHEMA, ALBUM_SCHEMA, ALLOWED_EXTENSIONS, ALBUMS_JSON
+from config import METADATA_SCHEMA, ALBUM_SCHEMA, ALLOWED_EXTENSIONS, ALBUMS_JSON, ALBUMS_DIR
 
 # Configure logging
 logging.basicConfig(
@@ -20,6 +21,27 @@ logger = logging.getLogger(__name__)
 class ValidationError(Exception):
     """Custom exception for validation errors."""
     pass
+
+def validate_album_id(album_id: str) -> None:
+    """Validate that an album ID contains only safe characters."""
+    if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$', album_id):
+        raise ValidationError(
+            f"Invalid album ID '{album_id}': must contain only alphanumeric characters, hyphens, and underscores"
+        )
+
+def validate_safe_album_path(album_dir: Path) -> Path:
+    """Resolve an album directory path and verify it stays within ALBUMS_DIR.
+
+    Prevents path traversal attacks by resolving symlinks and relative
+    components, then checking the result is a child of the albums directory.
+    """
+    resolved = album_dir.resolve()
+    albums_root = ALBUMS_DIR.resolve()
+    if not str(resolved).startswith(str(albums_root) + '/') and resolved != albums_root:
+        raise ValidationError(
+            f"Path traversal detected: {album_dir} resolves outside the albums directory"
+        )
+    return resolved
 
 def validate_image_file(path: Path) -> None:
     """Validate that a file is a valid image."""
@@ -76,9 +98,10 @@ def validate_album_data(
 
 def validate_album_structure(album_dir: Path) -> None:
     """Validate album directory structure."""
+    validate_safe_album_path(album_dir)
     if not album_dir.exists():
         raise ValidationError(f"Album directory does not exist: {album_dir}")
-    
+
     images_dir = album_dir / 'images'
     if not images_dir.exists():
         raise ValidationError(f"Images directory does not exist: {images_dir}")

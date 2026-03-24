@@ -9,7 +9,10 @@ from typing import Dict, List, Optional, Union
 from datetime import datetime
 
 from config import ALBUMS_JSON, METADATA_SCHEMA, ALBUM_SCHEMA, ALBUMS_DIR, BASE_DIR
-from validation import validate_album_data, validate_image_file, validate_album_structure
+from validation import (
+    validate_album_data, validate_image_file, validate_album_structure,
+    validate_album_id, validate_safe_album_path,
+)
 from image_processor import ImageProcessor
 
 logger = logging.getLogger(__name__)
@@ -33,8 +36,10 @@ class AlbumManager:
     ) -> bool:
         """Create a new album with the given parameters."""
         try:
-            # Create album directory
+            # Validate album name and resolve path safely
+            validate_album_id(album_name)
             album_dir = Path(ALBUMS_JSON).parent / album_name
+            validate_safe_album_path(album_dir)
             if album_dir.exists():
                 raise ValueError(f"Album directory already exists: {album_dir}")
             
@@ -108,6 +113,7 @@ class AlbumManager:
     def delete_album(self, album_id: str) -> bool:
         """Delete an album by its ID."""
         try:
+            validate_album_id(album_id)
             # Load current summary
             albums_data = self._load_albums_summary()
             
@@ -119,6 +125,7 @@ class AlbumManager:
             
             # Remove album directory
             album_dir = self.albums_json.parent / album_id
+            validate_safe_album_path(album_dir)
             if album_dir.exists():
                 shutil.rmtree(album_dir)
             
@@ -136,11 +143,13 @@ class AlbumManager:
     def add_images(self, album_id: str, image_paths: Union[str, List[str]]) -> bool:
         """Add one or more images to an existing album."""
         try:
+            validate_album_id(album_id)
             # Convert single path to list
             if isinstance(image_paths, str):
                 image_paths = [image_paths]
-            
+
             album_dir = ALBUMS_DIR / album_id
+            validate_safe_album_path(album_dir)
             if not album_dir.exists():
                 raise ValueError(f"Album directory not found: {album_id}")
             
@@ -179,11 +188,13 @@ class AlbumManager:
     def delete_images(self, album_id: str, image_ids: Union[str, List[str]]) -> bool:
         """Delete one or more images from an album."""
         try:
+            validate_album_id(album_id)
             # Convert single ID to list
             if isinstance(image_ids, str):
                 image_ids = [image_ids]
-            
+
             album_dir = ALBUMS_DIR / album_id
+            validate_safe_album_path(album_dir)
             if not album_dir.exists():
                 raise ValueError(f"Album directory not found: {album_id}")
             
@@ -247,7 +258,9 @@ class AlbumManager:
     def get_album(self, album_id: str) -> Optional[Dict]:
         """Get full album data by ID."""
         try:
+            validate_album_id(album_id)
             album_dir = ALBUMS_DIR / album_id
+            validate_safe_album_path(album_dir)
             return self._load_album_json(album_dir)
         except Exception as e:
             logger.error(f"Failed to get album {album_id}: {e}")
@@ -256,7 +269,9 @@ class AlbumManager:
     def update_album(self, album_id: str, **updates) -> bool:
         """Update album metadata."""
         try:
+            validate_album_id(album_id)
             album_dir = ALBUMS_DIR / album_id
+            validate_safe_album_path(album_dir)
             if not album_dir.exists():
                 raise ValueError(f"Album directory not found: {album_id}")
                 

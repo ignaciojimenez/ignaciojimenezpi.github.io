@@ -128,6 +128,10 @@ function createResponsivePicture(imagePath, title, metadata, albumId, priority =
 }
 
 function createAlbumCard(album, metadata, priority = 'auto') {
+    if (!/^[a-zA-Z0-9_-]+$/.test(album.id)) {
+        console.error('Invalid album ID:', album.id);
+        return document.createElement('div');
+    }
     const card = document.createElement('div');
     card.className = 'album-card opacity-0';
     card.setAttribute('data-album-id', album.id);
@@ -220,15 +224,20 @@ function createAlbumCard(album, metadata, priority = 'auto') {
     // Add keyboard navigation
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
-    card.addEventListener('click', () => {
-        window.location.href = `/photography/albums/${album.id}`;
-    });
-    card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            window.location.href = `/photography/albums/${album.id}`;
-        }
-    });
+    const albumHref = /^[a-zA-Z0-9_-]+$/.test(album.id)
+        ? `/photography/albums/${album.id}`
+        : null;
+    if (albumHref) {
+        card.addEventListener('click', () => {
+            window.location.href = albumHref;
+        });
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                window.location.href = albumHref;
+            }
+        });
+    }
 
     return card;
 }
