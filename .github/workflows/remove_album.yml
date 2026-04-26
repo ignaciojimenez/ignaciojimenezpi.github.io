@@ -32,12 +32,15 @@ jobs:
         pip install Pillow
         
     - name: Remove Album
+      env:
+        WORKFLOW_DISPATCH_ALBUM_ID: ${{ github.event.inputs.album_id }}
+        REPOSITORY_DISPATCH_ALBUM_ID: ${{ github.event.client_payload.album_id }}
       run: |
         cd photography/utils
         # Get album_id from workflow_dispatch input or repository_dispatch payload
-        ALBUM_ID="${{ github.event.inputs.album_id }}"
+        ALBUM_ID="$WORKFLOW_DISPATCH_ALBUM_ID"
         if [ -z "$ALBUM_ID" ]; then
-          ALBUM_ID="${{ github.event.client_payload.album_id }}"
+          ALBUM_ID="$REPOSITORY_DISPATCH_ALBUM_ID"
         fi
         
         if [ -z "$ALBUM_ID" ]; then
