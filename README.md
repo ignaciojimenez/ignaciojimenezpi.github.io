@@ -10,6 +10,10 @@ A minimalist music portfolio to share some of my music projects.
 ### [Film Photography Portfolio](/photography)
 A minimalist photography portfolio to share some of my film pictures.
 
+## Docs
+
+- [Decisions](docs/decisions.md) — architecture and strategy decisions.
+
 ## Development
 Each project has its own README with detailed setup and development instructions.
 
