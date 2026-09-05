@@ -1,11 +1,9 @@
-const CACHE_NAME = 'photography-cache-v1';
+const CACHE_NAME = 'photography-cache-v2';
 const STATIC_ASSETS = [
     '/photography/',
     '/photography/index.html',
     '/photography/css/styles.css',
-    '/photography/js/gallery.js',
-    'https://cdn.tailwindcss.com',
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+    '/photography/js/gallery.js'
 ];
 
 // Install event - cache static assets
