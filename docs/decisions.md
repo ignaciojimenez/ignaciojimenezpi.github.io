@@ -10,3 +10,10 @@ One-liner record of architecture and strategy decisions.
 - Add `object-src 'none'` — explicit, rather than relying on the `default-src 'self'` fallback.
 - Pin dependency floors at patched versions (`Pillow==12.3.0`, `pillow-heif>=1.3.0`) rather than tracking latest, so scanners read the floor as safe.
 - Keep the service worker's cache list same-origin only — it previously listed `cdn.tailwindcss.com` and a Google Fonts URL that the CSP already blocked, which would fail `cache.addAll()` and abort the whole install.
+
+## 2026-09-06 — Lockfile integrity CI
+
+- Restore the `resolved` + `integrity` fields that merge `c356ff4` stripped from all 153 `package-lock.json` entries — the conflict was resolved by regenerating against an existing `node_modules`, which makes npm rebuild the tree from disk without contacting the registry, writing versions but no hashes.
+- Guard the lockfile with `scripts/check-lockfile-integrity.mjs` in CI rather than relying on `npm ci` — `npm ci` installs a hash-less lockfile without complaint and silently skips tarball verification, so it cannot catch this regression itself.
+- Run the dependency workflow only on `package.json` / `package-lock.json` changes — album and content commits touch neither, so the gate stays quiet.
+- Gate `npm audit` at `--audit-level=high` — the npm tree is entirely devDependencies (the site ships zero runtime deps), so low-severity build-chain noise should not block PRs.

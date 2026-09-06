@@ -1,0 +1,61 @@
+name: Dependencies
+
+# Guards the npm build toolchain. Runs only when dependency manifests change,
+# so ordinary content and album commits are unaffected.
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/check-lockfile-integrity.mjs'
+      - '.github/workflows/dependencies.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/check-lockfile-integrity.mjs'
+      - '.github/workflows/dependencies.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    # Read-only: this job inspects dependencies, it never writes to the repo.
+    permissions:
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '22'
+        cache: 'npm'
+
+    # Runs BEFORE npm ci on purpose. `npm ci` installs a lockfile with no
+    # integrity hashes without complaint, silently skipping tarball
+    # verification, so it cannot detect this class of regression itself.
+    - name: Lockfile carries integrity hashes
+      run: node scripts/check-lockfile-integrity.mjs
+
+    # Reproducible install straight from the lockfile. With hashes now
+    # guaranteed present, every tarball is checksum-verified here.
+    - name: Install from lockfile
+      run: npm ci
+
+    # Confirms each tarball is signed by the registry — a separate trust
+    # signal from the lockfile hashes, which only pin what we saw last time.
+    - name: Verify registry signatures
+      run: npm audit signatures
+
+    # Dev-only toolchain (the site ships zero runtime dependencies), so gate
+    # on high/critical rather than blocking PRs over low-severity noise.
+    - name: Audit for known vulnerabilities
+      run: npm audit --audit-level=high
