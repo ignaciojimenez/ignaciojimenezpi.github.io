@@ -17,3 +17,7 @@ One-liner record of architecture and strategy decisions.
 - Guard the lockfile with `scripts/check-lockfile-integrity.mjs` in CI rather than relying on `npm ci` — `npm ci` installs a hash-less lockfile without complaint and silently skips tarball verification, so it cannot catch this regression itself.
 - Run the dependency workflow only on `package.json` / `package-lock.json` changes — album and content commits touch neither, so the gate stays quiet.
 - Gate `npm audit` at `--audit-level=high` — the npm tree is entirely devDependencies (the site ships zero runtime deps), so low-severity build-chain noise should not block PRs.
+
+## 2026-11-04 — Pillow 13
+
+- Run the album workflows on Python 3.13 — Pillow 13 drops 3.10, so the pin and the runtime have to move together or `pip install` fails in CI.
