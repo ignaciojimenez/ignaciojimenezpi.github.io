@@ -1,0 +1,37 @@
+# Version updates, held back 20 days after release (supply-chain cooldown).
+# Security updates are unaffected: GitHub never applies cooldown to them, so
+# they arrive as soon as a fix exists and are reviewed as flagged exceptions.
+#
+# One grouped PR per ecosystem, so the verify job sees every bump at once
+# instead of failing single-package PRs while the others are still pending.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 20
+    groups:
+      npm:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    directory: /photography/utils
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 20
+    groups:
+      pip:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 20
+    groups:
+      github-actions:
+        patterns: ["*"]

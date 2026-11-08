@@ -21,3 +21,8 @@ One-liner record of architecture and strategy decisions.
 ## 2026-11-04 — Pillow 13
 
 - Run the album workflows on Python 3.13 — Pillow 13 drops 3.10, so the pin and the runtime have to move together or `pip install` fails in CI.
+
+## 2026-11-08 — Dependabot version updates
+
+- Enable version updates for npm, pip and GitHub Actions with a 20-day `cooldown` — pins only moved when an alert forced them; cooldown cannot apply to security updates (GitHub docs), so those stay immediate and are reviewed as flagged exceptions.
+- Group each ecosystem into one weekly PR — the `verify` job fails on any high/critical finding, so single-package PRs can block each other.
