@@ -13,9 +13,9 @@
     "watch:css:all": "npx concurrently \"npm run watch:css\" \"npm run watch:css:photography\" \"npm run watch:css:music\""
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.0",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.5.12",
+    "tailwindcss": "^3.4.19",
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.31",
     "concurrently": "^8.2.2"
   }
 }
