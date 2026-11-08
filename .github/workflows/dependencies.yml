@@ -59,3 +59,15 @@ jobs:
     # on high/critical rather than blocking PRs over low-severity noise.
     - name: Audit for known vulnerabilities
       run: npm audit --audit-level=high
+
+    # A bump can install cleanly and audit clean yet break the toolchain
+    # (tailwindcss v4 ships no CLI), so prove the CSS still builds.
+    - name: Build CSS
+      run: npm run build:css:all
+
+    # Drift is expected on some bumps and is not a failure: the committed CSS
+    # is what deploys. The warning says the artifacts need a rebuild.
+    - name: Compiled CSS matches the committed artifacts
+      run: |
+        git diff --stat --exit-code -- css/styles.css photography/css/styles.css music/css/styles.css \
+          || echo "::warning::Compiled CSS differs from the committed files; rebuild and commit them."

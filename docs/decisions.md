@@ -25,4 +25,6 @@ One-liner record of architecture and strategy decisions.
 ## 2026-11-08 — Dependabot version updates
 
 - Enable version updates for npm, pip and GitHub Actions with a 20-day `cooldown` — pins only moved when an alert forced them; cooldown cannot apply to security updates (GitHub docs), so those stay immediate and are reviewed as flagged exceptions.
-- Group each ecosystem into one weekly PR — the `verify` job fails on any high/critical finding, so single-package PRs can block each other.
+- Group each ecosystem's minor and patch bumps into one weekly PR — the `verify` job fails on any high/critical finding, so single-package PRs can block each other. Majors get their own PR; each is a decision.
+- Ignore tailwindcss majors — v4 ships no CLI, so the bump broke `npm run build:css` (PR #29); moving to v4 is a migration to plan, not a Dependabot PR.
+- Build the CSS in the `verify` job — #29 installed and audited clean while breaking the build; a CSS diff only warns, since the committed artifacts are what deploys.
