@@ -2,8 +2,9 @@
 # Security updates are unaffected: GitHub never applies cooldown to them, so
 # they arrive as soon as a fix exists and are reviewed as flagged exceptions.
 #
-# One grouped PR per ecosystem, so the verify job sees every bump at once
-# instead of failing single-package PRs while the others are still pending.
+# Minor and patch bumps share one PR per ecosystem, so the verify job sees them
+# together instead of failing single-package PRs while the others are pending.
+# Majors arrive as their own PRs: each one is a decision, not routine upkeep.
 version: 2
 updates:
   - package-ecosystem: npm
@@ -15,6 +16,11 @@ updates:
     groups:
       npm:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # v4 drops the CLI the build scripts call; it is a migration, not a bump.
+      - dependency-name: tailwindcss
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /photography/utils
@@ -25,6 +31,7 @@ updates:
     groups:
       pip:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: github-actions
     directory: /
@@ -35,3 +42,4 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
